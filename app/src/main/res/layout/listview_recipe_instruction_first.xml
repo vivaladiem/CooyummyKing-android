@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:orientation="vertical">
+    <RelativeLayout
+        android:id="@+id/detail_recipe_info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:background="@drawable/detail_recipe_card_background">
+        <com.coo.y2.cooyummyking.view.SquareImageView
+            android:id="@+id/detail_recipe_main_image"
+            android:layout_height="0dp"
+            android:layout_width="match_parent"
+            android:layout_marginBottom="8dp"
+            android:scaleType="centerCrop"
+            android:background="@android:color/darker_gray"/> <!--TODO del, plcaeholder로 대체 -->
+
+        <!-- 레시피 개요 -->
+        <TextView
+            android:id="@+id/detail_recipe_title_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/detail_recipe_main_image"
+            android:text="@string/detail_recipe_title"
+            android:textAppearance="@style/TextLightGrey"/>
+        <TextView
+            android:id="@+id/detail_recipe_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/detail_recipe_title_name"
+            android:layout_alignBaseline="@id/detail_recipe_title_name"
+            android:layout_marginLeft="40dp"
+            android:singleLine="true"
+            android:text="사과식빵"
+            android:textAppearance="@style/TextLargeDarkGrey"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:id="@+id/detail_recipe_time_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/detail_recipe_title_name"
+            android:text="@string/detail_recipe_time"
+            android:textAppearance="@style/TextLightGrey"/>
+        <ImageView
+            android:id="@+id/detail_recipe_time_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:layout_toRightOf="@id/detail_recipe_time_name"
+            android:layout_below="@id/detail_recipe_title_name"
+            android:src="@drawable/detail_recipe_icon_time"/>
+        <TextView
+            android:id="@+id/detail_recipe_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_toRightOf="@id/detail_recipe_time_icon"
+            android:layout_alignBaseline="@id/detail_recipe_time_name"
+            android:singleLine="true"
+            android:text="10분"
+            android:textAppearance="@style/TextDarkGrey"/>
+
+        <TextView
+            android:id="@+id/detail_recipe_theme_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/detail_recipe_time_name"
+            android:text="@string/detail_recipe_theme"
+            android:textAppearance="@style/TextLightGrey"/>
+        <ImageView
+            android:id="@+id/detail_recipe_theme_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:layout_toRightOf="@id/detail_recipe_time_name"
+            android:layout_below="@id/detail_recipe_time_name"
+            android:src="@drawable/detail_recipe_icon_time"/>
+        <TextView
+            android:id="@+id/detail_recipe_theme"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_toRightOf="@id/detail_recipe_time_icon"
+            android:layout_alignBaseline="@id/detail_recipe_theme_name"
+            android:singleLine="true"
+            android:text="야식"
+            android:textAppearance="@style/TextDarkGrey"/>
+
+        <TextView
+            android:id="@+id/detail_recipe_ingredient_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_below="@id/detail_recipe_theme_name"
+            android:text="@string/detail_recipe_ingredient"
+            android:textAppearance="@style/TextLightGrey"/>
+        <ImageView
+            android:id="@+id/detail_recipe_ingredient_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="40dp"
+            android:layout_toRightOf="@id/detail_recipe_time_name"
+            android:layout_below="@id/detail_recipe_theme_name"
+            android:src="@drawable/detail_recipe_icon_time"/>
+        <TextView
+            android:id="@+id/detail_recipe_ingredient"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_toRightOf="@id/detail_recipe_time_icon"
+            android:layout_below="@id/detail_recipe_theme_name"
+            android:maxLines="4"
+            android:singleLine="false"
+            android:text="사과, 식빵, 맛있는 재료는 무엇이든 넣어도 좋답니다 그러니까 팍팍 넣으세요 무한히"
+            android:textAppearance="@style/TextDarkGrey"/>
+
+        <!-- alignBase로 정렬된 오브젝트를 layout_below 등의 대상으로 정할 수가 없구나..! -->
+        <TextView
+            android:id="@+id/detail_recipe_source_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_below="@id/detail_recipe_ingredient"
+            android:text="@string/detail_recipe_source"
+            android:textAppearance="@style/TextLightGrey"/>
+        <TextView
+            android:id="@+id/detail_recipe_source"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toRightOf="@id/detail_recipe_title_name"
+            android:layout_alignBaseline="@id/detail_recipe_source_name"
+            android:layout_marginLeft="40dp"
+            android:singleLine="true"
+            android:text="꿀"
+            android:textAppearance="@style/TextDarkGrey"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 레시피 개요 내용 -->
+        <!-- TODO 테마, 재료 아이콘이 없다... -->
+
+    </RelativeLayout>
+    <include layout="@layout/listview_recipe_instruction"/>
+</LinearLayout>

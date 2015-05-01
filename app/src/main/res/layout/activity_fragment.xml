@@ -1,22 +1,25 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/activity_main_layout"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:orientation="vertical">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_width="match_parent"
-        android:background="@drawable/actionbar_bg">
+        android:minHeight="48dp"
+        android:background="@drawable/actionbar_background">
+        <!-- minHeight를 설정해야지 아이콘이 중앙에 옴 -->
         <TextView
             android:id="@+id/toolbar_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="쿠요미킹"
-            android:textAppearance="@style/TextAppearance.AppCompat.Large"
-            android:textSize="@dimen/abc_text_size_large_material"/>
-        </android.support.v7.widget.Toolbar>
+            android:textStyle="bold"
+            android:textSize="22sp"/>
+    </android.support.v7.widget.Toolbar>
 
     <android.support.v4.widget.DrawerLayout
         android:id="@+id/drawer_layout"
@@ -27,8 +30,7 @@
         <FrameLayout
             android:id="@+id/fragmentContainer"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
+            android:layout_height="match_parent"/>
         <!-- 사이드 메뉴(= drawer menu = hamburger menu) -->
         <LinearLayout
             android:id="@+id/ham_menu"
@@ -51,15 +53,13 @@
                 android:layout_margin="4dp"
                 android:layout_gravity="center_horizontal"
                 android:src="@drawable/ham_btn_login_off"/>
-
         </LinearLayout>
-
     </android.support.v4.widget.DrawerLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:orientation="horizontal"
-        android:background="@drawable/bottom_tab_bg">
+        android:background="@drawable/bottom_tab_background">
         <ImageView
             android:id="@+id/bottom_tab_list"
             android:layout_height="wrap_content"
@@ -68,10 +68,12 @@
             android:layout_gravity="center"
             android:clickable="true"
             android:src="@drawable/bottom_tab_btn_list"/>
-        <ImageView
-            android:layout_width="wrap_content"
+        <View
             android:layout_height="match_parent"
-            android:src="@drawable/bottom_tab_indicator"/>
+            android:layout_width="2dp"
+            android:layout_marginTop="1px"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/bottom_tab_indicator"/>
         <ImageView
             android:id="@+id/bottom_tab_tool"
             android:layout_width="wrap_content"
@@ -80,10 +82,12 @@
             android:layout_gravity="center"
             android:clickable="true"
             android:src="@drawable/bottom_tab_btn_tool"/>
-        <ImageView
-            android:layout_width="wrap_content"
+        <View
             android:layout_height="match_parent"
-            android:src="@drawable/bottom_tab_indicator"/>
+            android:layout_width="2dp"
+            android:layout_marginTop="1px"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/bottom_tab_indicator"/>
         <ImageView
             android:id="@+id/bottom_tab_mypage"
             android:layout_width="wrap_content"

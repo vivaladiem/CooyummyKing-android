@@ -28,6 +28,10 @@ public class HttpUtil {
         getClient().post(getAbsoluteUrl(url), params, handler);
     }
 
+    public static void cancle() {
+        getClient().cancelAllRequests(true);
+    }
+
     public static void setHeaders(Map<String, String> headers) {
         if (headers == null) {
             return;

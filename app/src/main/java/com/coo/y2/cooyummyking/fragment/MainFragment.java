@@ -2,10 +2,12 @@ package com.coo.y2.cooyummyking.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -101,11 +103,30 @@ public class MainFragment extends Fragment {
             mIvRecipeImages[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Toast.makeText(getActivity().getApplicationContext(), mRecipes.get((int) v.getTag()).title + " clicked", Toast.LENGTH_SHORT).show();
+                    Recipe recipe = mRecipes.get((int) v.getTag());
+                    if (recipe == null) {
+                        Toast.makeText(getActivity(), "레시피를 불러올 수 없습니다", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    Fragment fragment = new RecipeDetailFragment();
+                    Bundle data = new Bundle();
+                    data.putInt(RecipeDetailFragment.EXTRA_RECIPEID, recipe.id);
+//                    data.putInt(RecipeDetailFragment.EXTRA_USERID, 본인아이디);
+                    data.putInt(RecipeDetailFragment.EXTRA_MAIN_IMAGE_NUM, recipe.mainImageNum);
+                    data.putString(RecipeDetailFragment.EXTRA_TITLE, recipe.title);
+                    fragment.setArguments(data);
+                    FragmentManager fm = getActivity().getSupportFragmentManager();
+                    fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // 기존 백스택을 비운다. 근데 왜 하나는 남는거지..
+                    HttpUtil.cancle();
+                    fm.beginTransaction()
+                            .replace(R.id.fragmentContainer, fragment)
+                            .addToBackStack(null)
+                            .commit();
                 }
             });
         }
     }
+
 
     @Override
     public void onResume() {
@@ -114,7 +135,7 @@ public class MainFragment extends Fragment {
     }
 
     private void executeGetRecipes() {
-        HttpUtil.post(URL.FETCH_RECIPES, null, null, new JsonHttpResponseHandler() {
+        HttpUtil.get(URL.GET_RECIPES, null, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
@@ -125,6 +146,7 @@ public class MainFragment extends Fragment {
             @Override
             public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
                 super.onFailure(statusCode, headers, responseString, throwable);
+                HttpUtil.cancle();
             }
 
             private void clearAndBuildRecipes(JSONArray recipes) {
@@ -140,17 +162,19 @@ public class MainFragment extends Fragment {
         new AttachImageTask().execute();
     }
     private class AttachImageTask extends AsyncTask<Void, Integer, Void> {
+        private int size = mRecipes.size();
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
             for (ImageView iv : mIvRecipeImages) {
-                iv.setImageDrawable(null);
+//                ((BitmapDrawable) iv.getDrawable()).getBitmap().recycle(); // 3.0 버전 이하에선 recycle을 해줘야만 함.
+                iv.setImageDrawable(null); // 3.0 이상에선 이것만 해줘도 자동으로 비트맵 메모리 반환됨
+                if (iv.getDrawable() != null) iv.getDrawable().setCallback(null);
             }
         }
 
         @Override
         protected Void doInBackground(Void... params) {
-            int size = mRecipes.size();
             for (int i = 0; i < size; i++) {
                 publishProgress(i);
             }
@@ -160,9 +184,10 @@ public class MainFragment extends Fragment {
         @Override
         protected void onProgressUpdate(Integer... values) {
             int i = values[0];
-            if (i < mRecipes.size()) {
-                if (mRecipes.get(i).mainImageNum != 0) {
-                    ImageLoader.getInstance().displayImage(mRecipes.get(i).getImageUrl(), mIvRecipeImages[i]);
+            if (i < size) {
+                Recipe recipe = mRecipes.get(i);
+                if (recipe.mainImageNum != 0) {
+                    ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageNum), mIvRecipeImages[i]);
                 } else {
                     // 혹시라도 사진이 하나도 없을 때.
                 }

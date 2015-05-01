@@ -1,5 +1,7 @@
 package com.coo.y2.cooyummyking.entity;
 
+import com.coo.y2.cooyummyking.network.URL;
+
 import org.json.JSONObject;
 
 import java.io.Serializable;
@@ -18,15 +20,15 @@ public class User implements Serializable{
     public static final String FOLLOWING_COUNT = "following_count";
     public static final String FOLLOWER_COUNT = "follower_count";
 
-    private int id;
-    private String name;
-    private String email;
-    private String profileText;
-    private int point;
-    private int level;
-    private int recipeCount;
-    private int followingCount;
-    private int followerCount;
+    public int id;
+    public String name;
+    public String email;
+    public String profileText;
+    public int point;
+    public int level;
+    public int recipeCount;
+    public int followingCount;
+    public int followerCount;
 
     public static User build(JSONObject json) {
         if (json == null) {
@@ -45,76 +47,7 @@ public class User implements Serializable{
 
         return user;
     }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getProfileText() {
-        return profileText;
-    }
-
-    public void setProfileText(String profileText) {
-        this.profileText = profileText;
-    }
-
-    public int getPoint() {
-        return point;
-    }
-
-    public void setPoint(int point) {
-        this.point = point;
-    }
-
-    public int getLevel() {
-        return level;
-    }
-
-    public void setLevel(int level) {
-        this.level = level;
-    }
-
-    public int getRecipeCount() {
-        return recipeCount;
-    }
-
-    public void setRecipeCount(int recipeCount) {
-        this.recipeCount = recipeCount;
-    }
-
-    public int getFollowingCount() {
-        return followingCount;
-    }
-
-    public void setFollowingCount(int followingCount) {
-        this.followingCount = followingCount;
-    }
-
-    public int getFollowerCount() {
-        return followerCount;
-    }
-
-    public void setFollowerCount(int followerCount) {
-        this.followerCount = followerCount;
+    public String getImageUrl() {
+        return new StringBuilder().append(URL.getBaseUrl()).append("/users/profile/").append(this.id).toString();
     }
 }

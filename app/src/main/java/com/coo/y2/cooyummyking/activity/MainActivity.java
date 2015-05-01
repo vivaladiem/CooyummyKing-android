@@ -1,5 +1,6 @@
 package com.coo.y2.cooyummyking.activity;
 
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -12,10 +13,13 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.fragment.MainFragment;
+import com.coo.y2.cooyummyking.network.HttpUtil;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -23,6 +27,34 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
 //    private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
+//    private Typeface mTypeface;
+
+    /*
+    @Override
+    public void setContentView(int layoutResID) {
+        super.setContentView(layoutResID);
+        if (mTypeface == null) {
+        mTypeface = Typeface.createFromAsset(getAssets(), "nanum.otf.mp3");
+        }
+        ViewGroup root = (ViewGroup) findViewById(R.id.activity_main_layout);
+        setAppFont(root);
+    }
+    private void setAppFont(ViewGroup root) {
+        ViewHolderForApplyFont holder = new ViewHolderForApplyFont();
+        int count = root.getChildCount();
+        for (int i = 0; i < count; i++) {
+            holder.v = root.getChildAt(i);
+            if (holder.v instanceof TextView) {
+                ((TextView)holder.v).setTypeface(mTypeface);
+            } else if (holder.v instanceof ViewGroup) {
+                setAppFont((ViewGroup) holder.v);
+            }
+        }
+    }
+    private class ViewHolderForApplyFont {
+        View v;
+    }
+    */
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -91,6 +123,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void replaceFragment (Fragment fragment) {
         FragmentManager fm = getSupportFragmentManager();
+        fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+        HttpUtil.cancle();
         fm.beginTransaction()
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
@@ -128,6 +162,10 @@ public class MainActivity extends AppCompatActivity {
     public void onBackPressed() {
         if (mDrawerLayout.isDrawerOpen(Gravity.START)) {
             mDrawerLayout.closeDrawers();
+            return;
+        }
+        if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+            getSupportFragmentManager().popBackStack();
             return;
         }
         super.onBackPressed();

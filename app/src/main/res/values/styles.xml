@@ -2,16 +2,10 @@
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
         <!-- Customize your theme here. -->
-        <!--
-        <item name="android:actionBarStyle">@style/CooActionBar</item>
-        <item name="actionBarStyle">@style/CooActionBar</item> -->
         <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
     </style>
 
-    <style name="CooActionBar" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="android:background">@drawable/actionbar_bg</item>
-        <item name="background">@drawable/actionbar_bg</item>
-    </style>
+    <!-- Toolbar 사이드메뉴 토글버튼 -->
     // http://developer.android.com/reference/android/support/v7/appcompat/R.styleable.html 참고. 툴바 커스텀 가능 요소들
     <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
         <item name="spinBars">true</item>
@@ -20,5 +14,23 @@
         <item name="thickness">3sp</item>
         <item name="gapBetweenBars">3sp</item>
         <item name="middleBarArrowSize">20sp</item>
+    </style>
+
+    <!-- Text -->
+    <style name="TextLightGrey">
+        <item name="android:textColor">#ff999999</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="TextLargeDarkGrey">
+        <item name="android:textColor">#ff666666</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+    <style name="TextDarkGrey">
+        <item name="android:textColor">#ff666666</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+    <style name="TextRed">
+        <item name="android:textColor">#ffcb0001</item>
+        <item name="android:textSize">16sp</item>
     </style>
 </resources>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:padding="12dp"
+                android:background="@drawable/detail_recipe_card_background">
+    <!-- TODO 끈 작은이미지 만들어서 wrap_content로 해야. 기기따라서 엉망으로 보임. 어떻게 해야할까-->
+    <ImageView
+        android:layout_height="28dp"
+        android:layout_width="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="-30dp"
+        android:layout_marginLeft="20dp"
+        android:src="@drawable/detail_recipe_card_string"/>
+    <ImageView
+        android:layout_height="28dp"
+        android:layout_width="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="-30dp"
+        android:layout_marginRight="20dp"
+        android:src="@drawable/detail_recipe_card_string"/>
+    <com.coo.y2.cooyummyking.view.SquareImageView
+        android:id="@+id/detail_recipe_instruction_iv"
+        android:layout_height="0dp"
+        android:cropToPadding="true"
+        android:layout_width="match_parent"
+        android:visibility="gone"
+        android:scaleType="centerCrop"/>
+    <TextView
+        android:id="@+id/detail_recipe_instruction_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/detail_recipe_instruction_iv"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:textAppearance="@style/TextDarkGrey"
+        android:text="200도 예열에서 10분간 구워 완성!"/>
+    <ViewStub
+        android:id="@+id/detail_recipe_instruction_end_stub"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="24dp"
+        android:layout_below="@id/detail_recipe_instruction_tv"
+        android:layout="@layout/listview_recipe_instruction_end_stub"/>
+</RelativeLayout>
