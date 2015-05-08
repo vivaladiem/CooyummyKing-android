@@ -6,7 +6,7 @@
     android:orientation="vertical">
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
-        android:layout_height="48dp"
+        android:layout_height="@dimen/actionbar_height"
         android:layout_width="match_parent"
         android:minHeight="48dp"
         android:background="@drawable/toolbar_background">
@@ -57,10 +57,11 @@
         </LinearLayout>
     </android.support.v4.widget.DrawerLayout>
 
+    <!-- 그냥 Bottom bar 라고 할걸.. 괜히 tab으로 해서 어감 안좋네 근데 바꾸기 귀찮.. -->
     <!-- Botom tab -->
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="@dimen/bottomtab_height"
         android:orientation="horizontal"
         android:background="@drawable/bottom_tab_background">
         <ImageView

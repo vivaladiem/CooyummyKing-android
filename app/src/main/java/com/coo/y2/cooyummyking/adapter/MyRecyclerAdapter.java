@@ -21,12 +21,6 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     private ArrayList<Bitmap> mImages = new ArrayList<>();
     private int mMainImageNum;
 
-    public static final int VIEW_HEADER = 0;
-    public static final int VIEW_NORMAL = 1;
-
-    public boolean isHeader(int position) {
-        return position == 0;
-    }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public TextView mTvTagNum;
@@ -65,7 +59,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
 
     // Create layout and initiate ViewHolder
     @Override
-    public MyRecyclerAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int ViewType) {
+    public ViewHolder onCreateViewHolder(ViewGroup parent, int ViewType) {
         View v;
             v = LayoutInflater.from(parent.getContext()).inflate(R.layout.tool_lowerpage_overview_content, parent, false);
             return new ViewHolder(v, false);
@@ -75,18 +69,10 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     // Handle View contents
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        if (position == VIEW_HEADER) {
-            // setOnCLickListener or ScrollLinster for Scroll.
-        }
         holder.mTvTagNum.setText(String.valueOf(position + 1));
         holder.mIvRecipeImage.setImageBitmap(mImages.get(position));
 
         holder.mTvRecipeText.setText(mInstructions.get(position));
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        return isHeader(position) ? VIEW_HEADER : VIEW_NORMAL;
     }
 
     @Override

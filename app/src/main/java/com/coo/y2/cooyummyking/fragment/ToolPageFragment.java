@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -107,12 +106,14 @@ public class ToolPageFragment extends Fragment {
         final GridLayoutManager mMyGridLayoutManager = new GridLayoutManager(getActivity(), SPAN_COUNT);
         mRecycleView.setLayoutManager(mMyGridLayoutManager);
 
+        /*
         mMyGridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
             @Override
             public int getSpanSize(int position) {
                 return mAdapter.isHeader(position) ? 1 : 1;
             }
         });
+        */
     }
 
 }
