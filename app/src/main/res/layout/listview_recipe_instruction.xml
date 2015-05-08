@@ -23,7 +23,7 @@
         android:layout_marginTop="-30dp"
         android:layout_marginRight="20dp"
         android:src="@drawable/detail_recipe_card_string"/>
-    <com.coo.y2.cooyummyking.view.SquareImageView
+    <com.coo.y2.cooyummyking.view.SquareImageView_byWidth
         android:id="@+id/detail_recipe_instruction_iv"
         android:layout_height="0dp"
         android:cropToPadding="true"

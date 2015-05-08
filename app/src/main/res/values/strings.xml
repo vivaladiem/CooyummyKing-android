@@ -3,20 +3,35 @@
 
     <string name="hello_world">Hello world!</string>
 
-    <!-- action bar strings -->
-    <string name="action_hammenu">메뉴</string>
-    <string name="action_refresh">새로고침</string>
-    <string name="action_search">검색</string>
+    <!-- toolbar strings -->
+    <string name="toolbar_ham">메뉴</string>
+    <string name="toolbar_refresh">새로고침</string>
+    <string name="toolbar_search">검색</string>
     <string name="ham_open">햄버거메뉴 열기</string>
     <string name="ham_close">햄버거메뉴 닫기</string>
-    <string name="title_main">쿠요미킹</string>
+    <string name="toolbar_title_main">쿠요미킹</string>
 
     <!-- detail -->
-    <string name="detail_recipe_title">제목</string>
-    <string name="detail_recipe_time">시간</string>
-    <string name="detail_recipe_theme">테마</string>
-    <string name="detail_recipe_ingredient">재료</string>
-    <string name="detail_recipe_source">양념</string>
+    <string name="detail_recipe_toolbar_title">상세레시피</string>
+    <string name="detail_recipe_title_caption">제목</string>
+    <string name="detail_recipe_time_caption">시간</string>
+    <string name="detail_recipe_theme_caption">테마</string>
+    <string name="detail_recipe_ingredient_caption">재료</string>
+    <string name="detail_recipe_source_caption">양념</string>
+
+    <!-- tool -->
+    <string name="tool_toolbar_title">쿠요미 툴</string>
+    <string name="tool_info_caption">기본정보</string>
+    <string name="tool_info_title_caption">제목</string>
+    <string name="tool_info_time_caption">시간</string>
+    <string name="tool_info_theme_caption">테마</string>
+    <string name="tool_info_ingredient_caption">재료</string>
+    <string name="tool_info_source_caption">양념</string>
+    <string name="tool_photo_load_image">사진로드</string>
+    <string name="tool_photo_camera">촬영</string>
+    <string name="tool_photo_album">앨범</string>
+    <string name="tool_making_title_caption">요리과정</string>
+
     <!-- errors -->
     <string name="err_no_recipe">네트워크 오류로 인해 레시피 정보를 가져올 수 없습니다</string>
 </resources>

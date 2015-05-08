@@ -19,6 +19,7 @@ import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.fragment.MainFragment;
+import com.coo.y2.cooyummyking.fragment.ToolFragment;
 import com.coo.y2.cooyummyking.network.HttpUtil;
 
 
@@ -105,6 +106,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (v.isSelected()) return;
                 v.setSelected(true);
+                Fragment fragment = new ToolFragment();
+                replaceFragment(fragment);
                 mIvBtnList.setSelected(false);
                 mIvBtnMypage.setSelected(false);
             }
@@ -145,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-//        mToolbar.setNavigationIcon(R.drawable.actionbar_btn_hammenu); // 일반 정적 아이콘을 toggle로 사용하기. 애니메이션이 없어져서 drawerArrayToggle을 커스텀해서 사용중.(styles.xml)
+//        mToolbar.setNavigationIcon(R.drawable.toolbar_btn_hammenu); // 일반 정적 아이콘을 toggle로 사용하기. 애니메이션이 없어져서 drawerArrayToggle을 커스텀해서 사용중.(styles.xml)
         return super.onCreateOptionsMenu(menu);
     }
 

@@ -2,13 +2,18 @@ package com.coo.y2.cooyummyking.fragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.internal.VersionUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -25,6 +30,8 @@ import com.coo.y2.cooyummyking.network.HttpUtil;
 import com.coo.y2.cooyummyking.network.URL;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+
 import org.apache.http.Header;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,8 +44,10 @@ import java.util.ArrayList;
 public class MainFragment extends Fragment {
     private static final String TAG = "MainFragment";
     // [Tuning] 실제 서비스할 때는 아래와 같이 한 메서드에서만 사용하는 변수들은 그 메서드에서 선언할것.
-    private final String HIT_RECIPE_LENGTH = "hrl";
-    private final String NORMAL_RECIPE_LENGTH = "nrl";
+    private static final String HIT_RECIPE_LENGTH = "hrl";
+    private static final String NORMAL_RECIPE_LENGTH = "nrl";
+    // 이런 변수들은 따로 모아야하나..
+    public static final String SCREEN_WIDTH_DP = "swd";
     private final int RECIPE_COUNT = 12;
     private ImageView[] mIvRecipeImages = new ImageView[RECIPE_COUNT];
     private ArrayList<Recipe> mRecipes = new ArrayList<>();
@@ -57,29 +66,47 @@ public class MainFragment extends Fragment {
         return v;
     }
 
+
+    // ------------- Util Methods ------------ //
     private int getResourceId(String id) {
         return getResources().getIdentifier(id, "id", this.getActivity().getPackageName());
     }
 
+    private void returnBitmapMemory(ImageView v) {
+        Drawable drawable;
+        if ((drawable = v.getDrawable()) != null) {
+            Bitmap bm = ((BitmapDrawable) drawable).getBitmap();
+            v.setImageBitmap(null);
+            drawable.setCallback(null); // callback이 남아있어서 비트맵이 반환되지 않는다는 말도 있는데 항상 그런진 모르겠다.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB) {
+                // 허니콤부터는 비트맵 참조만 없어져도 메모리가 반환됐는데 그 이전에는 recycle 해줘야함.
+                //
+                try {
+                    bm.recycle();
+                } catch (Exception e) { }
+            }
+        }
+    }
+
+    // --------------Use In onCreateView ---------------- //
     private void initResources(View view) {
         SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
-        int recipeSideLength;
-        int hitRecipeSideLength;
-        recipeSideLength = prefs.getInt(NORMAL_RECIPE_LENGTH, 0);
-        hitRecipeSideLength = prefs.getInt(HIT_RECIPE_LENGTH, 0);
+        int recipeSideLength = prefs.getInt(NORMAL_RECIPE_LENGTH, 0);
+        int hitRecipeSideLength = prefs.getInt(HIT_RECIPE_LENGTH, 0);
 
         if (recipeSideLength == 0 || hitRecipeSideLength == 0) {
+            SharedPreferences.Editor editor = prefs.edit();
             DisplayMetrics dm = getResources().getDisplayMetrics();
             float screenWidthPx = dm.widthPixels;
             float dens = dm.density;
             int screenWidthDp = Math.round((screenWidthPx - 0.5f) / dens);
+            editor.putInt(SCREEN_WIDTH_DP, screenWidthDp);
 
             int recipeWidthDp = (screenWidthDp - (20 + 8 + 8 + 20)) / 3;
             int hitRecipeWidthDp = recipeWidthDp * 2 + 8;
 
             recipeSideLength = (int) (recipeWidthDp * dens + 0.5f);
             hitRecipeSideLength = (int) (hitRecipeWidthDp * dens + 0.5f);
-            SharedPreferences.Editor editor = prefs.edit();
             editor.putInt(NORMAL_RECIPE_LENGTH, recipeSideLength);
             editor.putInt(HIT_RECIPE_LENGTH, hitRecipeSideLength);
             editor.commit();
@@ -103,8 +130,11 @@ public class MainFragment extends Fragment {
             mIvRecipeImages[i].setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Recipe recipe = mRecipes.get((int) v.getTag());
-                    if (recipe == null) {
+                    Recipe recipe;
+                    // TODO 나중엔 오프라인에선 저장(스크랩)해놓은 레시피를 볼 수 있게 하자
+                    try {
+                        recipe = mRecipes.get((int) v.getTag());
+                    } catch (IndexOutOfBoundsException e) {
                         Toast.makeText(getActivity(), "레시피를 불러올 수 없습니다", Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -116,7 +146,7 @@ public class MainFragment extends Fragment {
                     data.putString(RecipeDetailFragment.EXTRA_TITLE, recipe.title);
                     fragment.setArguments(data);
                     FragmentManager fm = getActivity().getSupportFragmentManager();
-                    fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // 기존 백스택을 비운다. 근데 왜 하나는 남는거지..
+                    fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // 기존 백스택을 비운다
                     HttpUtil.cancle();
                     fm.beginTransaction()
                             .replace(R.id.fragmentContainer, fragment)
@@ -126,7 +156,6 @@ public class MainFragment extends Fragment {
             });
         }
     }
-
 
     @Override
     public void onResume() {
@@ -167,9 +196,7 @@ public class MainFragment extends Fragment {
         protected void onPreExecute() {
             super.onPreExecute();
             for (ImageView iv : mIvRecipeImages) {
-//                ((BitmapDrawable) iv.getDrawable()).getBitmap().recycle(); // 3.0 버전 이하에선 recycle을 해줘야만 함.
-                iv.setImageDrawable(null); // 3.0 이상에선 이것만 해줘도 자동으로 비트맵 메모리 반환됨
-                if (iv.getDrawable() != null) iv.getDrawable().setCallback(null);
+                returnBitmapMemory(iv);
             }
         }
 
@@ -196,11 +223,19 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroy();
+        for (ImageView iv : mIvRecipeImages) {
+            returnBitmapMemory(iv);
+        }
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.menu_main, menu);
         TextView tv = (TextView) getActivity().findViewById(R.id.toolbar_title);
-        tv.setText(R.string.title_main);
+        tv.setText(R.string.toolbar_title_main);
     }
 
     @Override

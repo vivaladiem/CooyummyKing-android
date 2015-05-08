@@ -17,12 +17,12 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
         DisplayImageOptions options = new DisplayImageOptions.Builder()
-                .cacheInMemory(true)
+                .cacheInMemory(false)
                 .cacheOnDisk(false)
                 .build();
         // File cacheDir = StorageUtils.getCacheDirectory(this);
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
-                .memoryCache(new LruMemoryCache(8 * 1024 * 1024))
+//                .memoryCache(new LruMemoryCache(8 * 1024 * 1024))
                 .defaultDisplayImageOptions(options)
                 .build();
         ImageLoader.getInstance().init(config);

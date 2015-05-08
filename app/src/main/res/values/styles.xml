@@ -18,19 +18,19 @@
 
     <!-- Text -->
     <style name="TextLightGrey">
-        <item name="android:textColor">#ff999999</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/Coo_LightGrey</item>
+        <item name="android:textSize">18sp</item>
     </style>
     <style name="TextLargeDarkGrey">
-        <item name="android:textColor">#ff666666</item>
+        <item name="android:textColor">@color/Coo_DarkGrey</item>
         <item name="android:textSize">20sp</item>
     </style>
     <style name="TextDarkGrey">
-        <item name="android:textColor">#ff666666</item>
-        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/Coo_DarkGrey</item>
+        <item name="android:textSize">20sp</item>
     </style>
     <style name="TextRed">
-        <item name="android:textColor">#ffcb0001</item>
-        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/Coo_Red</item>
+        <item name="android:textSize">18sp</item>
     </style>
 </resources>
