@@ -43,11 +43,10 @@ import java.util.ArrayList;
  */
 public class MainFragment extends Fragment {
     private static final String TAG = "MainFragment";
-    // [Tuning] 실제 서비스할 때는 아래와 같이 한 메서드에서만 사용하는 변수들은 그 메서드에서 선언할것.
     private static final String HIT_RECIPE_LENGTH = "hrl";
     private static final String NORMAL_RECIPE_LENGTH = "nrl";
-    // 이런 변수들은 따로 모아야하나..
     public static final String SCREEN_WIDTH_DP = "swd";
+
     private final int RECIPE_COUNT = 12;
     private ImageView[] mIvRecipeImages = new ImageView[RECIPE_COUNT];
     private ArrayList<Recipe> mRecipes = new ArrayList<>();
@@ -61,34 +60,10 @@ public class MainFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_main_recipe_list, container, false);
         initResources(v);
-        initEvents();
         setHasOptionsMenu(true);
         return v;
     }
 
-
-    // ------------- Util Methods ------------ //
-    private int getResourceId(String id) {
-        return getResources().getIdentifier(id, "id", this.getActivity().getPackageName());
-    }
-
-    private void returnBitmapMemory(ImageView v) {
-        Drawable drawable;
-        if ((drawable = v.getDrawable()) != null) {
-            Bitmap bm = ((BitmapDrawable) drawable).getBitmap();
-            v.setImageBitmap(null);
-            drawable.setCallback(null); // callback이 남아있어서 비트맵이 반환되지 않는다는 말도 있는데 항상 그런진 모르겠다.
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB) {
-                // 허니콤부터는 비트맵 참조만 없어져도 메모리가 반환됐는데 그 이전에는 recycle 해줘야함.
-                //
-                try {
-                    bm.recycle();
-                } catch (Exception e) { }
-            }
-        }
-    }
-
-    // --------------Use In onCreateView ---------------- //
     private void initResources(View view) {
         SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
         int recipeSideLength = prefs.getInt(NORMAL_RECIPE_LENGTH, 0);
@@ -109,7 +84,7 @@ public class MainFragment extends Fragment {
             hitRecipeSideLength = (int) (hitRecipeWidthDp * dens + 0.5f);
             editor.putInt(NORMAL_RECIPE_LENGTH, recipeSideLength);
             editor.putInt(HIT_RECIPE_LENGTH, hitRecipeSideLength);
-            editor.commit();
+            editor.apply();
         }
 
         for (int i = 0; i < RECIPE_COUNT; i++) {
@@ -122,6 +97,13 @@ public class MainFragment extends Fragment {
                 mIvRecipeImages[i].getLayoutParams().width = recipeSideLength;
             }
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        initEvents();
+        executeGetRecipes();
     }
 
     private void initEvents() {
@@ -157,12 +139,6 @@ public class MainFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        executeGetRecipes();
-    }
-
     private void executeGetRecipes() {
         HttpUtil.get(URL.GET_RECIPES, null, null, new JsonHttpResponseHandler() {
             @Override
@@ -187,9 +163,11 @@ public class MainFragment extends Fragment {
             }
         });
     }
+
     private void loadRecipeImages() {
         new AttachImageTask().execute();
     }
+
     private class AttachImageTask extends AsyncTask<Void, Integer, Void> {
         private int size = mRecipes.size();
         @Override
@@ -227,7 +205,9 @@ public class MainFragment extends Fragment {
         super.onDestroy();
         for (ImageView iv : mIvRecipeImages) {
             returnBitmapMemory(iv);
+            iv.setOnClickListener(null);
         }
+        mIvRecipeImages = null;
     }
 
     @Override
@@ -246,6 +226,26 @@ public class MainFragment extends Fragment {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    // ------------- Util Methods ------------ //
+    private int getResourceId(String id) {
+        return getResources().getIdentifier(id, "id", this.getActivity().getPackageName());
+    }
+
+    private void returnBitmapMemory(ImageView v) {
+        Drawable drawable;
+        if ((drawable = v.getDrawable()) != null) {
+            Bitmap bm = ((BitmapDrawable) drawable).getBitmap();
+            v.setImageBitmap(null);
+            drawable.setCallback(null); // callback이 남아있어서 비트맵이 반환되지 않는다는 말도 있는데 항상 그런진 모르겠다.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB) {
+                // 허니콤부터는 비트맵 참조만 없어져도 메모리가 반환됐는데 그 이전에는 recycle 해줘야함.
+                try {
+                    bm.recycle();
+                } catch (Exception e) { }
+            }
         }
     }
 }

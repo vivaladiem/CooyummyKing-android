@@ -1,4 +1,4 @@
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/activity_main_layout"
     android:layout_height="match_parent"
@@ -24,13 +24,14 @@
     <android.support.v4.widget.DrawerLayout
         android:id="@+id/drawer_layout"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:layout_below="@id/toolbar">
 
         <FrameLayout
             android:id="@+id/fragmentContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:paddingBottom="@dimen/bottomtab_height"
             android:background="@color/COO_BackgroundLightGrey"/>
         <!-- 사이드 메뉴(= drawer menu = hamburger menu) -->
         <LinearLayout
@@ -42,6 +43,7 @@
             android:divider="@android:color/transparent"
             android:background="@android:color/white"
             >
+            <!--
             <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -54,51 +56,17 @@
                 android:layout_margin="4dp"
                 android:layout_gravity="center_horizontal"
                 android:src="@drawable/ham_btn_login_off"/>
+                -->
         </LinearLayout>
     </android.support.v4.widget.DrawerLayout>
 
     <!-- 그냥 Bottom bar 라고 할걸.. 괜히 tab으로 해서 어감 안좋네 근데 바꾸기 귀찮.. -->
+    <!-- 쿠요미툴의 Dialog에선 다른 탭으로 교체되므로 ViewStub으로 제작 -->
     <!-- Botom tab -->
-    <LinearLayout
+    <ViewStub
+        android:id="@+id/bottomtab_viewstub"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottomtab_height"
-        android:orientation="horizontal"
-        android:background="@drawable/bottom_tab_background">
-        <ImageView
-            android:id="@+id/bottom_tab_list"
-            android:layout_height="wrap_content"
-            android:layout_width="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:src="@drawable/bottom_tab_btn_list"/>
-        <View
-            android:layout_height="match_parent"
-            android:layout_width="2dp"
-            android:layout_marginTop="1px"
-            android:layout_marginBottom="1dp"
-            android:background="@drawable/bottom_tab_indicator"/>
-        <ImageView
-            android:id="@+id/bottom_tab_tool"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:src="@drawable/bottom_tab_btn_tool"/>
-        <View
-            android:layout_height="match_parent"
-            android:layout_width="2dp"
-            android:layout_marginTop="1px"
-            android:layout_marginBottom="1dp"
-            android:background="@drawable/bottom_tab_indicator"/>
-        <ImageView
-            android:id="@+id/bottom_tab_mypage"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:src="@drawable/bottom_tab_btn_mypage"/>
-    </LinearLayout>
-</LinearLayout>
+        android:layout_alignParentBottom="true"
+        android:layout="@layout/bottom_tab_normal_stub"/>
+</RelativeLayout>

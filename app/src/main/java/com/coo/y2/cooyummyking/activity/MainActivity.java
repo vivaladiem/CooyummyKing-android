@@ -14,7 +14,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewStub;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
@@ -24,7 +26,8 @@ import com.coo.y2.cooyummyking.network.HttpUtil;
 
 
 public class MainActivity extends AppCompatActivity {
-    private Toolbar mToolbar; // 툴바는 액션바를 대체하는 신규기능
+//    private Toolbar mToolbar; // 툴바는 액션바를 대체하는 신규기능 / To local
+    public static View bottomTab;
     private DrawerLayout mDrawerLayout;
 //    private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
@@ -77,18 +80,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void initToolbar() {
-        mToolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.ham_open, R.string.ham_close);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        try {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        } catch (NullPointerException e) { e.printStackTrace(); }
     }
     private void initBottomTab() {
-        final ImageView mIvBtnList = (ImageView) findViewById(R.id.bottom_tab_list);
-        final ImageView mIvBtnTool = (ImageView) findViewById(R.id.bottom_tab_tool);
-        final ImageView mIvBtnMypage = (ImageView) findViewById(R.id.bottom_tab_mypage);
+        bottomTab = ((ViewStub) findViewById(R.id.bottomtab_viewstub)).inflate();
+        final ImageView mIvBtnList = (ImageView) bottomTab.findViewById(R.id.bottom_tab_list);
+        final ImageView mIvBtnTool = (ImageView) bottomTab.findViewById(R.id.bottom_tab_tool);
+        final ImageView mIvBtnMypage = (ImageView) bottomTab.findViewById(R.id.bottom_tab_mypage);
         mIvBtnList.setSelected(true);
         mIvBtnList.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -121,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
                 mIvBtnTool.setSelected(false);
             }
         });
-
     }
 
     private void replaceFragment (Fragment fragment) {
@@ -148,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-//        mToolbar.setNavigationIcon(R.drawable.toolbar_btn_hammenu); // 일반 정적 아이콘을 toggle로 사용하기. 애니메이션이 없어져서 drawerArrayToggle을 커스텀해서 사용중.(styles.xml)
+//        mToolbar.setNavigationIcon(R.drawable.toolbar_btn_hammenu); // 일반 정적 아이콘을 toggle로 사용하기. 애니메이션이 없어져서 drawerArrayToggle의 크기를 커스텀해서 사용중.(styles.xml)
         return super.onCreateOptionsMenu(menu);
     }
 

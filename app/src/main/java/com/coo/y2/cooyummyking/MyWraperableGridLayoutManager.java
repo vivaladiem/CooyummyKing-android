@@ -8,14 +8,20 @@ import android.view.ViewGroup;
 
 /**
  * Created by Y2 on 2015-05-06.
+ * Wrap_content가 가능한 DynamicGridView
+ * https://github.com/askerov/DynamicGrid
+ *
  */
 // GridLayoutManager that can be layout_height = wrap_content.
 public class MyWraperableGridLayoutManager extends GridLayoutManager {
     private int[] mMeasuredDimension = new int[2];
 
+
     public MyWraperableGridLayoutManager(Context context, int spanCount) {
         super(context, spanCount);
     }
+
+
 
     @Override
     public void onMeasure(RecyclerView.Recycler recycler, RecyclerView.State state, int widthSpec, int heightSpec) {
@@ -35,8 +41,8 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
 
             // Only for Vertical Orientation.
             measureScrapChild(recycler, i
-                    , widthSpec
-                    , heightSpec
+                    , View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+                    , View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
                     , mMeasuredDimension);
             if ((i + 1) % spanCount == 1) {
                 height = height + mMeasuredDimension[1];
@@ -69,6 +75,8 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
     }
 
     private void measureScrapChild(RecyclerView.Recycler recycler, int position, int widthSpec, int heightSpec, int[] measuredDimension) {
+        // 아이템 크기를 정확히 주면 제대로 작동하지 않을까..
+        // LayoutParams.height, widht에 screen에서 나눈 값 주.. 려면 그냥 쉽게 ToolFragment에서 하고 말지..
         View view = recycler.getViewForPosition(position);
 
         int viewWidth = view.getMeasuredWidth();
@@ -81,7 +89,8 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
         int viewHeight1 = view.getMeasuredHeight();
 
         if (view != null) {
-            RecyclerView.LayoutParams p = (RecyclerView.LayoutParams) view.getLayoutParams();
+//            RecyclerView.LayoutParams p = (RecyclerView.LayoutParams) view.getLayoutParams();
+            LayoutParams p = (LayoutParams) view.getLayoutParams();
 
             //
             int paddingLeft = getPaddingLeft();
@@ -120,4 +129,5 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
             recycler.recycleView(view);
         }
     }
+
 }

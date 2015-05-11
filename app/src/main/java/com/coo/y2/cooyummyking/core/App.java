@@ -13,6 +13,10 @@ public class App extends Application {
     public static final int SERVER_TEST = 0;
     public static final int SERVER_PRODUCTION = 1;
     public static final int SERVER_TARGET = SERVER_TEST;
+
+    public static final String TAG = "CooYummyKing";
+
+
     @Override
     public void onCreate() {
         super.onCreate();

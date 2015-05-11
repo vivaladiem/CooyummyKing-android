@@ -25,6 +25,5 @@ public class SquareImageView_byWidth extends ImageView{
         int w = MeasureSpec.getSize(widthMeasureSpec);
         setMeasuredDimension(w, w);
         //int w = MeasureSpec.getSize(1073741830); // 오.. 맞네. MeasureSpec이란게 위치값 + pixel 사이즈네. EXACTLY가 1073741824니까 size가 6이면 1073741830임...
-        setMeasuredDimension(w, w);
     }
 }

@@ -220,7 +220,7 @@
                     android:layout_height="64dp"
                     android:layout_toLeftOf="@id/tool_stand_1"
                     android:layout_marginRight="-20dp"
-                    android:background="@drawable/tool_btn_camera_icon"/>
+                    android:src="@drawable/tool_btn_camera_icon"/>
                 <TextView
                     android:layout_width="64dp"
                     android:layout_height="wrap_content"
@@ -236,7 +236,7 @@
                     android:layout_height="64dp"
                     android:layout_toRightOf="@id/tool_stand_1"
                     android:layout_marginLeft="60dp"
-                    android:background="@drawable/tool_btn_album_icon"/>
+                    android:src="@drawable/tool_btn_album_icon"/>
                 <TextView
                     android:layout_width="64dp"
                     android:layout_height="wrap_content"
@@ -276,16 +276,20 @@
         </LinearLayout>
 
         <!-- 현재 wrap_content를 지원하지 않아 코드에서 높이를 맞춰야 -->
-        <android.support.v7.widget.RecyclerView
+        <com.coo.y2.cooyummyking.MyWrapableGridView
             android:id="@+id/tool_making_sector"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/tool_upperpage"
-            android:minHeight="480dp"
+            android:horizontalSpacing="8dp"
+            android:verticalSpacing="24dp"
+            android:numColumns="@integer/dynamic_gridview_column_count"
+            android:paddingTop="12dp"
             android:paddingLeft="@dimen/tool_padding"
-            android:paddingBottom="@dimen/tool_padding"
+            android:paddingBottom="36dp"
             android:paddingRight="@dimen/tool_padding"
             android:clipChildren="false"
+            android:clipToPadding="false"
             android:background="@drawable/tool_background_3"/>
         <!--
         <ImageView
