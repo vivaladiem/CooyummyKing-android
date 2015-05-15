@@ -1,6 +1,5 @@
 package com.coo.y2.cooyummyking.adapter;
 
-import android.graphics.Bitmap;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -18,7 +18,7 @@ import java.util.Iterator;
  */
 public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.ViewHolder> {
     private ArrayList<String> mInstructions = new ArrayList<>();
-    private ArrayList<Bitmap> mImages = new ArrayList<>();
+    private ArrayList<String> mImageUrls = new ArrayList<>();
     private int mMainImageNum;
 
 
@@ -46,14 +46,15 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
      *
      *     Instructions and images array size should be same.
      */
-    public MyRecyclerAdapter(ArrayList<String> instructions, ArrayList<Bitmap> images) {
-        Iterator<String> itInst = instructions.iterator();
+    public MyRecyclerAdapter(ArrayList<String> savedInstructions, ArrayList<String> savedImageUrls) {
+        // TODO Iterator 방식이 좋은건가? 그냥 = 으로 할당하면 안되나? 초기화 한 이후로로 다시 해도 될것같은데.
+        Iterator<String> itInst = savedInstructions.iterator();
         while(itInst.hasNext()) {
             this.mInstructions.add(itInst.next());
         }
-        Iterator<Bitmap> itImg = images.iterator();
+        Iterator<String> itImg = savedImageUrls.iterator();
         while(itImg.hasNext()) {
-            this.mImages.add(itImg.next());
+            this.mImageUrls.add(itImg.next());
         }
     }
 
@@ -61,8 +62,8 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int ViewType) {
         View v;
-            v = LayoutInflater.from(parent.getContext()).inflate(R.layout.tool_lowerpage_overview_content, parent, false);
-            return new ViewHolder(v, false);
+        v = LayoutInflater.from(parent.getContext()).inflate(R.layout.tool_lowerpage_overview_content, parent, false);
+        return new ViewHolder(v, false);
 //        return new ViewHolder(v);
     }
 
@@ -70,8 +71,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.mTvTagNum.setText(String.valueOf(position + 1));
-        holder.mIvRecipeImage.setImageBitmap(mImages.get(position));
-
+        ImageLoader.getInstance().displayImage(mImageUrls.get(position), holder.mIvRecipeImage);
         holder.mTvRecipeText.setText(mInstructions.get(position));
     }
 
@@ -84,21 +84,21 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     // ------------- Listener Methods ------------- //
     // called at ToolFragment in Listener.
 
-    public void addItem(int position, String instruction, Bitmap image) {
+    public void addItem(int position, String instruction, String imageUrl) {
         mInstructions.add(position, instruction);
-        mImages.add(position, image);
+        mImageUrls.add(position, imageUrl);
         notifyItemInserted(position);
     }
 
     public void removeItem(int position) {
         mInstructions.remove(position);
-        mImages.remove(position);
+        mImageUrls.remove(position);
         notifyItemRemoved(position);
     }
 
     public void changePosition(int before, int after) {
         mInstructions.add(after, mInstructions.remove(before));
-        mImages.add(after, mImages.remove(before));
+        mImageUrls.add(after, mImageUrls.remove(before));
         notifyItemMoved(before, after);
     }
 
@@ -107,8 +107,8 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
         notifyItemChanged(position);
     }
 
-    public void setImage(int position, Bitmap image) {
-        mImages.set(position, image);
+    public void setImage(int position, String imageUrl) {
+        mImageUrls.set(position, imageUrl);
         notifyItemChanged(position);
     }
 

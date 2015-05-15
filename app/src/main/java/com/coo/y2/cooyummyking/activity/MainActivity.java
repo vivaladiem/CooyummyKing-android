@@ -1,6 +1,5 @@
 package com.coo.y2.cooyummyking.activity;
 
-import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -13,16 +12,12 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.fragment.MainFragment;
 import com.coo.y2.cooyummyking.fragment.ToolFragment;
-import com.coo.y2.cooyummyking.network.HttpUtil;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -90,11 +85,12 @@ public class MainActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         } catch (NullPointerException e) { e.printStackTrace(); }
     }
+
     private void initBottomTab() {
-        bottomTab = ((ViewStub) findViewById(R.id.bottomtab_viewstub)).inflate();
-        final ImageView mIvBtnList = (ImageView) bottomTab.findViewById(R.id.bottom_tab_list);
-        final ImageView mIvBtnTool = (ImageView) bottomTab.findViewById(R.id.bottom_tab_tool);
-        final ImageView mIvBtnMypage = (ImageView) bottomTab.findViewById(R.id.bottom_tab_mypage);
+        bottomTab = ((ViewStub) findViewById(R.id.bottombar_viewstub)).inflate();
+        final ImageView mIvBtnList = (ImageView) bottomTab.findViewById(R.id.bottombar_list);
+        final ImageView mIvBtnTool = (ImageView) bottomTab.findViewById(R.id.bottombar_tool);
+        final ImageView mIvBtnMypage = (ImageView) bottomTab.findViewById(R.id.bottombar_mypage);
         mIvBtnList.setSelected(true);
         mIvBtnList.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
     private void replaceFragment (Fragment fragment) {
         FragmentManager fm = getSupportFragmentManager();
         fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-        HttpUtil.cancle();
+//        HttpUtil.cancle(); // 각각의 Stop에서 해주는게 낫겠지
         fm.beginTransaction()
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
@@ -145,6 +141,8 @@ public class MainActivity extends AppCompatActivity {
             mDrawerList.setAdapter(mAdapter);
         }
     */
+
+    // ------------------------ Set Toolbar and Menu --------------------------------- //
     @Override
     protected void onPostCreate(@Nullable Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);

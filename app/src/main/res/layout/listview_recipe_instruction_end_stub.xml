@@ -12,7 +12,7 @@
         android:layout_marginLeft="-16dp"
         android:layout_marginRight="-16dp"
         android:layout_alignParentTop="true"
-        android:background="@drawable/dotted_line"
+        android:background="@drawable/shape_dotted_line"
         android:layerType="software"/>
     <View
         android:id="@+id/stand"

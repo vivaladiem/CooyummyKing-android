@@ -1,12 +1,7 @@
 package com.coo.y2.cooyummyking.fragment;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapShader;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
-import android.graphics.Shader;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -21,14 +16,11 @@ import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.entity.Recipe;
-import com.coo.y2.cooyummyking.entity.User;
 import com.coo.y2.cooyummyking.network.HttpUtil;
 import com.coo.y2.cooyummyking.network.URL;
 import com.coo.y2.cooyummyking.view.CircleImageView;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import org.apache.http.Header;
@@ -56,6 +48,17 @@ public class RecipeDetailFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_recipe_detail, container, false);
         executeGetAndDisplayRecipe(v);
         return v;
+    }
+
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        ViewGroup vg = (ViewGroup) view;
+        while(vg != null) {
+            vg.setClipChildren(false);
+            vg.setClipToPadding(false);
+            vg = vg.getParent() instanceof ViewGroup ? (ViewGroup) vg.getParent() : null;
+        }
     }
 
     @Override
@@ -174,6 +177,16 @@ public class RecipeDetailFragment extends Fragment {
                     } else {
                         holder = (ViewHolder) convertView.getTag();
                     }
+                    /*
+                    // 짤리는거 막기 실험
+                    disableClipOnParents(convertView);
+                    if (getItemViewType(position) != TYPE_FIRST) {
+                        parent.invalidate();
+                        ((ViewGroup) convertView).getChildAt(0).invalidate();
+                        ((ViewGroup) convertView).getChildAt(1).invalidate();
+                    }
+                    */
+
 
                     String instruction = getItem(position);
                     final ImageView instImageView = (ImageView) convertView.findViewById(R.id.detail_recipe_instruction_iv);
@@ -190,6 +203,12 @@ public class RecipeDetailFragment extends Fragment {
                     holder.instTextView = (TextView) convertView.findViewById(R.id.detail_recipe_instruction_tv);
                     holder.instTextView.setText(instruction);
                     return convertView;
+                }
+
+                private void disableClipOnParents(View v) {
+                    if (v.getParent() == null) return;
+                    if (v instanceof ViewGroup) ((ViewGroup) v).setClipChildren(false);
+                    if (v.getParent() instanceof View) disableClipOnParents((View) v.getParent());
                 }
 
             }

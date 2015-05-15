@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_height="@dimen/toolbar_height"
+        android:layout_width="match_parent"
+        android:minHeight="48dp"
+        android:background="@drawable/toolbar_background">
+        <!-- minHeight를 설정해야지 아이콘이 중앙에 옴 -->
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textStyle="bold"
+            android:textSize="22sp"/>
+    </android.support.v7.widget.Toolbar>
+</merge>

@@ -4,22 +4,10 @@
     android:layout_height="match_parent"
     android:layout_width="match_parent"
     android:orientation="vertical">
-    <android.support.v7.widget.Toolbar
+
+    <include
         android:id="@+id/toolbar"
-        android:layout_height="@dimen/actionbar_height"
-        android:layout_width="match_parent"
-        android:minHeight="48dp"
-        android:background="@drawable/toolbar_background">
-        <!-- minHeight를 설정해야지 아이콘이 중앙에 옴 -->
-        <TextView
-            android:id="@+id/toolbar_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="쿠요미킹"
-            android:textStyle="bold"
-            android:textSize="22sp"/>
-    </android.support.v7.widget.Toolbar>
+        layout="@layout/toolbar"/>
 
     <android.support.v4.widget.DrawerLayout
         android:id="@+id/drawer_layout"
@@ -31,7 +19,7 @@
             android:id="@+id/fragmentContainer"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingBottom="@dimen/bottomtab_height"
+            android:paddingBottom="@dimen/bottombar_height"
             android:background="@color/COO_BackgroundLightGrey"/>
         <!-- 사이드 메뉴(= drawer menu = hamburger menu) -->
         <LinearLayout
@@ -60,13 +48,12 @@
         </LinearLayout>
     </android.support.v4.widget.DrawerLayout>
 
-    <!-- 그냥 Bottom bar 라고 할걸.. 괜히 tab으로 해서 어감 안좋네 근데 바꾸기 귀찮.. -->
     <!-- 쿠요미툴의 Dialog에선 다른 탭으로 교체되므로 ViewStub으로 제작 -->
-    <!-- Botom tab -->
+    <!-- Botom bar -->
     <ViewStub
-        android:id="@+id/bottomtab_viewstub"
+        android:id="@+id/bottombar_viewstub"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottomtab_height"
+        android:layout_height="@dimen/bottombar_height"
         android:layout_alignParentBottom="true"
-        android:layout="@layout/bottom_tab_normal_stub"/>
+        android:layout="@layout/bottom_bar_normal_stub"/>
 </RelativeLayout>

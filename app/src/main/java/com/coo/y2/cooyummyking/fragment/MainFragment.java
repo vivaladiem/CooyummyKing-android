@@ -11,9 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v7.internal.VersionUtils;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,7 +28,6 @@ import com.coo.y2.cooyummyking.network.HttpUtil;
 import com.coo.y2.cooyummyking.network.URL;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -201,13 +198,20 @@ public class MainFragment extends Fragment {
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        ImageLoader.getInstance().stop();
+        HttpUtil.cancle();
+    }
+
+    @Override
     public void onDestroyView() {
         super.onDestroy();
         for (ImageView iv : mIvRecipeImages) {
             returnBitmapMemory(iv);
             iv.setOnClickListener(null);
         }
-        mIvRecipeImages = null;
+//        mIvRecipeImages = null;
     }
 
     @Override

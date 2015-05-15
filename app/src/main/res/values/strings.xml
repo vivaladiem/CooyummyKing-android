@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">CooYummyKing</string>
+    <string name="gallery">갤러리</string>
 
     <string name="hello_world">Hello world!</string>
 
@@ -10,6 +11,7 @@
     <string name="ham_open">햄버거메뉴 열기</string>
     <string name="ham_close">햄버거메뉴 닫기</string>
     <string name="toolbar_title_main">쿠요미킹</string>
+    <string name="toolbar_gallery_complete">확인</string>
 
     <!-- detail -->
     <string name="detail_recipe_toolbar_title">상세레시피</string>

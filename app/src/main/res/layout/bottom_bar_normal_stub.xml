@@ -3,41 +3,41 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="horizontal"
-              android:background="@drawable/bottom_tab_background">
+              android:background="@drawable/bottombar_background">
     <ImageView
-        android:id="@+id/bottom_tab_list"
+        android:id="@+id/bottombar_list"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="center"
         android:clickable="true"
-        android:src="@drawable/bottom_tab_btn_list"/>
+        android:src="@drawable/bottombar_btn_list"/>
     <View
         android:layout_width="2dp"
         android:layout_height="match_parent"
         android:layout_marginTop="1px"
         android:layout_marginBottom="1dp"
-        android:background="@drawable/bottom_tab_indicator"/>
+        android:background="@drawable/bottombar_indicator"/>
     <ImageView
-        android:id="@+id/bottom_tab_tool"
+        android:id="@+id/bottombar_tool"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="center"
         android:clickable="true"
-        android:src="@drawable/bottom_tab_btn_tool"/>
+        android:src="@drawable/bottombar_btn_tool"/>
     <View
         android:layout_width="2dp"
         android:layout_height="match_parent"
         android:layout_marginTop="1px"
         android:layout_marginBottom="1dp"
-        android:background="@drawable/bottom_tab_indicator"/>
+        android:background="@drawable/bottombar_indicator"/>
     <ImageView
-        android:id="@+id/bottom_tab_mypage"
+        android:id="@+id/bottombar_mypage"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="center"
         android:clickable="true"
-        android:src="@drawable/bottom_tab_btn_mypage"/>
+        android:src="@drawable/bottombar_btn_mypage"/>
 </LinearLayout>

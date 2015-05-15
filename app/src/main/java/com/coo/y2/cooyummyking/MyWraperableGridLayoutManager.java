@@ -3,6 +3,7 @@ package com.coo.y2.cooyummyking;
 import android.content.Context;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -33,20 +34,18 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
         int width = 0;
         int height = 0;
 
+
+        // 각 row의 아이템의 높이가 일정할 때 성립. 아님 3개 값 따로 모아뒀다가 Math.max를 해야..
         int itemCount = getItemCount();
         int spanCount = getSpanCount();
-        int heightMultiply = 0;
-        // 각 row의 아이템의 높이가 일정할 때 성립. 아님 3개 값 따로 모아뒀다가 Math.max를 해야..
         for (int i = 0; i < itemCount; i++) {
-
             // Only for Vertical Orientation.
-            measureScrapChild(recycler, i
-                    , View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-                    , View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+            measureScrapChild1(recycler, i
+                    , View.MeasureSpec.makeMeasureSpec(i, View.MeasureSpec.AT_MOST)
+                    , View.MeasureSpec.makeMeasureSpec(i, View.MeasureSpec.AT_MOST)
                     , mMeasuredDimension);
             if ((i + 1) % spanCount == 1) {
                 height = height + mMeasuredDimension[1];
-                heightMultiply += 1;
             }
             if (i < spanCount) {
                 width = width + mMeasuredDimension[0];
@@ -56,18 +55,24 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
 
         switch(widthMode) {
             case View.MeasureSpec.AT_MOST:
+                Log.i("CYMK", "Width AT_MOST");
                 if (width < widthSize) break;
             case View.MeasureSpec.EXACTLY:
+                Log.i("CYMK", "Width EXACTLY");
                 width = widthSize;
             case View.MeasureSpec.UNSPECIFIED:
+                Log.i("CYMK", "Width UNSPECIFIED");
         }
 
         switch(heightMode) {
             case View.MeasureSpec.AT_MOST:
+                Log.i("CYMK", "Height AT_MOST");
                 if (height < heightSize) break;
             case View.MeasureSpec.EXACTLY:
+                Log.i("CYMK", "Height EXACTLY");
                 height = heightSize;
             case View.MeasureSpec.UNSPECIFIED:
+                Log.i("CYMK", "Height UNSPECIFIED");
         }
 
         setMeasuredDimension(width, height);
@@ -129,5 +134,29 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
             recycler.recycleView(view);
         }
     }
+
+    private void measureScrapChild1(RecyclerView.Recycler recycler, int position, int widthSpec, int heightSpec, int[] measuredDimension) {
+        View view = recycler.getViewForPosition(position);
+
+        if (view != null) {
+            RecyclerView.LayoutParams p = (RecyclerView.LayoutParams) view.getLayoutParams();
+
+            int childWidthSpec = ViewGroup.getChildMeasureSpec(widthSpec
+                    , getPaddingLeft() + getPaddingRight() + getDecoratedLeft(view) + getDecoratedRight(view)
+                    , p.width);
+
+            int childHeightSpec = ViewGroup.getChildMeasureSpec(heightSpec
+                    , getPaddingTop() + getPaddingBottom() + getDecoratedTop(view) + getDecoratedBottom(view)
+                    , p.height);
+
+            view.measure(childWidthSpec, childHeightSpec);
+
+            // Get decorated measurements
+            measuredDimension[0] = getDecoratedMeasuredWidth(view) + p.leftMargin + p.rightMargin;
+            measuredDimension[1] = getDecoratedMeasuredHeight(view) + p.topMargin + p.bottomMargin;
+            recycler.recycleView(view);
+        }
+    }
+
 
 }

@@ -1,6 +1,8 @@
 package com.coo.y2.cooyummyking.fragment;
 
-import android.graphics.Bitmap;
+import android.app.Activity;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,10 +20,12 @@ import android.widget.ScrollView;
 
 import com.coo.y2.cooyummyking.MyWrapableGridView;
 import com.coo.y2.cooyummyking.R;
+import com.coo.y2.cooyummyking.activity.GalleryActivity;
 import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.adapter.MyDynamicGridAdapter;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 /**
  * Created by Y2 on 2015-05-04.
@@ -33,11 +37,14 @@ import java.util.ArrayList;
  * 메모리는 메모리 누수 검사기로(MAT 등)
  */
 public class ToolFragment extends Fragment {
-    private ArrayList<String> instructions = new ArrayList<>();
-    private ArrayList<Bitmap> images = new ArrayList<>();
+    private ArrayList<String> mSavedInstructions = new ArrayList<>();
+    private ArrayList<String> mSavedImageUrls = new ArrayList<>();
 
     private int mScrollDistance;
     private ScrollView mScrollView;
+    private MyWrapableGridView mGridView;
+
+    private MyDynamicGridAdapter mAdapter;
 
     private GstListener mGstListener = new GstListener();
     private GestureDetector mGstDetector = new GestureDetector(getActivity(), mGstListener);
@@ -45,28 +52,31 @@ public class ToolFragment extends Fragment {
     private Animation mOutAnim;
     private Animation mInAnim;
 
+    public static final int INTENT_FOR_ALBUM = 0;
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         container.setPadding(0, 0, 0, 0);
         mScrollView = (ScrollView) inflater.inflate(R.layout.fragment_recipe_tool, container, false);
-        initDummyData();
+//        initDummyData();
         initResources(mScrollView);
+        loadSavedData();
         initBottomTabAnimation();
         initScrollViewFlicker();
+        initEvents();
         return mScrollView;
     }
 
     private void initResources(View v) {
-
         // 뷰들의 크기를 정의하기 위한 상수들을 가져옵니다.
         // All units are pixels
         // 회전 안하니까 그냥 여기에서 다 해도..
         DisplayMetrics dm = getResources().getDisplayMetrics();
         int screenHeightPixels = dm.heightPixels;
-        int actionBarHeight = getResources().getDimensionPixelSize(R.dimen.actionbar_height);
-        int bottomTabHeight = getResources().getDimensionPixelSize(R.dimen.bottomtab_height);
+        int actionBarHeight = getResources().getDimensionPixelSize(R.dimen.toolbar_height);
+        int bottomTabHeight = getResources().getDimensionPixelSize(R.dimen.bottombar_height);
         int linkHeight = getResources().getDimensionPixelSize(R.dimen.link_height);
         int padding = getResources().getDimensionPixelSize(R.dimen.tool_padding); // Upper Page Padding
 
@@ -74,13 +84,29 @@ public class ToolFragment extends Fragment {
         mScrollDistance = (upperPageHeight - linkHeight * 2) / 2; // link와 '제작화면'이란 글씨 있는 탭 남겨놓고 움직일 거리의 1/2
 
 
-        MyWrapableGridView mGridView = (MyWrapableGridView) v.findViewById(R.id.tool_making_sector);
-        mGridView.setAdapter(new MyDynamicGridAdapter(getActivity()
-                , getResources().getInteger(R.integer.dynamic_gridview_column_count)
-                , instructions, images));
-
         View mToolUpperPage = v.findViewById(R.id.tool_upperpage);
         mToolUpperPage.getLayoutParams().height = upperPageHeight;
+
+
+        mGridView = (MyWrapableGridView) v.findViewById(R.id.tool_making_sector);
+        mAdapter = new MyDynamicGridAdapter(getActivity(), getResources().getInteger(R.integer.dynamic_gridview_column_count), mSavedInstructions, mSavedImageUrls); // null자리에 원래 mSaved~ 가 들어가있어야.
+        mGridView.setAdapter(mAdapter);
+        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP)
+            mGridView.setClipToOutline(false);
+
+        //------------- recyclerView -------------------- //
+//        RecyclerView recyclerView = (RecyclerView) v.findViewById(R.id.tool_making_sector);
+//        MyWraperableGridLayoutManager layoutManager = new MyWraperableGridLayoutManager(getActivity(), 3);
+//        MyRecyclerAdapter adapter = new MyRecyclerAdapter(mSavedInstructions, mSavedImageUrls);
+//
+//        recyclerView.setLayoutManager(layoutManager);
+//        recyclerView.setAdapter(adapter);
+        //------------------------------------------------//
+    }
+
+    private void loadSavedData() {
+        // 저장되었던 정보들을 처리합니다.
+        // view 굳이 멤버로 만들 필요 없으니 initResources에서 처리해야 할지도..
     }
 
     // onResume에서 했더니 화면은 빠르게 나타나는데 처음 켜지고 조작이 느려서 그냥 onCreateView에서 함..
@@ -118,6 +144,7 @@ public class ToolFragment extends Fragment {
         });
     }
 
+    // 어째서인지 스크롤 할 때마다 10kb정도씩 소모된다? 메인화면의 일반 스크롤뷰에서도 역시..
     private void initScrollViewFlicker() {
         mScrollView.setOnTouchListener(new View.OnTouchListener() {
             @Override
@@ -127,10 +154,12 @@ public class ToolFragment extends Fragment {
             }
         });
 
-        mScrollView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+        mGridView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
-                mGstListener.setTotalHeightAndPage(view.getMeasuredHeight()); // 처음에 mScrollView 그려질 때도 호출됨.
+//                mGstListener.setTotalHeightAndPage(view.getMeasuredHeight()); // 처음에 mScrollView 그려질 때도 호출됨.
+                if (((ViewGroup) view).getChildCount() != 0)
+                    mGstListener.setTotalHeightAndPage(view.getHeight());
             }
         });
     }
@@ -138,21 +167,22 @@ public class ToolFragment extends Fragment {
     private final class GstListener extends GestureDetector.SimpleOnGestureListener {
         int selectedPage = 0;
         int totalHeight;
-        int pageCount = 2; // 기본적으로 2개의 페이지 분량은 존재
+        int pageCount = 0;
 
         public final void setTotalHeightAndPage(int height) {
             totalHeight = height;
             pageCount = (int) Math.ceil((double) totalHeight / mScrollDistance);
+            if (pageCount == 1) pageCount = 2; // 조잡하다 조잡해... 아오...
         }
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-            // 윗 페이지(upper page)는 2개의 페이지로 치고 한 번에 스크롤해 내린다.
+            if (pageCount == 0) return false;
+            // 윗 페이지(upper page)는 2개의 페이지로 치며 한 번에 스크롤해 내린다.
             if (selectedPage == 0) {
                 if (velocityY < 0) {
                     selectedPage += 2;
                     MainActivity.bottomTab.startAnimation(mOutAnim);
-
                 }
             } else if (selectedPage == 2) {
                 if (velocityY > 0) {
@@ -182,36 +212,31 @@ public class ToolFragment extends Fragment {
         btnAlbum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                // TODO 입력한 내용 저장 안되나? 그럼 저장해놓는 과정 필요
+                Intent intent = new Intent(getActivity(), GalleryActivity.class);
+                startActivityForResult(intent, INTENT_FOR_ALBUM);
             }
         });
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case INTENT_FOR_ALBUM:
+                if (resultCode != Activity.RESULT_OK) return;
+                // clone 안하면 참조값복사이므로 GalleryActivity가 남아있을지도 몰라 clone을 할라했는데 type unChecked warn 같은 번거로운게 뜨네..
+//                ArrayList<String> imageUrls = (ArrayList<String>) data.getStringArrayListExtra(GalleryActivity.EXTRA_SELECTED_ITEMS).clone();
+                ArrayList<String> imageUrls = data.getStringArrayListExtra(GalleryActivity.EXTRA_SELECTED_ITEMS);
 
-    private void initDummyData() {
-        instructions.add("맛있겠다");
-        instructions.add("만들자");
-        instructions.add("짠");
-        instructions.add("감동ㅠ");
-        instructions.add("맛있어");
-        instructions.add("너무맛있어");
-        instructions.add("어떡하지 널");
-        instructions.add("아오 쓸데없는데서 어렵다");
-        instructions.add("게다가 메모리가 왜이렇게 많이들지??!");
-        instructions.add("말도안되.. 계속 더 잡아먹고있잖아.. 비트맵때문인가");
-        instructions.add(2, "타다다다찹찹찹찹후루루룩포롱포롱후화화학빠바라람");
+                // addBulkItem을 하는것이 효율적이나 imageUrls와 같은 사이즈의 (현재로선 null로 차있는) instructions가 필요해서 귀찮아서 나중에..
+                Iterator<String> it = imageUrls.iterator();
+                while (it.hasNext()) {
+                    mAdapter.addItem(null, it.next());
+                }
 
-        images.add(null);
-        images.add(null);
-        images.add(null);
-        images.add(null);
-        images.add(null);
-        images.add(null);
-        images.add(null);
-        images.add(null);
-        images.add(null);
-        images.add(null);
-        images.add(null);
+                break;
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -226,7 +251,7 @@ public class ToolFragment extends Fragment {
             mOutAnim = null;
             mInAnim.setAnimationListener(null);
             mInAnim = null;
-            ((ViewGroup) getView().getParent()).setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.bottomtab_height));
+            ((ViewGroup) getView().getParent()).setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.bottombar_height));
 //        returnMemory(getView());
             recursiveRecycle(getView());
         } catch(Exception e) {
@@ -263,7 +288,7 @@ public class ToolFragment extends Fragment {
         }
     }
     */
-
+    // TODO GridView의 Children의 이미지들도 비워줘야.
     // TODO destroy 후 메인으로 갈 때도 60kb가 추가되고, 다시 이 프래그먼트 시작할 때마다 300kb씩 쌓이는걸로 보아 아직도 무언가 반환되지 않는게 있다.
     private void recursiveRecycle(View root) {
         if (root == null)

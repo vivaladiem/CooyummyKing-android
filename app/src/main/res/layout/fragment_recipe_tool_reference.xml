@@ -40,7 +40,7 @@
                 <EditText
                     android:textColor="#ff999999"
                     android:id="@+id/tool_basic_title"
-                    android:background="@drawable/background_white_with_grey_stroke"
+                    android:background="@drawable/shape_background_white_with_grey_stroke"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="6.0dip"
@@ -73,7 +73,7 @@
                 <EditText
                     android:textColor="#ff999999"
                     android:id="@+id/tool_basic_cookingtime"
-                    android:background="@drawable/background_white_with_grey_stroke"
+                    android:background="@drawable/shape_background_white_with_grey_stroke"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="6.0dip"
@@ -107,7 +107,7 @@
                 <Spinner
                     android:textColor="#ff999999"
                     android:id="@+id/tool_basic_theme"
-                    android:background="@drawable/background_white_with_grey_stroke"
+                    android:background="@drawable/shape_background_white_with_grey_stroke"
                     android:layout_width="fill_parent"
                     android:layout_height="25.0dip"
                     android:layout_margin="6.0dip"
@@ -140,7 +140,7 @@
                 <MultiAutoCompleteTextView
                     android:textColor="#ff999999"
                     android:id="@+id/tool_basic_ingredient"
-                    android:background="@drawable/background_white_with_grey_stroke"
+                    android:background="@drawable/shape_background_white_with_grey_stroke"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="6.0dip"
@@ -167,7 +167,7 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="6.0dip"
                     android:singleLine="true"
-                    android:background="@drawable/background_white_with_grey_stroke"
+                    android:background="@drawable/shape_background_white_with_grey_stroke"
                     />
             </LinearLayout>
         </LinearLayout>

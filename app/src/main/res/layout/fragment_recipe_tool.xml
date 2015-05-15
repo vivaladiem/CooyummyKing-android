@@ -4,9 +4,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/tool_scrollview"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:fillViewport="true">
-    <RelativeLayout
+    android:layout_height="wrap_content">
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
@@ -63,7 +62,7 @@
                         android:padding="2dp"
                         android:textColor="@color/Coo_DarkGrey"
                         android:text="사과식빵피자"
-                        android:background="@drawable/background_white_with_grey_stroke"/>
+                        android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
                 <LinearLayout
                     android:id="@+id/tool_info_time_group"
@@ -94,7 +93,7 @@
                         android:padding="2dp"
                         android:enabled="false"
                         android:textColor="@color/Coo_DarkGrey"
-                        android:background="@drawable/background_white_with_grey_stroke"/>
+                        android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
                 <LinearLayout
                     android:id="@+id/tool_info_theme_group"
@@ -124,7 +123,7 @@
                         android:padding="2dp"
                         android:enabled="false"
                         android:textColor="@color/Coo_DarkGrey"
-                        android:background="@drawable/background_white_with_grey_stroke"/>
+                        android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
                 <LinearLayout
                     android:id="@+id/tool_info_ingredient_group"
@@ -154,7 +153,7 @@
                         android:padding="2dp"
                         android:enabled="false"
                         android:textColor="@color/Coo_DarkGrey"
-                        android:background="@drawable/background_white_with_grey_stroke"/>
+                        android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
                 <LinearLayout
                     android:id="@+id/tool_info_source_group"
@@ -179,7 +178,7 @@
                         android:layout_margin="8dp"
                         android:padding="2dp"
                         android:textColor="@color/Coo_DarkGrey"
-                        android:background="@drawable/background_white_with_grey_stroke"/>
+                        android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
             </RelativeLayout>
             <!-- TODO 배경 포샵으로 정확히 잘라내서 하기(이어지게끔 잘라낸 부분들로 위 배경도 모두 바꿔서) -->
@@ -276,11 +275,12 @@
         </LinearLayout>
 
         <!-- 현재 wrap_content를 지원하지 않아 코드에서 높이를 맞춰야 -->
+        <!-- 코드가 비효율적이고 애초에 아이템 갯수가 적어서 GridLayout이 더 적절. 나중에 바꾸자 -->
+        <!--
         <com.coo.y2.cooyummyking.MyWrapableGridView
             android:id="@+id/tool_making_sector"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/tool_upperpage"
             android:horizontalSpacing="8dp"
             android:verticalSpacing="24dp"
             android:numColumns="@integer/dynamic_gridview_column_count"
@@ -288,6 +288,22 @@
             android:paddingLeft="@dimen/tool_padding"
             android:paddingBottom="36dp"
             android:paddingRight="@dimen/tool_padding"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:background="@drawable/tool_background_3"/>-->
+
+        <com.coo.y2.cooyummyking.MyWrapableGridView
+            android:id="@+id/tool_making_sector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="180dp"
+            android:paddingTop="12dp"
+            android:paddingLeft="@dimen/tool_padding"
+            android:paddingBottom="36dp"
+            android:paddingRight="@dimen/tool_padding"
+            android:horizontalSpacing="8dp"
+            android:verticalSpacing="24dp"
+            android:numColumns="@integer/dynamic_gridview_column_count"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:background="@drawable/tool_background_3"/>
@@ -302,5 +318,5 @@
             android:elevation="8dp"
             android:background="@drawable/tool_making_tag_num_btn"/>
             -->
-    </RelativeLayout>
+    </LinearLayout>
 </ScrollView>

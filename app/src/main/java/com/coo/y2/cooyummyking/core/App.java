@@ -1,10 +1,14 @@
 package com.coo.y2.cooyummyking.core;
 
 import android.app.Application;
+
+import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
 import com.nostra13.universalimageloader.cache.memory.impl.LruMemoryCache;
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import com.nostra13.universalimageloader.utils.StorageUtils;
+
+import java.io.File;
 
 /**
  * Created by Y2 on 2015-04-25.
@@ -20,14 +24,17 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        DisplayImageOptions options = new DisplayImageOptions.Builder()
-                .cacheInMemory(false)
-                .cacheOnDisk(false)
-                .build();
-        // File cacheDir = StorageUtils.getCacheDirectory(this);
+//        DisplayImageOptions options = new DisplayImageOptions.Builder()
+//                .cacheInMemory(false)
+//                .cacheOnDisk(false)
+//                .build();
+        File cacheDir = StorageUtils.getCacheDirectory(this);
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
-//                .memoryCache(new LruMemoryCache(8 * 1024 * 1024))
-                .defaultDisplayImageOptions(options)
+                .denyCacheImageMultipleSizesInMemory()
+                .memoryCache(new LruMemoryCache(4 * 1024 * 1024)) // 4MB
+//                .diskCache(new LimitedAgeDiscCache(cacheDir, 7 * 24 * 60 * 60)) // 7 days // I'm not sure whether it's proper or not
+//                .defaultDisplayImageOptions(options)
+                .diskCache(new UnlimitedDiscCache(cacheDir))
                 .build();
         ImageLoader.getInstance().init(config);
     }

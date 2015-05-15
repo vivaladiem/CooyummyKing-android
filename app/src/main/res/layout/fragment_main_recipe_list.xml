@@ -18,7 +18,7 @@
             android:layout_height="216dp"
             android:layout_margin="4dp"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -29,7 +29,7 @@
             android:layout_alignBaseline="@id/iv_recipe_0"
             android:layout_alignParentRight="true"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -40,7 +40,7 @@
             android:layout_below="@id/iv_recipe_2"
             android:layout_alignParentRight="true"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -51,7 +51,7 @@
             android:layout_below="@id/iv_recipe_0"
             android:layout_alignParentRight="true"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -62,7 +62,7 @@
             android:layout_below="@id/iv_recipe_0"
             android:layout_centerHorizontal="true"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -72,7 +72,7 @@
             android:layout_margin="4dp"
             android:layout_below="@id/iv_recipe_0"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -82,7 +82,7 @@
             android:layout_margin="4dp"
             android:layout_below="@id/iv_recipe_6"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -92,7 +92,7 @@
             android:layout_margin="4dp"
             android:layout_below="@id/iv_recipe_7"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -102,7 +102,7 @@
             android:layout_margin="4dp"
             android:layout_below="@id/iv_recipe_8"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -113,7 +113,7 @@
             android:layout_below="@id/iv_recipe_4"
             android:layout_alignParentRight="true"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -124,7 +124,7 @@
             android:layout_below="@id/iv_recipe_1"
             android:layout_centerHorizontal="true"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
         <ImageView
@@ -135,7 +135,7 @@
             android:layout_below="@id/iv_recipe_1"
             android:layout_alignParentRight="true"
             android:padding="4dp"
-            android:background="@drawable/background_white_with_grey_stroke"
+            android:background="@drawable/shape_background_white_with_grey_stroke"
             android:scaleType="centerCrop"
             android:cropToPadding="true"/>
     </RelativeLayout>

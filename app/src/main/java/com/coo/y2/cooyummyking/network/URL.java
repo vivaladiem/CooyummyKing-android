@@ -7,7 +7,7 @@ import com.coo.y2.cooyummyking.core.App;
  */
 public class URL {
     public static final String BASE_URL = "http://ec2-54-64-71-195.ap-northeast-1.compute.amazonaws.com:3000/";
-    public static final String BASE_URL_DEVELOPMENT = "http://192.168.10.102:3000/";
+    public static final String BASE_URL_DEVELOPMENT = "http://192.168.10.101:3000/";
     public static final String getBaseUrl() {
         if (App.SERVER_TARGET == App.SERVER_TEST) {
             return BASE_URL_DEVELOPMENT;

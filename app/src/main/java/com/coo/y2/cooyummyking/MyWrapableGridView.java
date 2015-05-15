@@ -2,7 +2,6 @@ package com.coo.y2.cooyummyking;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.ViewGroup;
 
 import org.askerov.dynamicgrid.DynamicGridView;
 
@@ -28,8 +27,8 @@ public class MyWrapableGridView extends DynamicGridView {
             int expandSpec = MeasureSpec.makeMeasureSpec(MEASURED_SIZE_MASK, MeasureSpec.AT_MOST);
             super.onMeasure(widthMeasureSpec, expandSpec);
 
-            ViewGroup.LayoutParams params = getLayoutParams();
-            params.height = getMeasuredHeight();
+//            ViewGroup.LayoutParams params = getLayoutParams();
+//            params.height = getMeasuredHeight();
         } else {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         }
