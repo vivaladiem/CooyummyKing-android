@@ -20,7 +20,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingBottom="@dimen/bottombar_height"
-            android:background="@color/COO_BackgroundLightGrey"/>
+            android:background="@color/Coo_BackgroundLightGrey"/>
         <!-- 사이드 메뉴(= drawer menu = hamburger menu) -->
         <LinearLayout
             android:id="@+id/ham_menu"
@@ -48,12 +48,55 @@
         </LinearLayout>
     </android.support.v4.widget.DrawerLayout>
 
-    <!-- 쿠요미툴의 Dialog에선 다른 탭으로 교체되므로 ViewStub으로 제작 -->
     <!-- Botom bar -->
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:id="@+id/bottombar"
+                  android:layout_width="match_parent"
+                  android:layout_height="@dimen/bottombar_height"
+                  android:layout_alignParentBottom="true"
+                  android:orientation="horizontal"
+                  android:background="@drawable/bottombar_background">
+        <ImageView
+            android:id="@+id/bottombar_list"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:src="@drawable/bottombar_btn_list"/>
+        <View
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="1px"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/bottombar_indicator"/>
+        <ImageView
+            android:id="@+id/bottombar_tool"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:src="@drawable/bottombar_btn_tool"/>
+        <View
+            android:layout_width="2dp"
+            android:layout_height="match_parent"
+            android:layout_marginTop="1px"
+            android:layout_marginBottom="1dp"
+            android:background="@drawable/bottombar_indicator"/>
+        <ImageView
+            android:id="@+id/bottombar_mypage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:src="@drawable/bottombar_btn_mypage"/>
+    </LinearLayout>
+    <!-- 쿠요미툴의 상세제작 다이얼로그에서 나오는 하단바. 다이얼로그보다 상위에 있어야 해서 여기에 정의함 -->
     <ViewStub
-        android:id="@+id/bottombar_viewstub"
+        android:id="@+id/tool_bottombar_stub"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottombar_height"
-        android:layout_alignParentBottom="true"
-        android:layout="@layout/bottom_bar_normal_stub"/>
+        android:layout="@layout/tool_detail_editor_bottombar_stub"/>
 </RelativeLayout>

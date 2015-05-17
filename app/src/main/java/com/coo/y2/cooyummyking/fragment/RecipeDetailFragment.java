@@ -18,7 +18,7 @@ import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.network.HttpUtil;
 import com.coo.y2.cooyummyking.network.URL;
-import com.coo.y2.cooyummyking.view.CircleImageView;
+import com.coo.y2.cooyummyking.widget.CircleImageView;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
@@ -50,16 +50,17 @@ public class RecipeDetailFragment extends Fragment {
         return v;
     }
 
-    @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-        ViewGroup vg = (ViewGroup) view;
-        while(vg != null) {
-            vg.setClipChildren(false);
-            vg.setClipToPadding(false);
-            vg = vg.getParent() instanceof ViewGroup ? (ViewGroup) vg.getParent() : null;
-        }
-    }
+    // 이런다고해도 젤리빈의 부모뷰 밖으로 나간 children의 짤림현상은 그대로이면서 리스트뷰가 상단탭 위로 넘어가버리므로 안하는게 낫다.
+//    @Override
+//    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+//        super.onViewCreated(view, savedInstanceState);
+//        ViewGroup vg = (ViewGroup) view;
+//        while(vg != null) {
+//            vg.setClipChildren(false);
+//            vg.setClipToPadding(false);
+//            vg = vg.getParent() instanceof ViewGroup ? (ViewGroup) vg.getParent() : null;
+//        }
+//    }
 
     @Override
     public void onResume() {
@@ -67,6 +68,7 @@ public class RecipeDetailFragment extends Fragment {
 
     }
 
+    // Inner Class를 너무 많이 쓴것 같다...
     private void executeGetAndDisplayRecipe(final View v) {
         String url = String.format(URL.GET_RECIPE, getArguments().getInt(EXTRA_RECIPEID), 1);
         HttpUtil.get(url, null, null, new JsonHttpResponseHandler() {
@@ -100,7 +102,7 @@ public class RecipeDetailFragment extends Fragment {
                 recipe = Recipe.build(data);
             }
             private void initWriterInfo(View v) {
-                ((TextView) v.findViewById(R.id.detail_writer_nickname)).setText(recipe.userName); // User.USERNAME 등 상수로 변경
+                ((TextView) v.findViewById(R.id.detail_writer_nickname)).setText(recipe.userName); // TODO User.USERNAME 등 상수로 변경
                 CircleImageView ivProfileImage = (CircleImageView) v.findViewById(R.id.detail_writer_thumb);
                 ivProfileImage.setBorderColor(Color.TRANSPARENT);
                 ivProfileImage.setBorderWidth(0);
@@ -148,11 +150,12 @@ public class RecipeDetailFragment extends Fragment {
                     ViewHolder holder;
                     if (convertView == null) {
                         holder = new ViewHolder();
+
                         int type = getItemViewType(position);
                         switch(type) {
                             case TYPE_FIRST:
                                 convertView = getActivity().getLayoutInflater()
-                                        .inflate(R.layout.listview_recipe_instruction_first, null);
+                                        .inflate(R.layout.listview_recipe_instruction_first, parent, false);
 
                                 ImageView ivMainImage = (ImageView) convertView.findViewById(R.id.detail_recipe_main_image);
                                 ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageNum), ivMainImage); // TODO 캐시를 통해 본문에서 이 이미지를 다시 다운로드하지 않게 해야함.
@@ -162,18 +165,20 @@ public class RecipeDetailFragment extends Fragment {
                                 break;
                             case TYPE_END:
                                 convertView = getActivity().getLayoutInflater()
-                                        .inflate(R.layout.listview_recipe_instruction, null);
-                                View bottom = ((ViewStub) convertView.findViewById(R.id.detail_recipe_instruction_end_stub)).inflate(); // 이게 ViewStub stub = ~; bottom = stub.inflate()보다 낫겠지?
-                                ((ImageView)bottom.findViewById(R.id.detail_recipe_instruction_end_like)).setImageDrawable(getResources().getDrawable(R.drawable.detail_info_btn_like_on));
-                                ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_like_num)).setText(recipe.likeCount + "명");
-                                ((ImageView)bottom.findViewById(R.id.detail_recipe_instruction_end_scrap)).setImageDrawable(getResources().getDrawable(R.drawable.detail_info_btn_scrab_on));
-                                ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_scrap_num)).setText(recipe.scrapCount + "명");
+                                        .inflate(R.layout.listview_recipe_instruction, parent, false);
+                                View bottom = ((ViewStub) convertView.findViewById(R.id.detail_recipe_instruction_end_stub)).inflate();
+                                ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_like)).setText(recipe.likeCount + "명");
+                                ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_scrap)).setText(recipe.scrapCount + "명");
                                 break;
                             default:
                                 convertView = getActivity().getLayoutInflater()
-                                        .inflate(R.layout.listview_recipe_instruction, null);
+                                        .inflate(R.layout.listview_recipe_instruction, parent, false);
                         }
+                        holder.instImageView = (ImageView) convertView.findViewById(R.id.detail_recipe_instruction_iv);
+                        holder.instTextView = (TextView) convertView.findViewById(R.id.detail_recipe_instruction_tv);
+
                         convertView.setTag(holder);
+
                     } else {
                         holder = (ViewHolder) convertView.getTag();
                     }
@@ -187,36 +192,39 @@ public class RecipeDetailFragment extends Fragment {
                     }
                     */
 
-
                     String instruction = getItem(position);
-                    final ImageView instImageView = (ImageView) convertView.findViewById(R.id.detail_recipe_instruction_iv);
                     String imageUrl = String.format(URL.getBaseUrl() + URL.GET_IMAGE_URL_BASE, recipe.id) + (position + 1);
                     // Main Image와 같은 사진일 땐 캐시로 하거나 앞에서 받은걸 다시 쓰거나 해야.
-                    ImageLoader.getInstance().loadImage(imageUrl, new SimpleImageLoadingListener() {
+                    ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, new SimpleImageLoadingListener() {
                         @Override
                         public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                            instImageView.setImageBitmap(loadedImage);
-                            instImageView.setVisibility(View.VISIBLE);
+                            super.onLoadingComplete(imageUri, view, loadedImage);
+                            view.setVisibility(View.VISIBLE);
                         }
                     });
 
-                    holder.instTextView = (TextView) convertView.findViewById(R.id.detail_recipe_instruction_tv);
                     holder.instTextView.setText(instruction);
                     return convertView;
                 }
 
-                private void disableClipOnParents(View v) {
-                    if (v.getParent() == null) return;
-                    if (v instanceof ViewGroup) ((ViewGroup) v).setClipChildren(false);
-                    if (v.getParent() instanceof View) disableClipOnParents((View) v.getParent());
-                }
+//                private void disableClipOnParents(View v) {
+//                    if (v.getParent() == null) return;
+//                    if (v instanceof ViewGroup) ((ViewGroup) v).setClipChildren(false);
+//                    if (v.getParent() instanceof View) disableClipOnParents((View) v.getParent());
+//                }
 
             }
         });
 
     }
-    public static class ViewHolder {
-//        public ImageView instImageView;
+    public class ViewHolder {
+        public ImageView instImageView;
         public TextView instTextView;
+    }
+
+    @Override
+    public void onDestroyView() {
+        // TODO ListView의 이미지들을 메모리 반환해줘야하는데 이너클래스로 썼더니 처리가 곤란..
+        super.onDestroyView();
     }
 }

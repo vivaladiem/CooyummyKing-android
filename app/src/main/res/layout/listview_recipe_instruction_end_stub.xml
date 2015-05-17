@@ -14,41 +14,31 @@
         android:layout_alignParentTop="true"
         android:background="@drawable/shape_dotted_line"
         android:layerType="software"/>
-    <View
+    <android.widget.Space
         android:id="@+id/stand"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_centerHorizontal="true"/>
     <TextView
-        android:id="@+id/detail_recipe_instruction_end_like_num"
+        android:id="@+id/detail_recipe_instruction_end_like"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@id/stand"
         android:layout_centerVertical="true"
-        android:layout_marginRight="8dp"
+        android:layout_marginRight="16dp"
+        android:drawableLeft="@drawable/detail_info_btn_like_on"
+        android:drawablePadding="4dp"
         android:textAppearance="@style/TextRed"
         android:textStyle="bold"/>
-    <ImageView
-        android:id="@+id/detail_recipe_instruction_end_like"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toLeftOf="@id/detail_recipe_instruction_end_like_num"
-        android:layout_centerVertical="true"
-        android:layout_marginRight="4dp"/>
-    <ImageView
+    <TextView
         android:id="@+id/detail_recipe_instruction_end_scrap"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/stand"
+        android:layout_toRightOf="@id/detail_recipe_instruction_end_like"
         android:layout_centerVertical="true"
-        android:layout_marginLeft="8dp"/>
-    <TextView
-        android:id="@+id/detail_recipe_instruction_end_scrap_num"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/detail_recipe_instruction_end_scrap"
-        android:layout_centerVertical="true"
-        android:layout_marginLeft="4dp"
+        android:layout_marginLeft="16dp"
+        android:drawableLeft="@drawable/detail_info_btn_scrap_on"
+        android:drawablePadding="4dp"
         android:textAppearance="@style/TextRed"
         android:textStyle="bold"/>
 </RelativeLayout>

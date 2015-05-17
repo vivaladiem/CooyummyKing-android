@@ -10,6 +10,9 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
         <!-- tool_upperpage의 height를 코드상에서 한 화면의 크기에 맞춰야 함 -->
+        <!-- TODO ReDesign is Needed. 옵티머스 뷰와 타블렛에선 엉망이다... 정보란이 다 짤리거나 엄-청 남거나..
+         아마 타블렛은 아래 OverView까지 다 한페이지에 넣고,
+         옵티머스 뷰에선 사진로드 부분을 없애고 OverView 상단에 아이콘을 넣어주는 식으로 해야할듯.-->
         <LinearLayout
             android:id="@+id/tool_upperpage"
             android:layout_width="match_parent"
@@ -198,50 +201,35 @@
                     android:layout_height="16dp"
                     android:layout_centerVertical="true"
                     android:background="@drawable/shape_triangle"/>
+                <!-- 이상하게 drawableLeft를 하면 없어져서 안보인다.. 크기조절을 어떻게 해도.. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:layout_marginLeft="12dp"
+                    android:layout_centerVertical="true"
                     android:textAppearance="@style/TextDarkGrey"
                     android:textSize="14sp"
                     android:textStyle="bold"
                     android:text="@string/tool_photo_load_image"/>
-                <View
-                    android:id="@+id/tool_stand_1"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:visibility="invisible"
-                    android:layout_centerInParent="true"/>
-                <ImageView
+                <TextView
                     android:id="@+id/tool_photo_camera"
                     android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_toLeftOf="@id/tool_stand_1"
-                    android:layout_marginRight="-20dp"
-                    android:src="@drawable/tool_btn_camera_icon"/>
-                <TextView
-                    android:layout_width="64dp"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/tool_photo_camera"
-                    android:layout_alignRight="@id/tool_photo_camera"
+                    android:layout_centerHorizontal="true"
                     android:gravity="center"
+                    android:clickable="true"
+                    android:drawableTop="@drawable/tool_btn_camera_icon"
                     android:textAppearance="@style/TextLightGrey"
                     android:text="@string/tool_photo_camera"/>
-
-                <ImageView
+                <TextView
                     android:id="@+id/tool_photo_album"
                     android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:layout_toRightOf="@id/tool_stand_1"
-                    android:layout_marginLeft="60dp"
-                    android:src="@drawable/tool_btn_album_icon"/>
-                <TextView
-                    android:layout_width="64dp"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/tool_photo_camera"
-                    android:layout_alignRight="@id/tool_photo_album"
+                    android:layout_toRightOf="@id/tool_photo_camera"
+                    android:layout_marginLeft="16dp"
                     android:gravity="center"
+                    android:clickable="true"
+                    android:drawableTop="@drawable/tool_btn_album_icon"
                     android:textAppearance="@style/TextLightGrey"
                     android:text="@string/tool_photo_album"/>
             </RelativeLayout>
@@ -275,24 +263,7 @@
         </LinearLayout>
 
         <!-- 현재 wrap_content를 지원하지 않아 코드에서 높이를 맞춰야 -->
-        <!-- 코드가 비효율적이고 애초에 아이템 갯수가 적어서 GridLayout이 더 적절. 나중에 바꾸자 -->
-        <!--
-        <com.coo.y2.cooyummyking.MyWrapableGridView
-            android:id="@+id/tool_making_sector"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:horizontalSpacing="8dp"
-            android:verticalSpacing="24dp"
-            android:numColumns="@integer/dynamic_gridview_column_count"
-            android:paddingTop="12dp"
-            android:paddingLeft="@dimen/tool_padding"
-            android:paddingBottom="36dp"
-            android:paddingRight="@dimen/tool_padding"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:background="@drawable/tool_background_3"/>-->
-
-        <com.coo.y2.cooyummyking.MyWrapableGridView
+        <com.coo.y2.cooyummyking.widget.MyWrapableGridView
             android:id="@+id/tool_making_sector"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

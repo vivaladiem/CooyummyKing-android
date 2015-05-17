@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
@@ -12,8 +13,8 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewStub;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.fragment.MainFragment;
@@ -21,16 +22,19 @@ import com.coo.y2.cooyummyking.fragment.ToolFragment;
 
 
 public class MainActivity extends AppCompatActivity {
-//    private Toolbar mToolbar; // 툴바는 액션바를 대체하는 신규기능 / To local
-    public static View bottomTab;
+    //    private Toolbar mToolbar; // 툴바는 액션바를 대체하는 신규기능 / To local
+    public static View sBottomBar;
+    public static ImageView sIvBtnList;
+    public static ImageView sIvBtnTool;
+    public static ImageView sIvBtnMypage;
     private DrawerLayout mDrawerLayout;
-//    private ListView mDrawerList;
+    //    private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
 //    private Typeface mTypeface;
 
     /*
     @Override
-    public void setContentView(int layoutResID) {
+    pu  blic void setContentView(int layoutResID) {
         super.setContentView(layoutResID);
         if (mTypeface == null) {
         mTypeface = Typeface.createFromAsset(getAssets(), "nanum.otf.mp3");
@@ -75,6 +79,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void initToolbar() {
+        sIvBtnList = (ImageView) findViewById(R.id.bottombar_list);
+        sIvBtnTool = (ImageView) findViewById(R.id.bottombar_tool);
+        sIvBtnMypage = (ImageView) findViewById(R.id.bottombar_mypage);
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -86,50 +93,41 @@ public class MainActivity extends AppCompatActivity {
         } catch (NullPointerException e) { e.printStackTrace(); }
     }
 
+    // Selected 상태는 각 Fragment에서 처리하기로.(여기서는 PopBackStack할 때 처리가 곤란)
     private void initBottomTab() {
-        bottomTab = ((ViewStub) findViewById(R.id.bottombar_viewstub)).inflate();
-        final ImageView mIvBtnList = (ImageView) bottomTab.findViewById(R.id.bottombar_list);
-        final ImageView mIvBtnTool = (ImageView) bottomTab.findViewById(R.id.bottombar_tool);
-        final ImageView mIvBtnMypage = (ImageView) bottomTab.findViewById(R.id.bottombar_mypage);
-        mIvBtnList.setSelected(true);
-        mIvBtnList.setOnClickListener(new View.OnClickListener() {
+        sBottomBar = findViewById(R.id.bottombar);
+        sIvBtnList.setSelected(true);
+        sIvBtnList.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.isSelected()) return;
-                v.setSelected(true);
                 Fragment fragment = new MainFragment();
-                replaceFragment(fragment);
-                mIvBtnTool.setSelected(false);
-                mIvBtnMypage.setSelected(false);
+                replaceFragment(fragment, false);
             }
         });
-        mIvBtnTool.setOnClickListener(new View.OnClickListener() {
+        sIvBtnTool.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.isSelected()) return;
-                v.setSelected(true);
                 Fragment fragment = new ToolFragment();
-                replaceFragment(fragment);
-                mIvBtnList.setSelected(false);
-                mIvBtnMypage.setSelected(false);
+                replaceFragment(fragment, sIvBtnList.isSelected());
             }
         });
-        mIvBtnMypage.setOnClickListener(new View.OnClickListener() {
+        sIvBtnMypage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (v.isSelected()) return;
-                v.setSelected(true);
-                mIvBtnList.setSelected(false);
-                mIvBtnTool.setSelected(false);
             }
         });
     }
 
-    private void replaceFragment (Fragment fragment) {
+    private void replaceFragment (Fragment fragment, boolean addToBackStack) {
         FragmentManager fm = getSupportFragmentManager();
         fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-//        HttpUtil.cancle(); // 각각의 Stop에서 해주는게 낫겠지
-        fm.beginTransaction()
+
+        FragmentTransaction transaction = fm.beginTransaction();
+        if (addToBackStack) transaction.addToBackStack(null);
+        transaction
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
     }
@@ -163,17 +161,33 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-
+    private static int backPressedCount = 0;
+    long backPressedTime = 0;
     @Override
     public void onBackPressed() {
         if (mDrawerLayout.isDrawerOpen(Gravity.START)) {
             mDrawerLayout.closeDrawers();
             return;
         }
+
         if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
             getSupportFragmentManager().popBackStack();
             return;
         }
+
+        // 두번 눌러 종료하기 //
+        if (System.currentTimeMillis() > backPressedTime + 2000) {
+            backPressedTime = 0;
+            backPressedCount = 0;
+        }
+
+        if (backPressedCount == 0) {
+            backPressedTime = System.currentTimeMillis();
+            Toast.makeText(this, R.string.close_toast, Toast.LENGTH_SHORT).show();
+            backPressedCount++;
+            return;
+        }
+
         super.onBackPressed();
     }
 }

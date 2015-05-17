@@ -35,11 +35,13 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
                     .build();
 
 
-    ArrayList<TextView> mLabels = new ArrayList<>(); // 선택여부 및 순서 라벨 텍스트뷰
+    //    ArrayList<TextView> mLabels = new ArrayList<>(); // 선택여부 및 순서 라벨 텍스트뷰
     ArrayList<Integer> mSelectedItemPosition = new ArrayList<>(); // 선택한 이미지의 position
     ArrayList<String> mSelectedItemUrl = new ArrayList<>();
 
+    int mPosition;
     int mDataColumnIndex;
+    String mUrl;
 
     GalleryOnClickListener mGalleryOnClickListener = new GalleryOnClickListener();
 
@@ -64,27 +66,30 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
 
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(mContext).inflate(R.layout.gallery_item, parent, false);
-        return new ViewHolder(v);
+        ViewHolder holder = new ViewHolder(v);
+        // Static으로 접근할 수 없는 변수를 사용하는 처리를 합니다.
+        holder.mViewGroup.setOnClickListener(mGalleryOnClickListener);
+        return holder;
     }
 
     // TODO 검은화면 안나오고 계속 이미지 이어지도록(미리 앞뒤페이지를 로딩한다거나) 하려면 어떻게 하지?
     @Override
     public void onBindViewHolder(ViewHolder holder, Cursor cursor) {
-//        int dataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
-        mDataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
-        String url = cursor.getString(mDataColumnIndex);
-        ImageLoader.getInstance().displayImage("file://" + url, holder.mImageView, mOptions);
+        mPosition = cursor.getPosition();
+        if (holder.mViewGroup.getTag() != mPosition) { // notify에 대비한 조건절
+            mDataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+            mUrl = cursor.getString(mDataColumnIndex);
+            ImageLoader.getInstance().displayImage("file://" + mUrl, holder.mImageView, mOptions);
 
-
-        int position = cursor.getPosition();
-        holder.mViewGroup.setTag(position);
-        holder.mViewGroup.setOnClickListener(mGalleryOnClickListener);
+//            holder.mViewGroup.setOnClickListener(mGalleryOnClickListener);
+            holder.mViewGroup.setTag(mPosition);
+        }
 
         // ------------------------ Set Label After NotifyDataSetChanged Called ------------------------- //
         // Seems little inefficient.. anyway first success. so hard to solve viewholder's confusing with other page's item.
         // TODO setSelected(LayoutParams) Could be better way. but I don't know how can I set order. maybe later.
         int index;
-        if ((index = mSelectedItemPosition.indexOf(position)) != -1) {
+        if ((index = mSelectedItemPosition.indexOf(mPosition)) != -1) {
             holder.mTextView.setVisibility(View.VISIBLE);
             holder.mTextView.setText(String.valueOf(index + 1));
         } else {
@@ -92,6 +97,8 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
         }
     }
 
+    // TODO 나중엔 설정란이 있어서 지정순서대로 or 무조건 먼저 촬영한 사진 순으로 선택되게 해도 좋겠다. 라벨 디자인도 다르게 해서 미세재미
+    // 사실 only 먼저촬영한 순으로만 되게 하는것도 좋겠지만 일단은 처음에 생각한 아이디어대로 해보자..
     private final class GalleryOnClickListener implements View.OnClickListener {
         ViewGroup vg;
         TextView tv;
@@ -102,24 +109,31 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
             position = (int) view.getTag();
             vg = (ViewGroup) view;
             tv = (TextView) vg.getChildAt(1);
-            int index;
 
+            int index;
             if ((index = mSelectedItemPosition.indexOf(position)) != -1) { // When the item is already selected
                 mSelectedItemPosition.remove(index);
                 mSelectedItemUrl.remove(index); // 'add' is called in onBindViewHolder
-                mLabels.remove(index);
-                int count = mSelectedItemPosition.size();
-                for (int i = index; i < count; i++) {
-                    mLabels.get(i).setText(String.valueOf(i + 1));
-                }
+//                mLabels.remove(index);
+//                int count = mSelectedItemPosition.size();
+//                for (int i = index; i < count; i++) {
+//                    mLabels.get(i).setText(String.valueOf(i + 1));
+//                }
+
+                notifyItemChanged(position); // 삭제된 아이템도 notify 해줘야.
+
             } else {
                 mSelectedItemPosition.add(position);
                 getCursor().moveToPosition(position);
                 mSelectedItemUrl.add(getCursor().getString(mDataColumnIndex));
-                mLabels.add(tv);
+//                mLabels.add(tv);
             }
 
-            notifyItemChanged(position);
+            for (int changedItemPosition : mSelectedItemPosition) { //선택된 아이템들에 대한 notify
+                notifyItemChanged(changedItemPosition);
+            }
+//            notifyDataSetChanged(); 메모리 엄청 잡아먹음. 절대 이런데 쓰면 안되겠다.
+
         }
     }
 

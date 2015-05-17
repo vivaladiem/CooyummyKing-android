@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:padding="12dp"
         android:background="@drawable/detail_recipe_card_background">
-        <com.coo.y2.cooyummyking.view.SquareImageView_byWidth
+        <com.coo.y2.cooyummyking.widget.SquareImageView_byWidth
             android:id="@+id/detail_recipe_main_image"
             android:layout_height="0dp"
             android:layout_width="match_parent"
@@ -48,21 +48,14 @@
             android:layout_below="@id/detail_recipe_title_name"
             android:text="@string/detail_recipe_time_caption"
             android:textAppearance="@style/TextLightGrey"/>
-        <ImageView
-            android:id="@+id/detail_recipe_time_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="40dp"
-            android:layout_toRightOf="@id/detail_recipe_time_name"
-            android:layout_below="@id/detail_recipe_title_name"
-            android:src="@drawable/recipe_info_icon_cookingtime"/>
         <TextView
             android:id="@+id/detail_recipe_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_toRightOf="@id/detail_recipe_time_icon"
+            android:layout_alignLeft="@id/detail_recipe_title"
             android:layout_alignBaseline="@id/detail_recipe_time_name"
+            android:drawableLeft="@drawable/recipe_info_icon_cookingtime"
+            android:drawablePadding="4dp"
             android:singleLine="true"
             android:text="10분"
             android:textAppearance="@style/TextDarkGrey"/>
@@ -75,21 +68,14 @@
             android:layout_below="@id/detail_recipe_time_name"
             android:text="@string/detail_recipe_theme_caption"
             android:textAppearance="@style/TextLightGrey"/>
-        <ImageView
-            android:id="@+id/detail_recipe_theme_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="40dp"
-            android:layout_toRightOf="@id/detail_recipe_time_name"
-            android:layout_below="@id/detail_recipe_time_name"
-            android:src="@drawable/recipe_info_icon_cookingtime"/>
         <TextView
             android:id="@+id/detail_recipe_theme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="4dp"
-            android:layout_toRightOf="@id/detail_recipe_time_icon"
             android:layout_alignBaseline="@id/detail_recipe_theme_name"
+            android:layout_alignLeft="@id/detail_recipe_title"
+            android:drawableLeft="@drawable/recipe_info_icon_cookingtime"
+            android:drawablePadding="4dp"
             android:singleLine="true"
             android:text="야식"
             android:textAppearance="@style/TextDarkGrey"/>
@@ -108,15 +94,16 @@
             android:layout_height="wrap_content"
             android:layout_marginLeft="40dp"
             android:layout_toRightOf="@id/detail_recipe_time_name"
-            android:layout_below="@id/detail_recipe_theme_name"
+            android:layout_alignTop="@id/detail_recipe_ingredient_name"
             android:src="@drawable/recipe_info_icon_cookingtime"/>
         <TextView
             android:id="@+id/detail_recipe_ingredient"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="4dp"
-            android:layout_toRightOf="@id/detail_recipe_time_icon"
+            android:layout_toRightOf="@id/detail_recipe_ingredient_icon"
             android:layout_below="@id/detail_recipe_theme_name"
+            android:layout_alignTop="@id/detail_recipe_ingredient_name"
             android:maxLines="4"
             android:singleLine="false"
             android:text="사과, 식빵, 맛있는 재료는 무엇이든 넣어도 좋답니다 그러니까 팍팍 넣으세요 무한히"

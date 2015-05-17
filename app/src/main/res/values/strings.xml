@@ -1,8 +1,7 @@
 <resources>
     <string name="app_name">CooYummyKing</string>
     <string name="gallery">갤러리</string>
-
-    <string name="hello_world">Hello world!</string>
+    <string name="close_toast">한번 더 뒤로가기를 누르시면 종료합니다.</string>
 
     <!-- toolbar strings -->
     <string name="toolbar_ham">메뉴</string>
@@ -33,6 +32,12 @@
     <string name="tool_photo_camera">촬영</string>
     <string name="tool_photo_album">앨범</string>
     <string name="tool_making_title_caption">요리과정</string>
+
+    <string name="tool_detail_bottombar_photoedit">사진편집</string>
+    <string name="tool_detail_bottombar_filter">필터</string>
+    <string name="tool_detail_bottombar_sticker">스티커</string>
+    <string name="tool_detail_bottombar_subtitle">자막</string>
+    <string name="tool_detail_bottombar_text">텍스트</string>
 
     <!-- errors -->
     <string name="err_no_recipe">네트워크 오류로 인해 레시피 정보를 가져올 수 없습니다</string>

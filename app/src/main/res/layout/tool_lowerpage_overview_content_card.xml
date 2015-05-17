@@ -39,7 +39,7 @@
         android:textColor="@android:color/white"/>
 
     <!-- 내용 -->
-    <com.coo.y2.cooyummyking.view.SquareImageView_byWidth
+    <com.coo.y2.cooyummyking.widget.SquareImageView_byWidth
         android:id="@+id/tool_making_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

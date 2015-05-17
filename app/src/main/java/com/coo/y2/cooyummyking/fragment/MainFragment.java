@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.coo.y2.cooyummyking.R;
+import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.network.HttpUtil;
 import com.coo.y2.cooyummyking.network.URL;
@@ -49,14 +50,15 @@ public class MainFragment extends Fragment {
     private ArrayList<Recipe> mRecipes = new ArrayList<>();
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        MainActivity.sIvBtnList.setSelected(true);
+        MainActivity.sIvBtnTool.setSelected(false);
+        MainActivity.sIvBtnMypage.setSelected(false);
+
         View v = inflater.inflate(R.layout.fragment_main_recipe_list, container, false);
         initResources(v);
+        initEvents();
+        executeGetRecipes(); // TODO backStack에서 꺼내졌을 땐 실행 안하게 하려면?
         setHasOptionsMenu(true);
         return v;
     }
@@ -94,13 +96,6 @@ public class MainFragment extends Fragment {
                 mIvRecipeImages[i].getLayoutParams().width = recipeSideLength;
             }
         }
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        initEvents();
-        executeGetRecipes();
     }
 
     private void initEvents() {

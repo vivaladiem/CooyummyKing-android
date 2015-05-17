@@ -2,17 +2,16 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:clipToPadding="false"
                 android:background="#fff2f2f2">
     <!-- 작성자 정보, 버튼 -->
     <LinearLayout
         android:id="@+id/detail_writer_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="48dp"
         android:layout_margin="4dp"
         android:gravity="center_vertical"
         android:orientation="horizontal">
-        <com.coo.y2.cooyummyking.view.CircleImageView
+        <com.coo.y2.cooyummyking.widget.CircleImageView
             android:id="@+id/detail_writer_thumb"
             android:layout_width="40dp"
             android:layout_height="40dp"
@@ -67,13 +66,12 @@
     <ListView
         android:id="@+id/detail_recipe_instruction_listview"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_below="@id/detail_writer_layout"
-        android:clipToPadding="false"
-        android:clipChildren="false"
         android:scrollbars="none"
+        android:clipChildren="false"
         android:cacheColorHint="#fff2f2f2"
         android:divider="@android:color/transparent"
         android:dividerHeight="8dp"/>

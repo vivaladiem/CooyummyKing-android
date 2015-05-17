@@ -2,7 +2,6 @@ package com.coo.y2.cooyummyking.fragment;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,14 +17,13 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 
-import com.coo.y2.cooyummyking.MyWrapableGridView;
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.GalleryActivity;
 import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.adapter.MyDynamicGridAdapter;
+import com.coo.y2.cooyummyking.widget.MyWrapableGridView;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Created by Y2 on 2015-05-04.
@@ -59,8 +57,11 @@ public class ToolFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         container.setPadding(0, 0, 0, 0);
+        MainActivity.sIvBtnList.setSelected(false);
+        MainActivity.sIvBtnTool.setSelected(true);
+        MainActivity.sIvBtnMypage.setSelected(false);
+
         mScrollView = (ScrollView) inflater.inflate(R.layout.fragment_recipe_tool, container, false);
-//        initDummyData();
         initResources(mScrollView);
         loadSavedData();
         initBottomTabAnimation();
@@ -91,9 +92,11 @@ public class ToolFragment extends Fragment {
         mGridView = (MyWrapableGridView) v.findViewById(R.id.tool_making_sector);
         mAdapter = new MyDynamicGridAdapter(getActivity(), getResources().getInteger(R.integer.dynamic_gridview_column_count), mSavedInstructions, mSavedImageUrls); // null자리에 원래 mSaved~ 가 들어가있어야.
         mGridView.setAdapter(mAdapter);
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP)
-            mGridView.setClipToOutline(false);
-
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+            }
+        });
         //------------- recyclerView -------------------- //
 //        RecyclerView recyclerView = (RecyclerView) v.findViewById(R.id.tool_making_sector);
 //        MyWraperableGridLayoutManager layoutManager = new MyWraperableGridLayoutManager(getActivity(), 3);
@@ -120,7 +123,7 @@ public class ToolFragment extends Fragment {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                MainActivity.bottomTab.setVisibility(View.GONE);
+                MainActivity.sBottomBar.setVisibility(View.GONE);
             }
 
             @Override
@@ -135,7 +138,7 @@ public class ToolFragment extends Fragment {
 
             @Override
             public void onAnimationEnd(Animation animation) {
-                MainActivity.bottomTab.setVisibility(View.VISIBLE);
+                MainActivity.sBottomBar.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -157,7 +160,7 @@ public class ToolFragment extends Fragment {
         mGridView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
-//                mGstListener.setTotalHeightAndPage(view.getMeasuredHeight()); // 처음에 mScrollView 그려질 때도 호출됨.
+                // GridView의 최소한의 높이로 인해 page = 1이 되어 곤란하므로 불러온 사진이 없을 땐 이렇게 처리함.
                 if (((ViewGroup) view).getChildCount() != 0)
                     mGstListener.setTotalHeightAndPage(view.getHeight());
             }
@@ -182,12 +185,12 @@ public class ToolFragment extends Fragment {
             if (selectedPage == 0) {
                 if (velocityY < 0) {
                     selectedPage += 2;
-                    MainActivity.bottomTab.startAnimation(mOutAnim);
+                    MainActivity.sBottomBar.startAnimation(mOutAnim);
                 }
             } else if (selectedPage == 2) {
                 if (velocityY > 0) {
                     selectedPage -= 2;
-                    MainActivity.bottomTab.startAnimation(mInAnim);
+                    MainActivity.sBottomBar.startAnimation(mInAnim);
                 } else {
                     selectedPage = Math.min(pageCount, selectedPage + 1);
                 }
@@ -219,20 +222,15 @@ public class ToolFragment extends Fragment {
         });
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch(requestCode) {
             case INTENT_FOR_ALBUM:
                 if (resultCode != Activity.RESULT_OK) return;
-                // clone 안하면 참조값복사이므로 GalleryActivity가 남아있을지도 몰라 clone을 할라했는데 type unChecked warn 같은 번거로운게 뜨네..
-//                ArrayList<String> imageUrls = (ArrayList<String>) data.getStringArrayListExtra(GalleryActivity.EXTRA_SELECTED_ITEMS).clone();
-                ArrayList<String> imageUrls = data.getStringArrayListExtra(GalleryActivity.EXTRA_SELECTED_ITEMS);
-
-                // addBulkItem을 하는것이 효율적이나 imageUrls와 같은 사이즈의 (현재로선 null로 차있는) instructions가 필요해서 귀찮아서 나중에..
-                Iterator<String> it = imageUrls.iterator();
-                while (it.hasNext()) {
-                    mAdapter.addItem(null, it.next());
-                }
+                // clone을 해야지만 GalleryActivity가 종료됨. 그냥 할당하면 참조값을 가져와서 계속 남아있음 무려 5mb나...
+                ArrayList<String> imageUrls = (ArrayList<String>) data.getStringArrayListExtra(GalleryActivity.EXTRA_SELECTED_ITEMS).clone();
+                mAdapter.addBulkItem(null, imageUrls);
 
                 break;
         }
@@ -241,6 +239,7 @@ public class ToolFragment extends Fragment {
 
     @Override
     public void onDestroyView () {
+        MainActivity.sBottomBar.setVisibility(View.VISIBLE);
         // 사실 getView().getParent()빼고는 별로 에러날 곳 없겠지만 그냥 편의+혹시몰라 한다.
         try {
             mGstDetector = null;

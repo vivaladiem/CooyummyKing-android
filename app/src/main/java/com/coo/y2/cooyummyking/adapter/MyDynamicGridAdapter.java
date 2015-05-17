@@ -2,9 +2,11 @@ package com.coo.y2.cooyummyking.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,7 +22,7 @@ import java.util.ArrayList;
 /**
  * Created by Y2 on 2015-05-09.
  */
-public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
+public class MyDynamicGridAdapter extends BaseDynamicGridAdapter implements AdapterView.OnItemClickListener {
     private final DisplayImageOptions mOptions = new DisplayImageOptions.Builder()
             .imageScaleType(ImageScaleType.EXACTLY)
             .bitmapConfig(Bitmap.Config.RGB_565)
@@ -87,10 +89,20 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
         notifyDataSetChanged();
     }
 
-    public void addBulkItem(ArrayList<String> instructions, ArrayList<String> imageUrls) {
+    public void addBulkItem(@Nullable ArrayList<String> instructions, ArrayList<String> imageUrls) {
+        if (instructions == null) {
+            ArrayList<String> inst = new ArrayList<>();
+            int count = imageUrls.size();
+            for (int i = 0; i < count; i++) inst.add(null);
+            instructions = inst;
+        }
         mInstructions.addAll(instructions);
         mImageUrls.addAll(imageUrls);
         notifyDataSetChanged();
     }
 
+    @Override
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+    }
 }
