@@ -2,13 +2,16 @@
 <!-- TODO ImageLoader에 제대로 된 사이즈를 주면서 동시에 기기에 맞게 조절되어야..
 UIL이 Target이 Wrap_content일 땐 최소한 처음에는 무조건 Screen Size로 불러와서 메모리부족해짐 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:id="@+id/gallery_item"
-                android:layout_width="120dp"
-                android:layout_height="120dp">
-    <ImageView
+             android:id="@+id/gallery_item"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_margin="1dp">
+    <com.coo.y2.cooyummyking.widget.SquareImageView_byWidth
         android:id="@+id/gallery_item_image"
-        android:layout_width="120dp"
-        android:layout_height="120dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:maxWidth="240dp"
+        android:maxHeight="240dp"
         android:scaleType="centerCrop"/>
     <TextView
         android:id="@+id/gallery_item_label"

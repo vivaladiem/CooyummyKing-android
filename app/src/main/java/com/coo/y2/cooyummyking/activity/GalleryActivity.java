@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
@@ -24,6 +25,9 @@ import java.util.ArrayList;
 
 /**
  * Created by Y2 on 2015-05-13.
+ * ToolFragment에서 앨범에서 사진 가져오기를 할 때 불려지는 Activity.
+ * 프래그먼트 없이 액티비티에서 모두 처리한다.
+ * TODO 앨범별로 고를 수 있으면 더 좋겠음.(인스타그램의 경우 앨범없이 쭉 나오긴 한다)
  */
 public class GalleryActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     RecyclerView mRecyclerView;
@@ -47,8 +51,10 @@ public class GalleryActivity extends AppCompatActivity implements LoaderManager.
         mRecyclerView.setHasFixedSize(true);
         GridLayoutManager layoutManager = new GridLayoutManager(this, 3);
         mRecyclerView.setLayoutManager(layoutManager);
+        DisplayMetrics dm = getResources().getDisplayMetrics();
+        int imageSideLength = dm.widthPixels / 3;
 
-        mAdapter = new GalleryCursorAdapter(this, null);
+        mAdapter = new GalleryCursorAdapter(this, null, imageSideLength);
         mRecyclerView.setAdapter(mAdapter);
     }
 
@@ -63,9 +69,14 @@ public class GalleryActivity extends AppCompatActivity implements LoaderManager.
     // ----------------------------------------- Loader Setting ----------------------------------------- //
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        final String[] columns = {MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID};
-        final String orderBy = MediaStore.Images.Media.DATE_TAKEN;
-        return new CursorLoader(this, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null, null, orderBy + " DESC");
+//        final String[] columns = {MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID};
+        final String[] columns = {MediaStore.Images.Thumbnails.DATA
+                , MediaStore.Images.Thumbnails.IMAGE_ID, MediaStore.Images.Thumbnails._ID};
+        final String where = MediaStore.Images.Thumbnails.KIND + "=" + MediaStore.Images.Thumbnails.MINI_KIND;
+
+//        final String orderBy = MediaStore.Images.Media.DATE_TAKEN;
+        final String orderBy = MediaStore.Images.Thumbnails.IMAGE_ID;
+        return new CursorLoader(this, MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, columns, where, null, orderBy + " DESC");
     }
 
     @Override

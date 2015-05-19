@@ -2,9 +2,12 @@ package com.coo.y2.cooyummyking.fragment;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -35,22 +38,33 @@ import java.util.ArrayList;
  * 메모리는 메모리 누수 검사기로(MAT 등)
  */
 public class ToolFragment extends Fragment {
+    //------ Variables for load previously uncompleted recipe data ----//
     private ArrayList<String> mSavedInstructions = new ArrayList<>();
     private ArrayList<String> mSavedImageUrls = new ArrayList<>();
 
-    private int mScrollDistance;
+    //------ Variables for view --------------//
     private ScrollView mScrollView;
     private MyWrapableGridView mGridView;
 
     private MyDynamicGridAdapter mAdapter;
 
-    private GstListener mGstListener = new GstListener();
-    private GestureDetector mGstDetector = new GestureDetector(getActivity(), mGstListener);
+    //------ Variables for BottomBar Scroll -------//
+    private ViewGroup mContainer; // For Reset Padding
+    private int mScrollDistance;
+    private GstListener mGstListener;
+    private GestureDetector mGstDetector;
 
+    //------- Variables for BottomBar Animation ---//
     private Animation mOutAnim;
     private Animation mInAnim;
 
+    //------- Variables for Intent - Album, Camera -----------------//
     public static final int INTENT_FOR_ALBUM = 0;
+    View mBtnAlbum;
+    View mBtnCamera;
+
+    //------- Variables for DetailEditor ----------//
+    public static Bitmap screenImage; // Detail Editor에서 Background로 사용할 스크린캡쳐된 이미지
 
 
     @Nullable
@@ -62,6 +76,7 @@ public class ToolFragment extends Fragment {
         MainActivity.sIvBtnMypage.setSelected(false);
 
         mScrollView = (ScrollView) inflater.inflate(R.layout.fragment_recipe_tool, container, false);
+        mContainer = container;
         initResources(mScrollView);
         loadSavedData();
         initBottomTabAnimation();
@@ -90,13 +105,9 @@ public class ToolFragment extends Fragment {
 
 
         mGridView = (MyWrapableGridView) v.findViewById(R.id.tool_making_sector);
-        mAdapter = new MyDynamicGridAdapter(getActivity(), getResources().getInteger(R.integer.dynamic_gridview_column_count), mSavedInstructions, mSavedImageUrls); // null자리에 원래 mSaved~ 가 들어가있어야.
+        mAdapter = new MyDynamicGridAdapter(getActivity(), getResources().getInteger(R.integer.dynamic_gridview_column_count), mSavedInstructions, mSavedImageUrls);
         mGridView.setAdapter(mAdapter);
-        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            }
-        });
+
         //------------- recyclerView -------------------- //
 //        RecyclerView recyclerView = (RecyclerView) v.findViewById(R.id.tool_making_sector);
 //        MyWraperableGridLayoutManager layoutManager = new MyWraperableGridLayoutManager(getActivity(), 3);
@@ -149,6 +160,9 @@ public class ToolFragment extends Fragment {
 
     // 어째서인지 스크롤 할 때마다 10kb정도씩 소모된다? 메인화면의 일반 스크롤뷰에서도 역시..
     private void initScrollViewFlicker() {
+        mGstListener = new GstListener();
+        mGstDetector = new GestureDetector(getActivity(), mGstListener);
+
         mScrollView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent ev) {
@@ -156,16 +170,27 @@ public class ToolFragment extends Fragment {
                 return true;
             }
         });
+//
+//        mGridView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
+//            @Override
+//            public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
+//                // GridView의 최소한의 높이로 인해 page = 1이 되어 곤란하므로 불러온 사진이 없을 땐 이렇게 처리함.
+//                if (((ViewGroup) view).getChildCount() != 0)
+//                    mGstListener.setTotalHeightAndPage(view.getHeight());
+//            }
+//        });
 
-        mGridView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-            @Override
-            public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
-                // GridView의 최소한의 높이로 인해 page = 1이 되어 곤란하므로 불러온 사진이 없을 땐 이렇게 처리함.
-                if (((ViewGroup) view).getChildCount() != 0)
-                    mGstListener.setTotalHeightAndPage(view.getHeight());
-            }
-        });
+        mGridView.addOnLayoutChangeListener(layoutChangeListener);
     }
+
+    View.OnLayoutChangeListener layoutChangeListener = new View.OnLayoutChangeListener() {
+        @Override
+        public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
+            // GridView의 최소한의 높이로 인해 page = 1이 되어 곤란하므로 불러온 사진이 없을 땐 이렇게 처리함.
+            if (((ViewGroup) view).getChildCount() != 0)
+                mGstListener.setTotalHeightAndPage(view.getHeight());
+        }
+    };
 
     private final class GstListener extends GestureDetector.SimpleOnGestureListener {
         int selectedPage = 0;
@@ -174,10 +199,17 @@ public class ToolFragment extends Fragment {
 
         public final void setTotalHeightAndPage(int height) {
             totalHeight = height;
-            pageCount = (int) Math.ceil((double) totalHeight / mScrollDistance);
+            pageCount = (int) Math.ceil((double) totalHeight / mScrollDistance * 0.95d); // 미세하게 남은 부분을 없애기 위해 0.95를 곱한다.
             if (pageCount == 1) pageCount = 2; // 조잡하다 조잡해... 아오...
         }
 
+        public final void setPage(int page) {
+            if (page > pageCount) page = pageCount;
+            selectedPage = page;
+            mScrollView.smoothScrollTo(0, mScrollDistance * selectedPage);
+        }
+
+        // TODO OverView 부분에선 한 줄 높이만큼 스크롤되게 하는것도 괜찮을듯.
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             if (pageCount == 0) return false;
@@ -210,14 +242,54 @@ public class ToolFragment extends Fragment {
     }
 
     private void initEvents() {
-        View btnAlbum = mScrollView.findViewById(R.id.tool_photo_album);
-        View btnCamera = mScrollView.findViewById(R.id.tool_photo_camera);
-        btnAlbum.setOnClickListener(new View.OnClickListener() {
+        mBtnAlbum = mScrollView.findViewById(R.id.tool_photo_album);
+        mBtnCamera = mScrollView.findViewById(R.id.tool_photo_camera);
+        mBtnAlbum.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // TODO 입력한 내용 저장 안되나? 그럼 저장해놓는 과정 필요
                 Intent intent = new Intent(getActivity(), GalleryActivity.class);
                 startActivityForResult(intent, INTENT_FOR_ALBUM);
+            }
+        });
+
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
+                // Detail Editor DialogFragment 실행(메모리때문에 어떻게 해야할지..)
+                // DialogFragment or 스크린샷찍어 배경으로 쓰는 새로운 Activity or ReplaceFragment
+
+                int width = mContainer.getMeasuredWidth();
+                int height = mContainer.getMeasuredHeight();
+                float scaleFactor = 2;
+//                mScrollView.setDrawingCacheEnabled(true);
+//                screenImage = Bitmap.createBitmap(mScrollView.getDrawingCache());
+//                mScrollView.setDrawingCacheEnabled(false);
+
+
+                screenImage = Bitmap.createBitmap((int) (width / scaleFactor), (int) (height / scaleFactor), Bitmap.Config.RGB_565);
+                Canvas canvas = new Canvas(screenImage);
+                canvas.scale(1 / scaleFactor, 1 / scaleFactor);
+
+//                Paint paint = new Paint();
+//                paint.setFlags(Paint.FILTER_BITMAP_FLAG);
+
+                mScrollView.setDrawingCacheEnabled(true);
+                canvas.drawBitmap(mScrollView.getDrawingCache(), 0, 0, null);
+                mScrollView.setDrawingCacheEnabled(false);
+                canvas.scale(scaleFactor, scaleFactor);
+
+
+                FragmentManager fm = getActivity().getSupportFragmentManager();
+                Fragment fragment = new ToolDetailEditorFragment();
+
+                // 현재 프래그먼트를 첫번째 인자로 넣어야 하는데 OnCLickListener 안이라 this로 못가져와서 findFragmentById로 함.
+                fragment.setTargetFragment(fm.findFragmentById(R.id.fragmentContainer), ToolDetailEditorFragment.INTENT_REQUESTCODE);
+
+                fm.beginTransaction()
+                        .addToBackStack(null)
+                        .replace(R.id.fragmentContainer, fragment)
+                        .commit();
             }
         });
     }
@@ -231,7 +303,7 @@ public class ToolFragment extends Fragment {
                 // clone을 해야지만 GalleryActivity가 종료됨. 그냥 할당하면 참조값을 가져와서 계속 남아있음 무려 5mb나...
                 ArrayList<String> imageUrls = (ArrayList<String>) data.getStringArrayListExtra(GalleryActivity.EXTRA_SELECTED_ITEMS).clone();
                 mAdapter.addBulkItem(null, imageUrls);
-
+                mGstListener.setPage(2);
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -239,54 +311,65 @@ public class ToolFragment extends Fragment {
 
     @Override
     public void onDestroyView () {
-        MainActivity.sBottomBar.setVisibility(View.VISIBLE);
-        // 사실 getView().getParent()빼고는 별로 에러날 곳 없겠지만 그냥 편의+혹시몰라 한다.
-        try {
-            mGstDetector = null;
-            mGstListener = null;
-            mScrollView.setOnTouchListener(null); //mScrollView = null만 하면 안해도 되겠지?
-            mScrollView = null;
-            mOutAnim.setAnimationListener(null);
-            mOutAnim = null;
-            mInAnim.setAnimationListener(null);
-            mInAnim = null;
-            ((ViewGroup) getView().getParent()).setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.bottombar_height));
-//        returnMemory(getView());
-            recursiveRecycle(getView());
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        mGstDetector = null;
+        mGstListener = null;
+        mScrollView.setOnTouchListener(null); //mScrollView = null만 하면 안해도 되겠지?
+        mScrollView = null;
+        mOutAnim.setAnimationListener(null);
+        mOutAnim = null;
+        mInAnim.setAnimationListener(null);
+        mInAnim = null;
+        mGridView.setOnItemClickListener(null);
+        mGridView.removeOnLayoutChangeListener(layoutChangeListener);
+        mGridView = null;
+        mBtnAlbum.setOnClickListener(null);
+        mBtnAlbum = null;
+
+        recursiveRecycle(getView());
         super.onDestroyView();
     }
 
-    /*
-    private class ViewHolder {
-        ViewGroup vg;
-        View v;
+    @Override
+    public void onDestroy() {
+        // DetailEditor로 갈 때는 작동 되지 않도록 여기에서 처리
+
+        mAdapter = null;
+        screenImage = null;
+
+        MainActivity.sBottomBar.setVisibility(View.VISIBLE);
+        mContainer.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.bottombar_height));
+
+        super.onDestroy();
     }
 
-    private void returnMemory(View v) {
-        List<View> unvisited = new ArrayList<View>();
-        unvisited.add(v);
-        ViewHolder holder = new ViewHolder();
 
-        while (!unvisited.isEmpty()) {
-            holder.v = unvisited.remove(0);
-            if (holder.v.getBackground() != null) {
-                holder.v.getBackground().setCallback(null);
-                holder.v.setBackground(null);
-            }
-            if (holder.v instanceof ImageView) {
-                ((ImageView) holder.v).getDrawable().setCallback(null);
-                ((ImageView) holder.v).setImageDrawable(null);
-            }
-            if (!(holder.v instanceof ViewGroup)) continue;
-            holder.vg = (ViewGroup) holder.v;
-            final int childCount = holder.vg.getChildCount();
-            for (int i=0; i<childCount; i++) unvisited.add(holder.vg.getChildAt(i));
-        }
-    }
-    */
+//        private class ViewHolder {
+//            ViewGroup vg;
+//            View v;
+//        }
+//
+//        private void returnMemory(View v) {
+//            List<View> unvisited = new ArrayList<View>();
+//            unvisited.add(v);
+//            ViewHolder holder = new ViewHolder();
+//
+//            while (!unvisited.isEmpty()) {
+//                holder.v = unvisited.remove(0);
+//                if (holder.v.getBackground() != null) {
+//                    holder.v.getBackground().setCallback(null);
+//                    holder.v.setBackground(null);
+//                }
+//                if (holder.v instanceof ImageView) {
+//                    ((ImageView) holder.v).getDrawable().setCallback(null);
+//                    ((ImageView) holder.v).setImageDrawable(null);
+//                }
+//                if (!(holder.v instanceof ViewGroup)) continue;
+//                holder.vg = (ViewGroup) holder.v;
+//                final int childCount = holder.vg.getChildCount();
+//                for (int i=0; i<childCount; i++) unvisited.add(holder.vg.getChildAt(i));
+//            }
+//        }
+
     // TODO GridView의 Children의 이미지들도 비워줘야.
     // TODO destroy 후 메인으로 갈 때도 60kb가 추가되고, 다시 이 프래그먼트 시작할 때마다 300kb씩 쌓이는걸로 보아 아직도 무언가 반환되지 않는게 있다.
     private void recursiveRecycle(View root) {
@@ -305,20 +388,22 @@ public class ToolFragment extends Fragment {
             if (!(group instanceof AdapterView)) {
                 group.removeAllViews();
             } else {
-                ((MyWrapableGridView) group).setAdapter(null); // 어떻게 어떤 AdapterView의 서브클래스이든 AdapterView 인 채로 setAdapter(null)을 할 수 있지?
+                count = group.getChildCount();
+                for (int i = 0; i < count; i++) {
+                    recursiveRecycle(group.getChildAt(i));
+                }
+//                ((MyWrapableGridView) group).setAdapter(null); // 어떻게 어떤 AdapterView의 서브클래스이든 AdapterView 인 채로 setAdapter(null)을 할 수 있지?
             }
         }
         if (root instanceof ImageView) {
             ((ImageView)root).setImageDrawable(null);
         }
-        root = null;
+//        root = null;
     }
 
-    /*
-    private void recursiveRecycle(List<WeakReference<View>> recycleList) {
-        for (WeakReference<View> ref : recycleList) {
-            recursiveRecycle(ref.get());
-        }
-    }
-    */
+//    private void recursiveRecycle(List<WeakReference<View>> recycleList) {
+//        for (WeakReference<View> ref : recycleList) {
+//            recursiveRecycle(ref.get());
+//        }
+//    }
 }

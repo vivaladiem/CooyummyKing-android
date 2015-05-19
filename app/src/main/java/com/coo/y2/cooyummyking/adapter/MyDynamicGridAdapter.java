@@ -27,6 +27,7 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter implements Adap
             .imageScaleType(ImageScaleType.EXACTLY)
             .bitmapConfig(Bitmap.Config.RGB_565)
             .considerExifParams(true)
+            .cacheInMemory(true)
             .build();
 
     private ArrayList<String> mInstructions = new ArrayList<>();

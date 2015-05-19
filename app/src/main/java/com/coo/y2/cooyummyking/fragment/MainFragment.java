@@ -28,7 +28,10 @@ import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.network.HttpUtil;
 import com.coo.y2.cooyummyking.network.URL;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -49,6 +52,15 @@ public class MainFragment extends Fragment {
     private ImageView[] mIvRecipeImages = new ImageView[RECIPE_COUNT];
     private ArrayList<Recipe> mRecipes = new ArrayList<>();
 
+    DisplayImageOptions mImageLoaderOptions = new DisplayImageOptions.Builder()
+            .bitmapConfig(Bitmap.Config.RGB_565)
+            .imageScaleType(ImageScaleType.EXACTLY)
+            .cacheInMemory(true)
+            .displayer(new FadeInBitmapDisplayer(300))
+            .build();
+
+    private boolean isNew = true; // BackStack에서 돌아왔을 때인지 나타내는 변수
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         MainActivity.sIvBtnList.setSelected(true);
@@ -58,11 +70,13 @@ public class MainFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_main_recipe_list, container, false);
         initResources(v);
         initEvents();
-        executeGetRecipes(); // TODO backStack에서 꺼내졌을 땐 실행 안하게 하려면?
+        executeGetRecipes(isNew); // is New => will reload | BackStack에서 돌아왔을 땐 새로고침 안함.
         setHasOptionsMenu(true);
         return v;
     }
 
+    // TODO 불가능하겠지만 스크린이 변해서 화면이 이상해질 경우 이 설정만 지워서 다시 맞추게끔 하면 좋음
+    // 아님 GridLayout으로 (GridView아님) 바꾸던가. 이게 더 효율적이긴하겠지.
     private void initResources(View view) {
         SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
         int recipeSideLength = prefs.getInt(NORMAL_RECIPE_LENGTH, 0);
@@ -76,7 +90,7 @@ public class MainFragment extends Fragment {
             int screenWidthDp = Math.round((screenWidthPx - 0.5f) / dens);
             editor.putInt(SCREEN_WIDTH_DP, screenWidthDp);
 
-            int recipeWidthDp = (screenWidthDp - (20 + 8 + 8 + 20)) / 3;
+            int recipeWidthDp = (screenWidthDp - (20 + 8 + 8 + 20)) / 3; // sceenWidthDp - (layout padding left +
             int hitRecipeWidthDp = recipeWidthDp * 2 + 8;
 
             recipeSideLength = (int) (recipeWidthDp * dens + 0.5f);
@@ -122,6 +136,7 @@ public class MainFragment extends Fragment {
                     FragmentManager fm = getActivity().getSupportFragmentManager();
                     fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // 기존 백스택을 비운다
                     HttpUtil.cancle();
+                    ImageLoader.getInstance().stop();
                     fm.beginTransaction()
                             .replace(R.id.fragmentContainer, fragment)
                             .addToBackStack(null)
@@ -131,7 +146,9 @@ public class MainFragment extends Fragment {
         }
     }
 
-    private void executeGetRecipes() {
+    private void executeGetRecipes(boolean willReload) {
+        if (!willReload) { loadRecipeImages(); return; }
+
         HttpUtil.get(URL.GET_RECIPES, null, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
@@ -152,6 +169,7 @@ public class MainFragment extends Fragment {
                 for (int i = 0; i < count; i++) {
                     mRecipes.add(Recipe.build(recipes.optJSONObject(i)));
                 }
+                ImageLoader.getInstance().clearMemoryCache();
             }
         });
     }
@@ -184,7 +202,7 @@ public class MainFragment extends Fragment {
             if (i < size) {
                 Recipe recipe = mRecipes.get(i);
                 if (recipe.mainImageNum != 0) {
-                    ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageNum), mIvRecipeImages[i]);
+                    ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageNum), mIvRecipeImages[i], mImageLoaderOptions);
                 } else {
                     // 혹시라도 사진이 하나도 없을 때.
                 }
@@ -206,7 +224,14 @@ public class MainFragment extends Fragment {
             returnBitmapMemory(iv);
             iv.setOnClickListener(null);
         }
+        isNew = false;
 //        mIvRecipeImages = null;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        ImageLoader.getInstance().clearMemoryCache();
     }
 
     @Override
@@ -221,7 +246,7 @@ public class MainFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                executeGetRecipes();
+                executeGetRecipes(true);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

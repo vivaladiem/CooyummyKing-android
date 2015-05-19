@@ -14,7 +14,6 @@ import android.widget.TextView;
 import com.coo.y2.cooyummyking.R;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 
 import java.util.ArrayList;
 
@@ -23,32 +22,29 @@ import java.util.ArrayList;
  */
 public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCursorAdapter.ViewHolder> {
     private Context mContext;
-    // TODO 디스크캐시가 원본 그대로 저장되서 너무 크다. denyMultipleSizeCache어쩌구를 하면 줄인것으로 저장되야하는데 안되네.. 해결해야.
+
     private final DisplayImageOptions mOptions =
             new DisplayImageOptions.Builder()
-                    .showImageOnLoading(R.drawable.detail_recipe_card_background)
-                    .cacheInMemory(true)
-                    .cacheOnDisk(true)
-                    .imageScaleType(ImageScaleType.EXACTLY)
                     .bitmapConfig(Bitmap.Config.RGB_565)
                     .considerExifParams(true)
+                    .cacheOnDisk(true)
                     .build();
+    int mImageSideLength; // As UIL doesn't know exact size when the size is match_parent or wrap_content, manually set the value.
 
-
-    //    ArrayList<TextView> mLabels = new ArrayList<>(); // 선택여부 및 순서 라벨 텍스트뷰
-    ArrayList<Integer> mSelectedItemPosition = new ArrayList<>(); // 선택한 이미지의 position
+    ArrayList<Integer> mSelectedItemPosition = new ArrayList<>();
     ArrayList<String> mSelectedItemUrl = new ArrayList<>();
 
     int mPosition;
+
     int mDataColumnIndex;
     String mUrl;
 
     GalleryOnClickListener mGalleryOnClickListener = new GalleryOnClickListener();
 
-
-    public GalleryCursorAdapter(Context context, Cursor cursor) {
+    public GalleryCursorAdapter(Context context, Cursor cursor, int imageSideLength) {
         super(context, cursor);
         mContext = context;
+        mImageSideLength = imageSideLength;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder{
@@ -64,30 +60,36 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
         }
     }
 
+
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(mContext).inflate(R.layout.gallery_item, parent, false);
         ViewHolder holder = new ViewHolder(v);
-        // Static으로 접근할 수 없는 변수를 사용하는 처리를 합니다.
+
+        // 뷰홀더에 static으로 접근할 수 없는 변수를 사용하는 처리를 합니다.
         holder.mViewGroup.setOnClickListener(mGalleryOnClickListener);
+        ViewGroup.LayoutParams lp = holder.mImageView.getLayoutParams();
+        lp.width = mImageSideLength;
+        lp.height = mImageSideLength;
         return holder;
     }
 
-    // TODO 검은화면 안나오고 계속 이미지 이어지도록(미리 앞뒤페이지를 로딩한다거나) 하려면 어떻게 하지?
+
+    // UI Related things SHOULD be handled only in here.
     @Override
     public void onBindViewHolder(ViewHolder holder, Cursor cursor) {
         mPosition = cursor.getPosition();
-        if (holder.mViewGroup.getTag() != mPosition) { // notify에 대비한 조건절
-            mDataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+        if (holder.mViewGroup.getTag() != mPosition) { // Prevent repeat on notify from onClick
+//            mDataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
+
+            mDataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Thumbnails.DATA);
             mUrl = cursor.getString(mDataColumnIndex);
+
             ImageLoader.getInstance().displayImage("file://" + mUrl, holder.mImageView, mOptions);
 
-//            holder.mViewGroup.setOnClickListener(mGalleryOnClickListener);
             holder.mViewGroup.setTag(mPosition);
         }
 
-        // ------------------------ Set Label After NotifyDataSetChanged Called ------------------------- //
-        // Seems little inefficient.. anyway first success. so hard to solve viewholder's confusing with other page's item.
-        // TODO setSelected(LayoutParams) Could be better way. but I don't know how can I set order. maybe later.
+        // ------------------------ Set Label After NotifyDataSetChanged is Called ------------------------- //
         int index;
         if ((index = mSelectedItemPosition.indexOf(mPosition)) != -1) {
             holder.mTextView.setVisibility(View.VISIBLE);
@@ -113,12 +115,7 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
             int index;
             if ((index = mSelectedItemPosition.indexOf(position)) != -1) { // When the item is already selected
                 mSelectedItemPosition.remove(index);
-                mSelectedItemUrl.remove(index); // 'add' is called in onBindViewHolder
-//                mLabels.remove(index);
-//                int count = mSelectedItemPosition.size();
-//                for (int i = index; i < count; i++) {
-//                    mLabels.get(i).setText(String.valueOf(i + 1));
-//                }
+                mSelectedItemUrl.remove(index);
 
                 notifyItemChanged(position); // 삭제된 아이템도 notify 해줘야.
 
@@ -126,13 +123,11 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
                 mSelectedItemPosition.add(position);
                 getCursor().moveToPosition(position);
                 mSelectedItemUrl.add(getCursor().getString(mDataColumnIndex));
-//                mLabels.add(tv);
             }
 
             for (int changedItemPosition : mSelectedItemPosition) { //선택된 아이템들에 대한 notify
                 notifyItemChanged(changedItemPosition);
             }
-//            notifyDataSetChanged(); 메모리 엄청 잡아먹음. 절대 이런데 쓰면 안되겠다.
 
         }
     }
@@ -140,62 +135,4 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
     public ArrayList<String> getSelectedItemUrl() {
         return mSelectedItemUrl;
     }
-
-
-//     //뷰를 새로 추가하는 방식인데 아래방식이랑 이거랑 뭐가 더 효율적인지는 모르겠다..
-//    private final class GalleryOnClickListener1 implements View.OnClickListener {
-//        ViewHolder holder;
-//        int position;
-//
-//        GalleryOnClickListener1(ViewHolder holder) {
-//            this.holder = holder;
-//        }
-//
-//        @Override
-//        public void onClick(View view) {
-//            position = (int) view.getTag();
-//
-//            int index;
-//
-//            if ((index = mSelectedItemPosition.indexOf(position)) != -1) { // When the item is already selected
-//                /*
-//                mSelectedItemPosition.remove(index);
-//
-//                ((ViewGroup)view.getParent()).removeViewAt(1); // 확실하게 하려면 removeView(holder.get(index));
-//                mLabels.remove(index);
-//
-//                int count = mLabels.size();
-//                for (int i = index; i < count; i++) {
-//                    mLabels.get(i).setText(String.valueOf(i + 1));
-//                }
-//                */
-//
-//                holder.mTextView.setText(null);
-//                holder.mTextView.setVisibility(View.GONE);
-//                mSelectedItemPosition.remove(index);
-//                mLabels.remove(index);
-//                int count = mSelectedItemPosition.size();
-//                for (int i = index; i < count; i++) {
-//                    mLabels.get(i).setText(String.valueOf(i + 1));
-//                }
-//
-//                return;
-//            }
-//
-//
-//            mSelectedItemPosition.add(position);
-//
-//            // set label
-////            TextView label = (TextView) LayoutInflater.from(mContext).inflate(R.layout.gallery_item_label, (ViewGroup)view.getParent(), true).findViewById(R.id.gallery_item_label);
-//
-////            mLabels.add(label);
-////            label.setText(String.valueOf(mLabels.size()));
-//
-//            holder.mTextView.setVisibility(View.VISIBLE);
-//            holder.mTextView.setText(String.valueOf(mSelectedItemPosition.size()));
-//
-//            mLabels.add(holder.mTextView);
-//
-//        }
-//    }
 }

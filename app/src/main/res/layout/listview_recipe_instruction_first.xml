@@ -16,8 +16,7 @@
             android:layout_height="0dp"
             android:layout_width="match_parent"
             android:layout_marginBottom="8dp"
-            android:scaleType="centerCrop"
-            android:background="@android:color/darker_gray"/> <!--TODO del, plcaeholder로 대체 -->
+            android:scaleType="centerCrop"/> <!--TODO del, plcaeholder로 대체 -->
 
         <!-- 레시피 개요 -->
         <TextView

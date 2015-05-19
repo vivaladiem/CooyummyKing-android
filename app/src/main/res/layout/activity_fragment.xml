@@ -94,9 +94,10 @@
             android:src="@drawable/bottombar_btn_mypage"/>
     </LinearLayout>
     <!-- 쿠요미툴의 상세제작 다이얼로그에서 나오는 하단바. 다이얼로그보다 상위에 있어야 해서 여기에 정의함 -->
+    <!--
     <ViewStub
         android:id="@+id/tool_bottombar_stub"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottombar_height"
-        android:layout="@layout/tool_detail_editor_bottombar_stub"/>
+        android:layout="@layout/tool_detail_editor_bottombar_stub"/>-->
 </RelativeLayout>
