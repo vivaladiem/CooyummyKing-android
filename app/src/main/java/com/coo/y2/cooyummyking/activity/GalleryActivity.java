@@ -20,6 +20,7 @@ import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.adapter.GalleryCursorAdapter;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 
@@ -69,14 +70,14 @@ public class GalleryActivity extends AppCompatActivity implements LoaderManager.
     // ----------------------------------------- Loader Setting ----------------------------------------- //
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-//        final String[] columns = {MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID};
-        final String[] columns = {MediaStore.Images.Thumbnails.DATA
-                , MediaStore.Images.Thumbnails.IMAGE_ID, MediaStore.Images.Thumbnails._ID};
-        final String where = MediaStore.Images.Thumbnails.KIND + "=" + MediaStore.Images.Thumbnails.MINI_KIND;
+        final String[] columns = {MediaStore.Images.Media.DATA, MediaStore.Images.Media._ID};
+//        final String[] columns = {MediaStore.Images.Thumbnails.DATA
+//                , MediaStore.Images.Thumbnails.IMAGE_ID, MediaStore.Images.Thumbnails._ID};
+//        final String where = MediaStore.Images.Thumbnails.KIND + "=" + MediaStore.Images.Thumbnails.MINI_KIND;
 
-//        final String orderBy = MediaStore.Images.Media.DATE_TAKEN;
-        final String orderBy = MediaStore.Images.Thumbnails.IMAGE_ID;
-        return new CursorLoader(this, MediaStore.Images.Thumbnails.EXTERNAL_CONTENT_URI, columns, where, null, orderBy + " DESC");
+        final String orderBy = MediaStore.Images.Media.DATE_TAKEN;
+//        final String orderBy = MediaStore.Images.Thumbnails.IMAGE_ID;
+        return new CursorLoader(this, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, columns, null, null, orderBy + " DESC");
     }
 
     @Override
@@ -130,6 +131,7 @@ public class GalleryActivity extends AppCompatActivity implements LoaderManager.
         } catch(Exception e) {
             e.printStackTrace();
         }
+        ImageLoader.getInstance().clearMemoryCache();
         super.onDestroy();
 
         // 리스너는 Activity에 귀속되므로 어차피 끊길테니 놔둬도 됨.

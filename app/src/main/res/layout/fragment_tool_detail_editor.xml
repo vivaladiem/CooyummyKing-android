@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:id="@+id/tool_detail_editor_layout"
-              android:orientation="vertical"
               android:layout_width="match_parent"
               android:layout_height="match_parent">
+    <!-- canvas로 화면에 어두운 레이어 깔 수 있으면 굳이 viewpager를 길게 놓지 않아도 될텐데 -->
     <android.support.v4.view.ViewPager
         android:id="@+id/tool_detail_editor_viewPager"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="3"
-        android:padding="24dp"/>
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/bottombar_height"
+        android:paddingTop="32dp"
+        android:paddingLeft="32dp"
+        android:paddingRight="32dp"
+        android:paddingBottom="120dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"/>
     <!-- 나중엔 이부분은 블러된 배경을 쓰는 것도 좋겠다. 투명디스플레이, 유리같은 느낌으로 -->
     <FrameLayout
         android:id="@+id/tool_detail_editor_fragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_height="120dp"
+        android:layout_alignBottom="@id/tool_detail_editor_viewPager"/>
 
     <!-- TODO [디자인]아이콘 크기 똑같게 만들어야. 그래야 글씨 크기 키워도 한줄로 정렬됨 -->
     <LinearLayout
         android:id="@+id/tool_detail_editor_bottombar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/bottombar_height"
+        android:layout_alignParentBottom="true"
         android:orientation="horizontal"
         android:visibility="invisible"
         android:background="@drawable/bottombar_background">
@@ -110,4 +116,4 @@
             android:textAppearance="@style/TextLightGreyAndRed"
             android:text="@string/tool_detail_bottombar_text"/>
     </LinearLayout>
-</LinearLayout>
+</RelativeLayout>

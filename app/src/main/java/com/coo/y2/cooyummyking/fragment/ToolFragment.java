@@ -39,8 +39,12 @@ import java.util.ArrayList;
  */
 public class ToolFragment extends Fragment {
     //------ Variables for load previously uncompleted recipe data ----//
-    private ArrayList<String> mSavedInstructions = new ArrayList<>();
-    private ArrayList<String> mSavedImageUrls = new ArrayList<>();
+//    private ArrayList<String> mSavedInstructions = new ArrayList<>();
+//    private ArrayList<String> mSavedImageUrls = new ArrayList<>();
+
+    // arguments로 Fragment에 넣는건 느리기도 하고 복잡해서 그냥 일단 이렇게 한다..
+    public static ArrayList<String> sInstructions = new ArrayList<>();
+    public static ArrayList<String> sImageUrls = new ArrayList<>();
 
     //------ Variables for view --------------//
     private ScrollView mScrollView;
@@ -105,7 +109,7 @@ public class ToolFragment extends Fragment {
 
 
         mGridView = (MyWrapableGridView) v.findViewById(R.id.tool_making_sector);
-        mAdapter = new MyDynamicGridAdapter(getActivity(), getResources().getInteger(R.integer.dynamic_gridview_column_count), mSavedInstructions, mSavedImageUrls);
+        mAdapter = new MyDynamicGridAdapter(getActivity(), getResources().getInteger(R.integer.dynamic_gridview_column_count));
         mGridView.setAdapter(mAdapter);
 
         //------------- recyclerView -------------------- //
@@ -203,6 +207,7 @@ public class ToolFragment extends Fragment {
             if (pageCount == 1) pageCount = 2; // 조잡하다 조잡해... 아오...
         }
 
+        // 왜 안되지? 아직 view가 안생겼을 때 불러지나..
         public final void setPage(int page) {
             if (page > pageCount) page = pageCount;
             selectedPage = page;
@@ -262,17 +267,11 @@ public class ToolFragment extends Fragment {
                 int width = mContainer.getMeasuredWidth();
                 int height = mContainer.getMeasuredHeight();
                 float scaleFactor = 2;
-//                mScrollView.setDrawingCacheEnabled(true);
-//                screenImage = Bitmap.createBitmap(mScrollView.getDrawingCache());
-//                mScrollView.setDrawingCacheEnabled(false);
-
 
                 screenImage = Bitmap.createBitmap((int) (width / scaleFactor), (int) (height / scaleFactor), Bitmap.Config.RGB_565);
                 Canvas canvas = new Canvas(screenImage);
                 canvas.scale(1 / scaleFactor, 1 / scaleFactor);
 
-//                Paint paint = new Paint();
-//                paint.setFlags(Paint.FILTER_BITMAP_FLAG);
 
                 mScrollView.setDrawingCacheEnabled(true);
                 canvas.drawBitmap(mScrollView.getDrawingCache(), 0, 0, null);

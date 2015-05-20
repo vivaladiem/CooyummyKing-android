@@ -116,72 +116,81 @@ public class RecipeDetailFragment extends Fragment {
                 lv.setAdapter(adapter);
             }
 
-            // 커스텀 ArrayAdapter를 정의합니다.
-            class RecipeDetailInstructionAdapter extends ArrayAdapter<String> {
-                private final int TYPE_FIRST = 0;
-                private final int TYPE_CONTENT = 1;
-                private final int TYPE_END = 2;
-                private int count;
 
-                public RecipeDetailInstructionAdapter(String[] instructions) {
-                    super(getActivity(), 0, instructions);
-                    count = instructions.length;
+        });
+
+    }
+    public class ViewHolder {
+        public ImageView instImageView;
+        public TextView instTextView;
+    }
+
+    // 커스텀 ArrayAdapter를 정의합니다.
+    class RecipeDetailInstructionAdapter extends ArrayAdapter<String> {
+        private final int TYPE_FIRST = 0;
+        private final int TYPE_CONTENT = 1;
+        private final int TYPE_END = 2;
+        private int count;
+
+        public RecipeDetailInstructionAdapter(String[] instructions) {
+            super(getActivity(), 0, instructions);
+            count = instructions.length;
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if (position == 0) return TYPE_FIRST;
+            if (position + 1 == count) return TYPE_END;
+            return TYPE_CONTENT;
+        }
+
+        @Override
+        public int getViewTypeCount() {
+            return TYPE_END + 1;
+        }
+
+        @Override
+        public int getCount() {
+            return count;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ViewHolder holder;
+            if (convertView == null) {
+                holder = new ViewHolder();
+
+                int type = getItemViewType(position);
+                switch(type) {
+                    case TYPE_FIRST:
+                        convertView = getActivity().getLayoutInflater()
+                                .inflate(R.layout.listview_recipe_instruction_first, parent, false);
+
+                        ImageView ivMainImage = (ImageView) convertView.findViewById(R.id.detail_recipe_main_image);
+                        ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageNum), ivMainImage); // TODO 캐시를 통해 본문에서 이 이미지를 다시 다운로드하지 않게 해야함.
+
+                        TextView tvTitle = (TextView) convertView.findViewById(R.id.detail_recipe_title);
+                        tvTitle.setText(recipe.title);
+                        break;
+                    case TYPE_END:
+                        convertView = getActivity().getLayoutInflater()
+                                .inflate(R.layout.listview_recipe_instruction, parent, false);
+                        View bottom = ((ViewStub) convertView.findViewById(R.id.detail_recipe_instruction_end_stub)).inflate();
+                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_like)).setText(recipe.likeCount + "명");
+                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_scrap)).setText(recipe.scrapCount + "명");
+                        break;
+                    default:
+                        convertView = getActivity().getLayoutInflater()
+                                .inflate(R.layout.listview_recipe_instruction, parent, false);
                 }
+                holder.instImageView = (ImageView) convertView.findViewById(R.id.detail_recipe_instruction_iv);
+                holder.instTextView = (TextView) convertView.findViewById(R.id.detail_recipe_instruction_tv);
 
-                @Override
-                public int getItemViewType(int position) {
-                    if (position == 0) return TYPE_FIRST;
-                    if (position + 1 == count) return TYPE_END;
-                    return TYPE_CONTENT;
-                }
+                convertView.setTag(holder);
 
-                @Override
-                public int getViewTypeCount() {
-                    return TYPE_END + 1;
-                }
-
-                @Override
-                public int getCount() {
-                    return count;
-                }
-
-                @Override
-                public View getView(int position, View convertView, ViewGroup parent) {
-                    ViewHolder holder;
-                    if (convertView == null) {
-                        holder = new ViewHolder();
-
-                        int type = getItemViewType(position);
-                        switch(type) {
-                            case TYPE_FIRST:
-                                convertView = getActivity().getLayoutInflater()
-                                        .inflate(R.layout.listview_recipe_instruction_first, parent, false);
-
-                                ImageView ivMainImage = (ImageView) convertView.findViewById(R.id.detail_recipe_main_image);
-                                ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageNum), ivMainImage); // TODO 캐시를 통해 본문에서 이 이미지를 다시 다운로드하지 않게 해야함.
-
-                                TextView tvTitle = (TextView) convertView.findViewById(R.id.detail_recipe_title);
-                                tvTitle.setText(recipe.title);
-                                break;
-                            case TYPE_END:
-                                convertView = getActivity().getLayoutInflater()
-                                        .inflate(R.layout.listview_recipe_instruction, parent, false);
-                                View bottom = ((ViewStub) convertView.findViewById(R.id.detail_recipe_instruction_end_stub)).inflate();
-                                ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_like)).setText(recipe.likeCount + "명");
-                                ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_scrap)).setText(recipe.scrapCount + "명");
-                                break;
-                            default:
-                                convertView = getActivity().getLayoutInflater()
-                                        .inflate(R.layout.listview_recipe_instruction, parent, false);
-                        }
-                        holder.instImageView = (ImageView) convertView.findViewById(R.id.detail_recipe_instruction_iv);
-                        holder.instTextView = (TextView) convertView.findViewById(R.id.detail_recipe_instruction_tv);
-
-                        convertView.setTag(holder);
-
-                    } else {
-                        holder = (ViewHolder) convertView.getTag();
-                    }
+            } else {
+                holder = (ViewHolder) convertView.getTag();
+            }
                     /*
                     // 짤리는거 막기 실험
                     disableClipOnParents(convertView);
@@ -192,20 +201,20 @@ public class RecipeDetailFragment extends Fragment {
                     }
                     */
 
-                    String instruction = getItem(position);
-                    String imageUrl = String.format(URL.getBaseUrl() + URL.GET_IMAGE_URL_BASE, recipe.id) + (position + 1);
-                    // Main Image와 같은 사진일 땐 캐시로 하거나 앞에서 받은걸 다시 쓰거나 해야.
-                    ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, new SimpleImageLoadingListener() {
-                        @Override
-                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                            super.onLoadingComplete(imageUri, view, loadedImage);
-                            view.setVisibility(View.VISIBLE);
-                        }
-                    });
-
-                    holder.instTextView.setText(instruction);
-                    return convertView;
+            String instruction = getItem(position);
+            String imageUrl = String.format(URL.getBaseUrl() + URL.GET_IMAGE_URL_BASE, recipe.id) + (position + 1);
+            // Main Image와 같은 사진일 땐 캐시로 하거나 앞에서 받은걸 다시 쓰거나 해야.
+            ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, new SimpleImageLoadingListener() {
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    super.onLoadingComplete(imageUri, view, loadedImage);
+                    view.setVisibility(View.VISIBLE);
                 }
+            });
+
+            holder.instTextView.setText(instruction);
+            return convertView;
+        }
 
 //                private void disableClipOnParents(View v) {
 //                    if (v.getParent() == null) return;
@@ -213,13 +222,6 @@ public class RecipeDetailFragment extends Fragment {
 //                    if (v.getParent() instanceof View) disableClipOnParents((View) v.getParent());
 //                }
 
-            }
-        });
-
-    }
-    public class ViewHolder {
-        public ImageView instImageView;
-        public TextView instTextView;
     }
 
     @Override

@@ -11,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
+import com.coo.y2.cooyummyking.fragment.ToolFragment;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -30,24 +31,10 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter implements Adap
             .cacheInMemory(true)
             .build();
 
-    private ArrayList<String> mInstructions = new ArrayList<>();
-    private ArrayList<String> mImageUrls = new ArrayList<>();
     private int mMainImageNum;
 
-    public MyDynamicGridAdapter(Context context, int columnCount, ArrayList<String> instructions, ArrayList<String> imageUrls) {
+    public MyDynamicGridAdapter(Context context, int columnCount) {
         super(context, columnCount);
-        /*
-        Iterator<String> itInst = instructions.iterator();
-        while(itInst.hasNext()) {
-            this.mInstructions.add(itInst.next());
-        }
-        Iterator<Bitmap> itImg = images.iterator();
-        while(itImg.hasNext()) {
-            this.mImages.add(itImg.next());
-        }
-        */
-        mInstructions = instructions;
-        mImageUrls = imageUrls;
     }
 
     @Override
@@ -61,15 +48,15 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter implements Adap
             holder = (ViewHolder) convertView.getTag();
         }
         holder.mTvTagNum.setText(String.valueOf(position + 1));
-        ImageLoader.getInstance().displayImage("file://" + mImageUrls.get(position), holder.mIvRecipeImage, mOptions);
-        holder.mTvRecipeText.setText(mInstructions.get(position));
+        ImageLoader.getInstance().displayImage("file://" + ToolFragment.sImageUrls.get(position), holder.mIvRecipeImage, mOptions);
+        holder.mTvRecipeText.setText(ToolFragment.sInstructions.get(position));
 
         return convertView;
     }
 
     @Override
     public int getCount() {
-        return mInstructions.isEmpty() ? 0 : mInstructions.size();
+        return ToolFragment.sInstructions.isEmpty() ? 0 : ToolFragment.sInstructions.size();
     }
 
     private class ViewHolder {
@@ -84,9 +71,10 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter implements Adap
         }
     }
 
+    // 디자인패턴도 잘 모르고 시간이 없어서 이렇게밖에 못했음.. 나중에 체계적으로 만들자.
     public void addItem(String instruction, String imageUrl) {
-        mInstructions.add(instruction);
-        mImageUrls.add(imageUrl);
+        ToolFragment.sInstructions.add(instruction);
+        ToolFragment.sImageUrls.add(imageUrl);
         notifyDataSetChanged();
     }
 
@@ -97,8 +85,8 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter implements Adap
             for (int i = 0; i < count; i++) inst.add(null);
             instructions = inst;
         }
-        mInstructions.addAll(instructions);
-        mImageUrls.addAll(imageUrls);
+        ToolFragment.sInstructions.addAll(instructions);
+        ToolFragment.sImageUrls.addAll(imageUrls);
         notifyDataSetChanged();
     }
 

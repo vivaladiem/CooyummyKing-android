@@ -5,6 +5,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +22,7 @@ import com.coo.y2.cooyummyking.R;
 public class ToolDetailEditorFragment extends Fragment {
     public static final int INTENT_REQUESTCODE = 0;
 
+    private ViewPager mViewPager;
     private View mBottomBar;
     private Animation mAnimSlideIn;
     private Animation mAnimFadeIn;
@@ -28,19 +31,36 @@ public class ToolDetailEditorFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_tool_detail_editor, container, false);
-        initResourcesAndAnimation(v);
+        initResources(v);
+        initAnimation(v);
         return v;
     }
 
-    private void initResourcesAndAnimation(View v) {
-        final ViewPager viewPager = (ViewPager) v.findViewById(R.id.tool_detail_editor_viewPager);
+    private void initResources(View v) {
+        mViewPager = (ViewPager) v.findViewById(R.id.tool_detail_editor_viewPager);
+        mViewPager.setPageMargin(10);
         v.setBackground(new BitmapDrawable(getResources(), ToolFragment.screenImage));
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        mViewPager.setAdapter(new FragmentStatePagerAdapter(fm) {
+            @Override
+            public Fragment getItem(int position) {
+                return ToolDetailEditorPageFragment.newInstance(position);
+            }
 
+            @Override
+            public int getCount() {
+                return ToolFragment.sImageUrls.size();
+            }
+        });
+
+    }
+
+    private void initAnimation(View v) {
         mAnimFadeIn = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_in);
         mAnimFadeIn.setAnimationListener(new Animation.AnimationListener() {
             @Override
             public void onAnimationStart(Animation animation) {
-                viewPager.setBackgroundColor(Color.argb(150, 0, 0, 0));
+                mViewPager.setBackgroundColor(Color.argb(150, 0, 0, 0));
             }
 
             @Override
@@ -49,14 +69,9 @@ public class ToolDetailEditorFragment extends Fragment {
             @Override
             public void onAnimationRepeat(Animation animation) { }
         });
-        viewPager.startAnimation(mAnimFadeIn);
+        mViewPager.startAnimation(mAnimFadeIn);
 
         mBottomBar = v.findViewById(R.id.tool_detail_editor_bottombar);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
         mAnimSlideIn = AnimationUtils.loadAnimation(getActivity(), R.anim.slide_in);
         mAnimSlideIn.setAnimationListener(new Animation.AnimationListener() {
             @Override
