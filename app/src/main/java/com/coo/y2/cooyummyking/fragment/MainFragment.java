@@ -5,6 +5,8 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -56,6 +58,7 @@ public class MainFragment extends Fragment {
             .bitmapConfig(Bitmap.Config.RGB_565)
             .imageScaleType(ImageScaleType.EXACTLY)
             .cacheInMemory(true)
+            .cacheOnDisk(true)
             .displayer(new FadeInBitmapDisplayer(300))
             .build();
 
@@ -126,17 +129,17 @@ public class MainFragment extends Fragment {
                         Toast.makeText(getActivity(), "레시피를 불러올 수 없습니다", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    Fragment fragment = new RecipeDetailFragment();
+//                    Fragment fragment = new RecipeDetailFragment(mImageLoaderOptions);
+                    Fragment fragment = RecipeDetailFragment.newInstance(mImageLoaderOptions);
                     Bundle data = new Bundle();
                     data.putInt(RecipeDetailFragment.EXTRA_RECIPEID, recipe.id);
-//                    data.putInt(RecipeDetailFragment.EXTRA_USERID, 본인아이디);
                     data.putInt(RecipeDetailFragment.EXTRA_MAIN_IMAGE_NUM, recipe.mainImageNum);
                     data.putString(RecipeDetailFragment.EXTRA_TITLE, recipe.title);
                     fragment.setArguments(data);
                     FragmentManager fm = getActivity().getSupportFragmentManager();
                     fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // 기존 백스택을 비운다
-                    HttpUtil.cancle();
-                    ImageLoader.getInstance().stop();
+//                    HttpUtil.cancle(); // 어차피 onStop에서 하니까 여기서 할 필요 없다.
+//                    ImageLoader.getInstance().stop();
                     fm.beginTransaction()
                             .replace(R.id.fragmentContainer, fragment)
                             .addToBackStack(null)
@@ -147,6 +150,7 @@ public class MainFragment extends Fragment {
     }
 
     private void executeGetRecipes(boolean willReload) {
+        if (!isInternetAvailable(getActivity())) return; // Toast나 Dialog 등 처리
         if (!willReload) { loadRecipeImages(); return; }
 
         HttpUtil.get(URL.GET_RECIPES, null, null, new JsonHttpResponseHandler() {
@@ -167,9 +171,9 @@ public class MainFragment extends Fragment {
                 mRecipes.clear();
                 int count = recipes.length(); // [Tuning] 반복문에선 이런식으로 값을 상수에 넣어놓고 사용해야 빠름.
                 for (int i = 0; i < count; i++) {
-                    mRecipes.add(Recipe.build(recipes.optJSONObject(i)));
+                    mRecipes.add(Recipe.loadRecipe(recipes.optJSONObject(i)));
                 }
-                ImageLoader.getInstance().clearMemoryCache();
+                ImageLoader.getInstance().clearMemoryCache(); // 캐시는 popBackStack에서 쓰기 위해 쓰는것이니 Refresh에선 바로 비워줌
             }
         });
     }
@@ -232,6 +236,7 @@ public class MainFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         ImageLoader.getInstance().clearMemoryCache();
+        ImageLoader.getInstance().clearDiskCache();
     }
 
     @Override
@@ -271,5 +276,23 @@ public class MainFragment extends Fragment {
                 } catch (Exception e) { }
             }
         }
+    }
+
+    public static boolean isInternetAvailable(Context context) {
+        boolean isInternetAvailable = false;
+
+        try {
+            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+
+            if(networkInfo != null && (networkInfo.isConnected())) {
+                isInternetAvailable  = true;
+            }
+        }
+        catch(Exception exception) {
+            exception.printStackTrace();
+        }
+
+        return isInternetAvailable;
     }
 }

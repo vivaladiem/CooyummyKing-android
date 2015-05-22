@@ -10,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.coo.y2.cooyummyking.R;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
@@ -25,21 +24,20 @@ import java.util.ArrayList;
  * Created by Y2 on 2015-05-13.
  */
 public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCursorAdapter.ViewHolder> {
-    private Context mContext;
+    private final Context mContext;
 
     private final DisplayImageOptions mOptions;
 
-    int mImageSideLength; // As UIL doesn't know exact size when the size is match_parent or wrap_content, manually set the value.
+    private int mImageSideLength; // As UIL doesn't know exact size when the size is match_parent or wrap_content, manually set the value.
 
-    ArrayList<Integer> mSelectedItemPosition = new ArrayList<>();
-    ArrayList<String> mSelectedItemUrl = new ArrayList<>();
+    private ArrayList<Integer> mSelectedItemPosition = new ArrayList<>();
+    private ArrayList<String> mSelectedItemPaths = new ArrayList<>();
 
-    int mPosition;
+    private Integer mPosition;
+    private int mDataColumnIndex;
+    private String mUrl;
 
-    int mDataColumnIndex;
-    String mUrl;
-
-    GalleryOnClickListener mGalleryOnClickListener = new GalleryOnClickListener();
+    private GalleryOnClickListener mGalleryOnClickListener = new GalleryOnClickListener();
 
     public GalleryCursorAdapter(Context context, Cursor cursor, int imageSideLength) {
         super(context, cursor);
@@ -89,14 +87,12 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
     }
 
 
-    // UI Related things SHOULD be handled only in here.
     @Override
     public void onBindViewHolder(ViewHolder holder, Cursor cursor) {
         mPosition = cursor.getPosition();
-        if (holder.mViewGroup.getTag() != mPosition) { // Prevent repeat on notify from onClick
+        if (!mPosition.equals(holder.mViewGroup.getTag())) { // Prevent repeat on notify from onClick
+//        if (holder.mViewGroup.getTag() != mPosition) { // Prevent repeat on notify from onClick / 어떻게된건지 127까지만 성립함.. 그후로는 무조건 false
             mDataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Media.DATA);
-
-//            mDataColumnIndex = cursor.getColumnIndex(MediaStore.Images.Thumbnails.DATA);
             mUrl = cursor.getString(mDataColumnIndex);
 
             // 썸네일(MediaStore.Images.Thumbnail)은 Exif가 날라가서 방향이 제멋대로인 경우가 많으며, 가끔 파일이 없는 경우도 있어서 곤란.
@@ -111,7 +107,6 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
                 @Override
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                     super.onLoadingComplete(imageUri, view, loadedImage);
-                    Toast.makeText(mContext, loadedImage.getWidth() + "x" + loadedImage.getHeight(), Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -144,14 +139,14 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
             int index;
             if ((index = mSelectedItemPosition.indexOf(position)) != -1) { // When the item is already selected
                 mSelectedItemPosition.remove(index);
-                mSelectedItemUrl.remove(index);
+                mSelectedItemPaths.remove(index);
 
                 notifyItemChanged(position); // 삭제된 아이템도 notify 해줘야.
 
             } else {
                 mSelectedItemPosition.add(position);
                 getCursor().moveToPosition(position);
-                mSelectedItemUrl.add(getCursor().getString(mDataColumnIndex));
+                mSelectedItemPaths.add(getCursor().getString(mDataColumnIndex));
             }
 
             for (int changedItemPosition : mSelectedItemPosition) { //선택된 아이템들에 대한 notify
@@ -161,7 +156,7 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
         }
     }
 
-    public ArrayList<String> getSelectedItemUrl() {
-        return mSelectedItemUrl;
+    public ArrayList<String> getSelectedItemPaths() {
+        return mSelectedItemPaths;
     }
 }

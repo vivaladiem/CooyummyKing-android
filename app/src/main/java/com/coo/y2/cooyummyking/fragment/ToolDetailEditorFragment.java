@@ -1,5 +1,6 @@
 package com.coo.y2.cooyummyking.fragment;
 
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -15,6 +16,10 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.coo.y2.cooyummyking.R;
+import com.coo.y2.cooyummyking.entity.Recipe;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 
 /**
  * Created by Y2 on 2015-05-18.
@@ -27,6 +32,14 @@ public class ToolDetailEditorFragment extends Fragment {
     private Animation mAnimSlideIn;
     private Animation mAnimFadeIn;
 
+    private DisplayImageOptions options = new DisplayImageOptions.Builder()
+            .bitmapConfig(Bitmap.Config.RGB_565)
+            .imageScaleType(ImageScaleType.EXACTLY)
+            .considerExifParams(true)
+            .displayer(new FadeInBitmapDisplayer(300))
+            .build();
+
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -38,21 +51,23 @@ public class ToolDetailEditorFragment extends Fragment {
 
     private void initResources(View v) {
         mViewPager = (ViewPager) v.findViewById(R.id.tool_detail_editor_viewPager);
-        mViewPager.setPageMargin(10);
+        mViewPager.setPageMargin(20);
         v.setBackground(new BitmapDrawable(getResources(), ToolFragment.screenImage));
-        FragmentManager fm = getActivity().getSupportFragmentManager();
+        FragmentManager fm = getChildFragmentManager();
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fm) {
             @Override
             public Fragment getItem(int position) {
-                return ToolDetailEditorPageFragment.newInstance(position);
+                return ToolDetailEditorPageFragment.newInstance(position, options);
             }
 
             @Override
             public int getCount() {
-                return ToolFragment.sImageUrls.size();
+                return Recipe.imagePaths.size();
             }
         });
 
+        int position = getArguments().getInt("position");
+        mViewPager.setCurrentItem(position);
     }
 
     private void initAnimation(View v) {
@@ -91,6 +106,7 @@ public class ToolDetailEditorFragment extends Fragment {
         mBottomBar.startAnimation(mAnimSlideIn);
     }
 
+
     @Override
     public void onDestroyView() {
 //        Animation animSlideOut = AnimationUtils.loadAnimation(getActivity(), R.anim.slide_out);
@@ -110,7 +126,6 @@ public class ToolDetailEditorFragment extends Fragment {
 //        });
 //
 //        mBottomBar.startAnimation(animSlideOut);
-
         mAnimSlideIn.setAnimationListener(null);
         mAnimSlideIn = null;
 //        animSlideOut.setAnimationListener(null);
@@ -120,7 +135,7 @@ public class ToolDetailEditorFragment extends Fragment {
 
         try {getView().getBackground().setCallback(null);} catch(NullPointerException e) { e.printStackTrace(); }
         getView().setBackground(null);
-
+        mViewPager.setAdapter(null);
         super.onDestroyView();
 
     }

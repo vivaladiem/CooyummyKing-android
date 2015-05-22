@@ -18,6 +18,6 @@ public class URL {
 
     public static final String GET_RECIPES = "recipes/list";
     public static final String CREATE_RECIPES = "recipes";
-    public static final String GET_IMAGE_URL_BASE = "recipes/%s/images/";
+    public static final String GET_IMAGE_URL = getBaseUrl() + "recipes/%s/images/%s";
     public static final String GET_RECIPE = "recipes/%s/user/%s";
 }

@@ -45,7 +45,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/tool_detail_editor_image"
-        android:textAppearance="@style/TextDarkGrey"
-        android:lines="3"
+        android:cursorVisible="false"
+        android:minLines="3"
         android:textColor="@color/Coo_DarkGrey"/>
 </RelativeLayout>

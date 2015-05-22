@@ -17,6 +17,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 
@@ -24,6 +25,7 @@ import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.GalleryActivity;
 import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.adapter.MyDynamicGridAdapter;
+import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.widget.MyWrapableGridView;
 
 import java.util.ArrayList;
@@ -42,14 +44,12 @@ public class ToolFragment extends Fragment {
 //    private ArrayList<String> mSavedInstructions = new ArrayList<>();
 //    private ArrayList<String> mSavedImageUrls = new ArrayList<>();
 
-    // arguments로 Fragment에 넣는건 느리기도 하고 복잡해서 그냥 일단 이렇게 한다..
-    public static ArrayList<String> sInstructions = new ArrayList<>();
-    public static ArrayList<String> sImageUrls = new ArrayList<>();
+    // ----- Variables for Recipe data. Accessed by all tool related classes ---- //
+    private Recipe mRecipe = Recipe.getScheme();
 
     //------ Variables for view --------------//
     private ScrollView mScrollView;
     private MyWrapableGridView mGridView;
-
     private MyDynamicGridAdapter mAdapter;
 
     //------ Variables for BottomBar Scroll -------//
@@ -57,6 +57,9 @@ public class ToolFragment extends Fragment {
     private int mScrollDistance;
     private GstListener mGstListener;
     private GestureDetector mGstDetector;
+    int selectedPage = 0;
+    int totalHeight;
+    int pageCount = 0;
 
     //------- Variables for BottomBar Animation ---//
     private Animation mOutAnim;
@@ -78,9 +81,9 @@ public class ToolFragment extends Fragment {
         MainActivity.sIvBtnList.setSelected(false);
         MainActivity.sIvBtnTool.setSelected(true);
         MainActivity.sIvBtnMypage.setSelected(false);
-
         mScrollView = (ScrollView) inflater.inflate(R.layout.fragment_recipe_tool, container, false);
         mContainer = container;
+
         initResources(mScrollView);
         loadSavedData();
         initBottomTabAnimation();
@@ -90,9 +93,7 @@ public class ToolFragment extends Fragment {
     }
 
     private void initResources(View v) {
-        // 뷰들의 크기를 정의하기 위한 상수들을 가져옵니다.
-        // All units are pixels
-        // 회전 안하니까 그냥 여기에서 다 해도..
+        // Variables for determine view sizes. All units are pixels
         DisplayMetrics dm = getResources().getDisplayMetrics();
         int screenHeightPixels = dm.heightPixels;
         int actionBarHeight = getResources().getDimensionPixelSize(R.dimen.toolbar_height);
@@ -101,12 +102,10 @@ public class ToolFragment extends Fragment {
         int padding = getResources().getDimensionPixelSize(R.dimen.tool_padding); // Upper Page Padding
 
         int upperPageHeight = screenHeightPixels - actionBarHeight - bottomTabHeight - padding; // Height For Upper Page
-        mScrollDistance = (upperPageHeight - linkHeight * 2) / 2; // link와 '제작화면'이란 글씨 있는 탭 남겨놓고 움직일 거리의 1/2
-
+        mScrollDistance = (upperPageHeight - linkHeight * 2) / 2; // link와 제작화면 탭 남겨놓고 움직일 거리의 1/2
 
         View mToolUpperPage = v.findViewById(R.id.tool_upperpage);
         mToolUpperPage.getLayoutParams().height = upperPageHeight;
-
 
         mGridView = (MyWrapableGridView) v.findViewById(R.id.tool_making_sector);
         mAdapter = new MyDynamicGridAdapter(getActivity(), getResources().getInteger(R.integer.dynamic_gridview_column_count));
@@ -120,14 +119,36 @@ public class ToolFragment extends Fragment {
 //        recyclerView.setLayoutManager(layoutManager);
 //        recyclerView.setAdapter(adapter);
         //------------------------------------------------//
+
+        EditText txtTitle = (EditText) v.findViewById(R.id.tool_info_title);
+        EditText txtTime = (EditText) v.findViewById(R.id.tool_info_time);
+        EditText txtTheme = (EditText) v.findViewById(R.id.tool_info_theme);
+        EditText txtIngredient = (EditText) v.findViewById(R.id.tool_info_ingredient);
+        EditText txtSource = (EditText) v.findViewById(R.id.tool_info_source);
+
+        txtTitle.setOnFocusChangeListener(focusChangeListener);
+        txtTime.setOnFocusChangeListener(focusChangeListener);
+        txtTheme.setOnFocusChangeListener(focusChangeListener);
+        txtIngredient.setOnFocusChangeListener(focusChangeListener);
+        txtSource.setOnFocusChangeListener(focusChangeListener);
     }
+
+    View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
+        @Override
+        public void onFocusChange(View view, boolean hasFocus) {
+            if (hasFocus) {
+                ((EditText) view).setSingleLine(false);
+            } else {
+                ((EditText) view).setSingleLine(true);
+            }
+        }
+    };
 
     private void loadSavedData() {
         // 저장되었던 정보들을 처리합니다.
         // view 굳이 멤버로 만들 필요 없으니 initResources에서 처리해야 할지도..
     }
 
-    // onResume에서 했더니 화면은 빠르게 나타나는데 처음 켜지고 조작이 느려서 그냥 onCreateView에서 함..
     private void initBottomTabAnimation() {
         mOutAnim = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_slide_out_bottom);
         mInAnim = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_slide_in_bottom);
@@ -193,25 +214,19 @@ public class ToolFragment extends Fragment {
             // GridView의 최소한의 높이로 인해 page = 1이 되어 곤란하므로 불러온 사진이 없을 땐 이렇게 처리함.
             if (((ViewGroup) view).getChildCount() != 0)
                 mGstListener.setTotalHeightAndPage(view.getHeight());
+
         }
     };
 
     private final class GstListener extends GestureDetector.SimpleOnGestureListener {
-        int selectedPage = 0;
-        int totalHeight;
-        int pageCount = 0;
+//        int selectedPage = 0;
+//        int totalHeight;
+//        int pageCount = 0;
 
         public final void setTotalHeightAndPage(int height) {
             totalHeight = height;
-            pageCount = (int) Math.ceil((double) totalHeight / mScrollDistance * 0.95d); // 미세하게 남은 부분을 없애기 위해 0.95를 곱한다.
+            pageCount = (int) Math.ceil((double) totalHeight / mScrollDistance); // 미세하게 남은 부분을 없애기 위해 0.95를 곱한다.
             if (pageCount == 1) pageCount = 2; // 조잡하다 조잡해... 아오...
-        }
-
-        // 왜 안되지? 아직 view가 안생겼을 때 불러지나..
-        public final void setPage(int page) {
-            if (page > pageCount) page = pageCount;
-            selectedPage = page;
-            mScrollView.smoothScrollTo(0, mScrollDistance * selectedPage);
         }
 
         // TODO OverView 부분에선 한 줄 높이만큼 스크롤되게 하는것도 괜찮을듯.
@@ -281,7 +296,9 @@ public class ToolFragment extends Fragment {
 
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 Fragment fragment = new ToolDetailEditorFragment();
-
+                Bundle args = new Bundle();
+                args.putInt("position", position);
+                fragment.setArguments(args);
                 // 현재 프래그먼트를 첫번째 인자로 넣어야 하는데 OnCLickListener 안이라 this로 못가져와서 findFragmentById로 함.
                 fragment.setTargetFragment(fm.findFragmentById(R.id.fragmentContainer), ToolDetailEditorFragment.INTENT_REQUESTCODE);
 
@@ -299,10 +316,9 @@ public class ToolFragment extends Fragment {
         switch(requestCode) {
             case INTENT_FOR_ALBUM:
                 if (resultCode != Activity.RESULT_OK) return;
-                // clone을 해야지만 GalleryActivity가 종료됨. 그냥 할당하면 참조값을 가져와서 계속 남아있음 무려 5mb나...
+                // 반드시 Clone을 해야 참조가 끊겨 GalleryActivity가 종료됨.
                 ArrayList<String> imageUrls = (ArrayList<String>) data.getStringArrayListExtra(GalleryActivity.EXTRA_SELECTED_ITEMS).clone();
                 mAdapter.addBulkItem(null, imageUrls);
-                mGstListener.setPage(2);
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -320,7 +336,9 @@ public class ToolFragment extends Fragment {
         mInAnim = null;
         mGridView.setOnItemClickListener(null);
         mGridView.removeOnLayoutChangeListener(layoutChangeListener);
+//        mGridView.setAdapter(null);
         mGridView = null;
+        mAdapter = null;
         mBtnAlbum.setOnClickListener(null);
         mBtnAlbum = null;
 
@@ -331,13 +349,20 @@ public class ToolFragment extends Fragment {
     @Override
     public void onDestroy() {
         // DetailEditor로 갈 때는 작동 되지 않도록 여기에서 처리
-
-        mAdapter = null;
         screenImage = null;
+
+        // 저장 후 참조끊기. 임시저장기능 추가해야.
+        // 완전 허술한 구조...길이 같지 않으면 오류나는.. 1차원으로 나눴기때문에 어쩔 수 없긴 하지만, 보강해야
+        int count = mRecipe.instructions.size();
+        for (int i = count - 1; i >= 0; i--) { // 아니 대체 왜 --i가 먼저 --되고 진행하는게 아닌거야..
+            mRecipe.instructions.remove(i);
+            Recipe.imagePaths.remove(i);
+        }
+
+//        ImageLoader.getInstance().clearMemoryCache();
 
         MainActivity.sBottomBar.setVisibility(View.VISIBLE);
         mContainer.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.bottombar_height));
-
         super.onDestroy();
     }
 
@@ -391,7 +416,7 @@ public class ToolFragment extends Fragment {
                 for (int i = 0; i < count; i++) {
                     recursiveRecycle(group.getChildAt(i));
                 }
-//                ((MyWrapableGridView) group).setAdapter(null); // 어떻게 어떤 AdapterView의 서브클래스이든 AdapterView 인 채로 setAdapter(null)을 할 수 있지?
+                ((AdapterView)group).setAdapter(null); // 어떻게 어떤 AdapterView의 서브클래스이든 AdapterView 인 채로 setAdapter(null)을 할 수 있지?
             }
         }
         if (root instanceof ImageView) {

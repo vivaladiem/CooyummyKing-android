@@ -24,7 +24,7 @@
     </style>
     <style name="TextLargeDarkGrey">
         <item name="android:textColor">@color/Coo_DarkGrey</item>
-        <item name="android:textSize">20sp</item>
+        <item name="android:textSize">18sp</item>
     </style>
     <style name="TextDarkGrey">
         <item name="android:textColor">@color/Coo_DarkGrey</item>

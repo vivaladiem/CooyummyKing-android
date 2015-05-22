@@ -33,6 +33,7 @@ import java.util.ArrayList;
 public class GalleryActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
     RecyclerView mRecyclerView;
     GalleryCursorAdapter mAdapter;
+    Cursor mCursor;
 
     public static final String EXTRA_SELECTED_ITEMS = "com.coo.y2.cooyummyking.activity.GalleryActivity";
 
@@ -89,7 +90,7 @@ public class GalleryActivity extends AppCompatActivity implements LoaderManager.
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         data.moveToFirst();
         mAdapter.swapCursor(data);
-
+        mCursor = data;
     }
 
     // ---------------------------------------- Menu Setting ---------------------------------------------- //
@@ -105,7 +106,7 @@ public class GalleryActivity extends AppCompatActivity implements LoaderManager.
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.toolbar_gallery_complete:
-                ArrayList<String> selectedItemUrls = mAdapter.getSelectedItemUrl();
+                ArrayList<String> selectedItemUrls = mAdapter.getSelectedItemPaths();
                 Intent returnIntent = new Intent();
                 returnIntent.putStringArrayListExtra(EXTRA_SELECTED_ITEMS, selectedItemUrls);
                 setResult(RESULT_OK, returnIntent);
@@ -131,6 +132,7 @@ public class GalleryActivity extends AppCompatActivity implements LoaderManager.
         } catch(Exception e) {
             e.printStackTrace();
         }
+        mCursor.close();
         ImageLoader.getInstance().clearMemoryCache();
         super.onDestroy();
 

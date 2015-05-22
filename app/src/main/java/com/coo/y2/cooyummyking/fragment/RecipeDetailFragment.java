@@ -20,11 +20,14 @@ import com.coo.y2.cooyummyking.network.HttpUtil;
 import com.coo.y2.cooyummyking.network.URL;
 import com.coo.y2.cooyummyking.widget.CircleImageView;
 import com.loopj.android.http.JsonHttpResponseHandler;
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import org.apache.http.Header;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * Created by Y2 on 2015-04-30.
@@ -36,6 +39,13 @@ public class RecipeDetailFragment extends Fragment {
     public static final String EXTRA_TITLE = "com.coo.y2.cooyummyking.title";
 
     private Recipe recipe;
+    private DisplayImageOptions mOptions;
+
+    public static RecipeDetailFragment newInstance(DisplayImageOptions options) {
+        RecipeDetailFragment fragment = new RecipeDetailFragment();
+        fragment.mOptions = options;
+        return fragment;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,32 +60,21 @@ public class RecipeDetailFragment extends Fragment {
         return v;
     }
 
-    // 이런다고해도 젤리빈의 부모뷰 밖으로 나간 children의 짤림현상은 그대로이면서 리스트뷰가 상단탭 위로 넘어가버리므로 안하는게 낫다.
-//    @Override
-//    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
-//        super.onViewCreated(view, savedInstanceState);
-//        ViewGroup vg = (ViewGroup) view;
-//        while(vg != null) {
-//            vg.setClipChildren(false);
-//            vg.setClipToPadding(false);
-//            vg = vg.getParent() instanceof ViewGroup ? (ViewGroup) vg.getParent() : null;
-//        }
-//    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-    }
-
     // Inner Class를 너무 많이 쓴것 같다...
     private void executeGetAndDisplayRecipe(final View v) {
         String url = String.format(URL.GET_RECIPE, getArguments().getInt(EXTRA_RECIPEID), 1);
         HttpUtil.get(url, null, null, new JsonHttpResponseHandler() {
             @Override
+            public void onProgress(int bytesWritten, int totalSize) {
+                super.onProgress(bytesWritten, totalSize);
+                // TBD 프로그레스바 COOYUMMYKING 글씨 등
+            }
+
+            @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
 
+                // TODO ingredients, theme 등 채워야
                 Bundle args = getArguments();
                 int id = args.getInt(EXTRA_RECIPEID);
                 int mainImageNum = args.getInt(EXTRA_MAIN_IMAGE_NUM);
@@ -85,34 +84,35 @@ public class RecipeDetailFragment extends Fragment {
                 try {
                     recipeData = response.getJSONObject("recipe");
 
-
                     recipeData.put(Recipe.RECIPE_ID, id);
                     recipeData.put(Recipe.RECIPE_MAINIMG, mainImageNum);
                     recipeData.put(Recipe.RECIPE_TITLE, title);
                     buildRecipe(recipeData);
                     initWriterInfo(v);
                     initAdapterAndDisplayRecipe(v);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                     //TODO 오류시 메인으로 or 재로딩 등 처리해야
                 }
             }
 
             private void buildRecipe(JSONObject data) {
-                recipe = Recipe.build(data);
+                recipe = Recipe.loadRecipe(data);
             }
+
             private void initWriterInfo(View v) {
                 ((TextView) v.findViewById(R.id.detail_writer_nickname)).setText(recipe.userName); // TODO User.USERNAME 등 상수로 변경
                 CircleImageView ivProfileImage = (CircleImageView) v.findViewById(R.id.detail_writer_thumb);
                 ivProfileImage.setBorderColor(Color.TRANSPARENT);
                 ivProfileImage.setBorderWidth(0);
-                ImageLoader.getInstance().displayImage(recipe.getWriterProfileImageUrl(recipe.userId), ivProfileImage);
+                ImageLoader.getInstance().displayImage(recipe.getWriterProfileImageUrl(recipe.userId), ivProfileImage, mOptions);
 
             }
+
             private void initAdapterAndDisplayRecipe(View v) {
                 ListView lv = (ListView) v.findViewById(R.id.detail_recipe_instruction_listview);
-                RecipeDetailInstructionAdapter adapter =
-                        new RecipeDetailInstructionAdapter(recipe.instructions);
+                RecipeDetailAdapter adapter =
+                        new RecipeDetailAdapter(recipe.instructions);
                 lv.setAdapter(adapter);
             }
 
@@ -126,15 +126,15 @@ public class RecipeDetailFragment extends Fragment {
     }
 
     // 커스텀 ArrayAdapter를 정의합니다.
-    class RecipeDetailInstructionAdapter extends ArrayAdapter<String> {
+    class RecipeDetailAdapter extends ArrayAdapter<String> {
         private final int TYPE_FIRST = 0;
         private final int TYPE_CONTENT = 1;
         private final int TYPE_END = 2;
         private int count;
 
-        public RecipeDetailInstructionAdapter(String[] instructions) {
+        public RecipeDetailAdapter(ArrayList<String> instructions) {
             super(getActivity(), 0, instructions);
-            count = instructions.length;
+            count = instructions.size();
         }
 
         @Override
@@ -191,19 +191,9 @@ public class RecipeDetailFragment extends Fragment {
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
-                    /*
-                    // 짤리는거 막기 실험
-                    disableClipOnParents(convertView);
-                    if (getItemViewType(position) != TYPE_FIRST) {
-                        parent.invalidate();
-                        ((ViewGroup) convertView).getChildAt(0).invalidate();
-                        ((ViewGroup) convertView).getChildAt(1).invalidate();
-                    }
-                    */
 
             String instruction = getItem(position);
-            String imageUrl = String.format(URL.getBaseUrl() + URL.GET_IMAGE_URL_BASE, recipe.id) + (position + 1);
-            // Main Image와 같은 사진일 땐 캐시로 하거나 앞에서 받은걸 다시 쓰거나 해야.
+            String imageUrl = recipe.getImageUrl(position + 1);
             ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, new SimpleImageLoadingListener() {
                 @Override
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
@@ -215,13 +205,6 @@ public class RecipeDetailFragment extends Fragment {
             holder.instTextView.setText(instruction);
             return convertView;
         }
-
-//                private void disableClipOnParents(View v) {
-//                    if (v.getParent() == null) return;
-//                    if (v instanceof ViewGroup) ((ViewGroup) v).setClipChildren(false);
-//                    if (v.getParent() instanceof View) disableClipOnParents((View) v.getParent());
-//                }
-
     }
 
     @Override

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 코드에서 smoothScrollTo 적용함 -->
+<!-- TODO 타블렛, 옵티머스 뷰에서는 윗부분 없애고 아랫부분만. 상세편집 첫페이지를 레시피개요로 or 누르면 펼쳐지는 레이아웃 사용 -->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/tool_scrollview"
@@ -60,12 +60,12 @@
                         android:textStyle="bold"
                         android:text="@string/tool_info_title_caption"/>
                     <EditText
+                        android:id="@+id/tool_info_title"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
                         android:padding="2dp"
                         android:textColor="@color/Coo_DarkGrey"
-                        android:text="사과식빵피자"
                         android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
                 <LinearLayout
@@ -90,7 +90,7 @@
                         android:src="@drawable/recipe_info_icon_cookingtime"/>
                     <!-- TODO 시간, 테마, 재료는 텍스트를 직접 입력할 수 없음. onPressed 이펙트 효과 주어야 -->
                     <EditText
-                        android:id="@+id/tool_time"
+                        android:id="@+id/tool_info_time"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
@@ -120,7 +120,7 @@
                         android:padding="8dp"
                         android:src="@drawable/recipe_info_icon_cookingtime"/>
                     <EditText
-                        android:id="@+id/tool_theme"
+                        android:id="@+id/tool_info_theme"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
@@ -150,12 +150,11 @@
                         android:padding="8dp"
                         android:src="@drawable/recipe_info_icon_cookingtime"/>
                     <EditText
-                        android:id="@+id/tool_ingredient"
+                        android:id="@+id/tool_info_ingredient"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
                         android:padding="2dp"
-                        android:enabled="false"
                         android:textColor="@color/Coo_DarkGrey"
                         android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
@@ -176,7 +175,7 @@
                         android:text="@string/tool_info_source_caption"/>
 
                     <EditText
-                        android:id="@+id/tool_source"
+                        android:id="@+id/tool_info_source"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
@@ -227,7 +226,7 @@
                     android:layout_width="64dp"
                     android:layout_height="wrap_content"
                     android:layout_toRightOf="@id/tool_photo_camera"
-                    android:layout_marginLeft="16dp"
+                    android:layout_marginLeft="24dp"
                     android:gravity="center"
                     android:clickable="true"
                     android:drawableTop="@drawable/tool_btn_album_icon"

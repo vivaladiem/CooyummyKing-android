@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/tool_detail_editor_layout"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent">
+                android:id="@+id/tool_detail_editor_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:focusableInTouchMode="true">
     <!-- canvas로 화면에 어두운 레이어 깔 수 있으면 굳이 viewpager를 길게 놓지 않아도 될텐데 -->
     <android.support.v4.view.ViewPager
         android:id="@+id/tool_detail_editor_viewPager"
