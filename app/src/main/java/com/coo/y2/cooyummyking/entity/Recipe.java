@@ -43,7 +43,7 @@ public class Recipe implements Serializable{
     public String createdAt;
 
     // ------------------------- Related to tool -------------------------- //
-    public static Recipe recipe;
+    private static Recipe recipe;
     public static ArrayList<String> imagePaths = new ArrayList<>();
 
     public static Recipe getScheme() {
@@ -52,6 +52,7 @@ public class Recipe implements Serializable{
 
             // 초기화 필요한 변수들 초기화
             recipe.instructions = new ArrayList<>();
+            recipe.cookingTime = 0;
         }
         return recipe;
     }
@@ -79,6 +80,9 @@ public class Recipe implements Serializable{
         json.put(RECIPE_INGREDIENTS, ingredients);
         json.put(RECIPE_SOURCES, sources);
         return json;
+    }
+
+    public void saveTempData() {
     }
     // ----------------------------------------------------------------------- //
 

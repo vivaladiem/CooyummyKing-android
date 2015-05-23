@@ -2,6 +2,7 @@
 <resources>
     <item name="Coo_LightGrey" type="color">#ff999999</item>
     <item name="Coo_DarkGrey" type="color">#ff666666</item>
+    <item name="Coo_DarkGrey_transparent" type="color">#aa666666</item>
     <item name="Coo_Red" type="color">#ffcb0001</item>
     <item name="Coo_BackgroundLightGrey" type="color">#fff2f2f2</item>
 </resources>

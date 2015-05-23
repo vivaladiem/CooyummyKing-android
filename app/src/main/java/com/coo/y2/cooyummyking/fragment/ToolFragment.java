@@ -1,21 +1,25 @@
 package com.coo.y2.cooyummyking.fragment;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -27,6 +31,7 @@ import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.adapter.MyDynamicGridAdapter;
 import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.widget.MyWrapableGridView;
+import com.nostra13.universalimageloader.core.ImageLoader;
 
 import java.util.ArrayList;
 
@@ -40,26 +45,33 @@ import java.util.ArrayList;
  * 메모리는 메모리 누수 검사기로(MAT 등)
  */
 public class ToolFragment extends Fragment {
-    //------ Variables for load previously uncompleted recipe data ----//
-//    private ArrayList<String> mSavedInstructions = new ArrayList<>();
-//    private ArrayList<String> mSavedImageUrls = new ArrayList<>();
 
-    // ----- Variables for Recipe data. Accessed by all tool related classes ---- //
+    // ----- Variables for Recipe data ----------- //
     private Recipe mRecipe = Recipe.getScheme();
 
     //------ Variables for view --------------//
     private ScrollView mScrollView;
     private MyWrapableGridView mGridView;
     private MyDynamicGridAdapter mAdapter;
+    private View mTimeEditArea;
+
+    private EditText mTxtTitle;
+    private EditText mTxtTime;
+    private EditText mTxtTheme;
+    private EditText mTxtIngredient;
+    private EditText mTxtSource;
+    private InputMethodManager imm;
+    private boolean isFinish = false; // 나의 멍청함을 탓하라...
+    public static boolean isDialogFromTouch = false;
 
     //------ Variables for BottomBar Scroll -------//
     private ViewGroup mContainer; // For Reset Padding
     private int mScrollDistance;
     private GstListener mGstListener;
     private GestureDetector mGstDetector;
-    int selectedPage = 0;
-    int totalHeight;
-    int pageCount = 0;
+    private int selectedPage = 0;
+    private int totalHeight;
+    private int pageCount = 0;
 
     //------- Variables for BottomBar Animation ---//
     private Animation mOutAnim;
@@ -67,8 +79,8 @@ public class ToolFragment extends Fragment {
 
     //------- Variables for Intent - Album, Camera -----------------//
     public static final int INTENT_FOR_ALBUM = 0;
-    View mBtnAlbum;
-    View mBtnCamera;
+    private View mBtnAlbum;
+    private View mBtnCamera;
 
     //------- Variables for DetailEditor ----------//
     public static Bitmap screenImage; // Detail Editor에서 Background로 사용할 스크린캡쳐된 이미지
@@ -120,27 +132,63 @@ public class ToolFragment extends Fragment {
 //        recyclerView.setAdapter(adapter);
         //------------------------------------------------//
 
-        EditText txtTitle = (EditText) v.findViewById(R.id.tool_info_title);
-        EditText txtTime = (EditText) v.findViewById(R.id.tool_info_time);
-        EditText txtTheme = (EditText) v.findViewById(R.id.tool_info_theme);
-        EditText txtIngredient = (EditText) v.findViewById(R.id.tool_info_ingredient);
-        EditText txtSource = (EditText) v.findViewById(R.id.tool_info_source);
+        mTxtTitle = (EditText) v.findViewById(R.id.tool_info_title);
+        mTxtTime = (EditText) v.findViewById(R.id.tool_info_time);
+        mTxtTheme = (EditText) v.findViewById(R.id.tool_info_theme);
+        mTxtIngredient = (EditText) v.findViewById(R.id.tool_info_ingredient);
+        mTxtSource = (EditText) v.findViewById(R.id.tool_info_source);
+        imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE); // Variable for handle keyboard
 
-        txtTitle.setOnFocusChangeListener(focusChangeListener);
-        txtTime.setOnFocusChangeListener(focusChangeListener);
-        txtTheme.setOnFocusChangeListener(focusChangeListener);
-        txtIngredient.setOnFocusChangeListener(focusChangeListener);
-        txtSource.setOnFocusChangeListener(focusChangeListener);
+        // * ImeOptions on Multiple lines EditText only works when "singleLine = true & HorizontallyScrolling = false" -> horizon~ setting should be set on code!
+        // (to make multiple lines show, set maxLines)
+
+        mTxtTitle.setOnFocusChangeListener(focusChangeListener);
+        mTxtTitle.setHorizontallyScrolling(false); // Make Multiple lines show even though set to singleLine (with maxLines > 1) //
+        mTxtTitle.setOnKeyListener(mKeyListener);
+
+        mTxtTime.setOnFocusChangeListener(focusChangeListener);
+        mTxtTime.setTag("time");
+
+        mTxtTheme.setOnFocusChangeListener(focusChangeListener);
+        mTxtTheme.setHorizontallyScrolling(false);
+
+        mTxtIngredient.setOnFocusChangeListener(focusChangeListener);
+        mTxtIngredient.setHorizontallyScrolling(false);
+
+        mTxtSource.setOnFocusChangeListener(focusChangeListener);
+        mTxtSource.setHorizontallyScrolling(false);
+
+        mTimeEditArea = v.findViewById(R.id.tool_info_time_area);
+
     }
 
     View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
         @Override
         public void onFocusChange(View view, boolean hasFocus) {
+            EditText v = (EditText) view;
             if (hasFocus) {
-                ((EditText) view).setSingleLine(false);
+                v.setMaxLines(10);
+                // 커지고 작아지는 애니메이션 설정하면 더 좋긴 하겠다. TBD
+                switch(String.valueOf(view.getTag())) {
+                    case "time":
+                        openTimerDialog();
+                        break;
+                    // TBD
+                }
             } else {
-                ((EditText) view).setSingleLine(true);
+                v.setSelection(0); // 첫 줄이 보이도록 스크롤을 맨 위로.
+                v.setMaxLines(1);
             }
+        }
+    };
+
+    View.OnKeyListener mKeyListener = new View.OnKeyListener() {
+        @Override
+        public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+            if (keyCode == KeyEvent.KEYCODE_BACK) {
+                isFinish = true;
+            }
+            return false;
         }
     };
 
@@ -211,10 +259,9 @@ public class ToolFragment extends Fragment {
     View.OnLayoutChangeListener layoutChangeListener = new View.OnLayoutChangeListener() {
         @Override
         public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
-            // GridView의 최소한의 높이로 인해 page = 1이 되어 곤란하므로 불러온 사진이 없을 땐 이렇게 처리함.
+            // gridView의 padding으로 인해 초기에 pageCount가 1이 되는것을 방지함.
             if (((ViewGroup) view).getChildCount() != 0)
                 mGstListener.setTotalHeightAndPage(view.getHeight());
-
         }
     };
 
@@ -273,12 +320,14 @@ public class ToolFragment extends Fragment {
             }
         });
 
+
+        mTimeEditArea.setOnClickListener(timerClickListener);
+
+
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-                // Detail Editor DialogFragment 실행(메모리때문에 어떻게 해야할지..)
-                // DialogFragment or 스크린샷찍어 배경으로 쓰는 새로운 Activity or ReplaceFragment
-
+                // Take ScreenShot for DetailEditorFragment's background
                 int width = mContainer.getMeasuredWidth();
                 int height = mContainer.getMeasuredHeight();
                 float scaleFactor = 2;
@@ -293,14 +342,13 @@ public class ToolFragment extends Fragment {
                 mScrollView.setDrawingCacheEnabled(false);
                 canvas.scale(scaleFactor, scaleFactor);
 
-
+                // Open Detail Editor Fragment
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 Fragment fragment = new ToolDetailEditorFragment();
                 Bundle args = new Bundle();
                 args.putInt("position", position);
                 fragment.setArguments(args);
-                // 현재 프래그먼트를 첫번째 인자로 넣어야 하는데 OnCLickListener 안이라 this로 못가져와서 findFragmentById로 함.
-                fragment.setTargetFragment(fm.findFragmentById(R.id.fragmentContainer), ToolDetailEditorFragment.INTENT_REQUESTCODE);
+//                fragment.setTargetFragment(ToolFragment.this, ToolDetailEditorFragment.INTENT_REQUESTCODE); 정보를 static으로 관리하므로 필요가 없음.
 
                 fm.beginTransaction()
                         .addToBackStack(null)
@@ -310,13 +358,48 @@ public class ToolFragment extends Fragment {
         });
     }
 
+    View.OnClickListener timerClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            openTimerDialog();
+            isDialogFromTouch = true;
+        }
+    };
+
+    private void openTimerDialog() {
+        if (isFinish) return;
+        FragmentManager fm = getChildFragmentManager();
+//        JogDialogFragment jogFragment = new JogDialogFragment();
+        JogDialogFragment jogFragment = JogDialogFragment.newInstance(Recipe.getScheme().cookingTime);
+        jogFragment.show(fm, "dial_timer");
+    }
+
+    public void onTimerDialogClose(int time) {
+        String txt = "";
+        int h = time / 60;
+        int m = time % 60;
+        if (h != 0) txt = h + getResources().getString(R.string.tool_info_time_hour);
+        if (m != 0) txt = txt + " " + m + getResources().getString(R.string.tool_info_time_minute);
+        mTxtTime.setText(txt);
+        Recipe.getScheme().cookingTime = time;
+
+        if (isDialogFromTouch) {
+            // 다이얼로그가 터치로 실행되었을 땐 연속작성을 하지 않는다.
+            isDialogFromTouch = false;
+            return;
+        }
+        mTxtTheme.requestFocus(); // txtTheme에 포커스 활성화
+        imm.showSoftInput(mTxtTheme, InputMethodManager.SHOW_FORCED); // 키보드를 보여줌.
+    }
+
+
     @SuppressWarnings("unchecked")
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch(requestCode) {
             case INTENT_FOR_ALBUM:
                 if (resultCode != Activity.RESULT_OK) return;
-                // 반드시 Clone을 해야 참조가 끊겨 GalleryActivity가 종료됨.
+                // [Tuning] 반드시 Clone을 해야 참조가 끊겨 GalleryActivity가 종료됨.
                 ArrayList<String> imageUrls = (ArrayList<String>) data.getStringArrayListExtra(GalleryActivity.EXTRA_SELECTED_ITEMS).clone();
                 mAdapter.addBulkItem(null, imageUrls);
                 break;
@@ -334,13 +417,25 @@ public class ToolFragment extends Fragment {
         mOutAnim = null;
         mInAnim.setAnimationListener(null);
         mInAnim = null;
+
+        // Recipe Info - EditTexts
+        mTxtTitle.setOnKeyListener(null);
+        mTxtTitle.setOnFocusChangeListener(null);
+        mTxtTime.setOnFocusChangeListener(null);
+        mTxtTheme.setOnFocusChangeListener(null);
+        mTxtIngredient.setOnFocusChangeListener(null);
+        mTxtSource.setOnFocusChangeListener(null);
+        mTimeEditArea.setOnClickListener(null);
+
+        mBtnAlbum.setOnClickListener(null);
+        mBtnAlbum = null;
+
         mGridView.setOnItemClickListener(null);
         mGridView.removeOnLayoutChangeListener(layoutChangeListener);
 //        mGridView.setAdapter(null);
         mGridView = null;
         mAdapter = null;
-        mBtnAlbum.setOnClickListener(null);
-        mBtnAlbum = null;
+
 
         recursiveRecycle(getView());
         super.onDestroyView();
@@ -348,7 +443,7 @@ public class ToolFragment extends Fragment {
 
     @Override
     public void onDestroy() {
-        // DetailEditor로 갈 때는 작동 되지 않도록 여기에서 처리
+        // DetailEditor로 갈 때는 작동 되지 않아야 하는 것들 여기에서 처리
         screenImage = null;
 
         // 저장 후 참조끊기. 임시저장기능 추가해야.
@@ -359,7 +454,7 @@ public class ToolFragment extends Fragment {
             Recipe.imagePaths.remove(i);
         }
 
-//        ImageLoader.getInstance().clearMemoryCache();
+        ImageLoader.getInstance().clearMemoryCache();
 
         MainActivity.sBottomBar.setVisibility(View.VISIBLE);
         mContainer.setPadding(0, 0, 0, getResources().getDimensionPixelSize(R.dimen.bottombar_height));
@@ -416,13 +511,18 @@ public class ToolFragment extends Fragment {
                 for (int i = 0; i < count; i++) {
                     recursiveRecycle(group.getChildAt(i));
                 }
-                ((AdapterView)group).setAdapter(null); // 어떻게 어떤 AdapterView의 서브클래스이든 AdapterView 인 채로 setAdapter(null)을 할 수 있지?
+                ((AdapterView)group).setAdapter(null);
             }
         }
         if (root instanceof ImageView) {
-            ((ImageView)root).setImageDrawable(null);
+            Drawable drawable;
+            ImageView iv = (ImageView) root;
+            if ((drawable = iv.getDrawable()) == null) return;
+            drawable.setCallback(null);
+            iv.setImageDrawable(null);
+            iv = null;
         }
-//        root = null;
+        root = null;
     }
 
 //    private void recursiveRecycle(List<WeakReference<View>> recycleList) {

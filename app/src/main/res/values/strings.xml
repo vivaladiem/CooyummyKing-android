@@ -11,6 +11,8 @@
     <string name="ham_close">햄버거메뉴 닫기</string>
     <string name="toolbar_title_main">쿠요미킹</string>
     <string name="toolbar_gallery_complete">확인</string>
+    <string name="toolbar_tool_complete">완료</string>
+    <string name="toolbar_tool_detail_editor_thumbnail">썸네일</string>
 
     <!-- detail -->
     <string name="detail_recipe_toolbar_title">상세레시피</string>
@@ -25,6 +27,8 @@
     <string name="tool_info_caption">기본정보</string>
     <string name="tool_info_title_caption">제목</string>
     <string name="tool_info_time_caption">시간</string>
+    <string name="tool_info_time_hour">시</string>
+    <string name="tool_info_time_minute">분</string>
     <string name="tool_info_theme_caption">테마</string>
     <string name="tool_info_ingredient_caption">재료</string>
     <string name="tool_info_source_caption">양념</string>

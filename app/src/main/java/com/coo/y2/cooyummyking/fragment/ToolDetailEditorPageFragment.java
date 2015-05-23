@@ -17,6 +17,7 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 
 /**
  * Created by Y2 on 2015-05-21.
+ * 레시피 상세 편집
  */
 public class ToolDetailEditorPageFragment extends Fragment {
     int mPosition;
@@ -28,6 +29,7 @@ public class ToolDetailEditorPageFragment extends Fragment {
     private EditText mEtInstruction;
 
     private DisplayImageOptions mOptions;
+//    private View.OnKeyListener mKeyListener;
 
     public static ToolDetailEditorPageFragment newInstance(int position, DisplayImageOptions options) {
         ToolDetailEditorPageFragment fragment = new ToolDetailEditorPageFragment();
@@ -36,11 +38,10 @@ public class ToolDetailEditorPageFragment extends Fragment {
         fragment.setArguments(args);
 
         fragment.mOptions = options;
+//        fragment.mKeyListener = keyListener;
         return fragment;
     }
-    //TODO MainImageNum 등 포함 데이터 제대로 관리(지금처럼 ToolFragment에 static으로 하는거 나쁘지않은듯. 굳이 새로운 클래스 만들어봐야 자원소모만 많음. 아직은 필요없음
-    // 크롭은 그냥 보류하자.
-    // 스크롤 문제
+
     // 저장기능 구현
     // 하단바 메뉴들 구현
     // 임시저장기능 구현
@@ -77,6 +78,8 @@ public class ToolDetailEditorPageFragment extends Fragment {
         if (mImageView.getDrawable() != null) mImageView.getDrawable().setCallback(null);
         mImageView.setImageDrawable(null);
         mImageView = null;
+
+//        부모Fragment들의 Destroy와 순서가 보장이 안된다면 데이터 유실이 발생할 수 있으니 editText focus change에서 저장. or destroy 순서 확인
         mRecipe.instructions.set(mPosition, mEtInstruction.getText().toString());
     }
 }

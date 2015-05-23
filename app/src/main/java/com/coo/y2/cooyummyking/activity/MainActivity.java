@@ -32,32 +32,30 @@ public class MainActivity extends AppCompatActivity {
     private ActionBarDrawerToggle mDrawerToggle;
 //    private Typeface mTypeface;
 
-    /*
-    @Override
-    pu  blic void setContentView(int layoutResID) {
-        super.setContentView(layoutResID);
-        if (mTypeface == null) {
-        mTypeface = Typeface.createFromAsset(getAssets(), "nanum.otf.mp3");
-        }
-        ViewGroup root = (ViewGroup) findViewById(R.id.activity_main_layout);
-        setAppFont(root);
-    }
-    private void setAppFont(ViewGroup root) {
-        ViewHolderForApplyFont holder = new ViewHolderForApplyFont();
-        int count = root.getChildCount();
-        for (int i = 0; i < count; i++) {
-            holder.v = root.getChildAt(i);
-            if (holder.v instanceof TextView) {
-                ((TextView)holder.v).setTypeface(mTypeface);
-            } else if (holder.v instanceof ViewGroup) {
-                setAppFont((ViewGroup) holder.v);
-            }
-        }
-    }
-    private class ViewHolderForApplyFont {
-        View v;
-    }
-    */
+//    @Override
+//    public void setContentView(int layoutResID) {
+//        super.setContentView(layoutResID);
+//        if (mTypeface == null) {
+//        mTypeface = Typeface.createFromAsset(getAssets(), "nanum.otf.mp3");
+//        }
+//        ViewGroup root = (ViewGroup) findViewById(R.id.activity_main_layout);
+//        setAppFont(root);
+//    }
+//    private void setAppFont(ViewGroup root) {
+//        ViewHolderForApplyFont holder = new ViewHolderForApplyFont();
+//        int count = root.getChildCount();
+//        for (int i = 0; i < count; i++) {
+//            holder.v = root.getChildAt(i);
+//            if (holder.v instanceof TextView) {
+//                ((TextView)holder.v).setTypeface(mTypeface);
+//            } else if (holder.v instanceof ViewGroup) {
+//                setAppFont((ViewGroup) holder.v);
+//            }
+//        }
+//    }
+//    private class ViewHolderForApplyFont {
+//        View v;
+//    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,6 +85,7 @@ public class MainActivity extends AppCompatActivity {
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout, R.string.ham_open, R.string.ham_close);
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+
         try {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setDisplayShowTitleEnabled(false);
@@ -131,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                 .replace(R.id.fragmentContainer, fragment)
                 .commit();
     }
+
     /*
         private void addDrawerItems() {
             mDrawerList = (ListView) findViewById(R.id.ham_menu);

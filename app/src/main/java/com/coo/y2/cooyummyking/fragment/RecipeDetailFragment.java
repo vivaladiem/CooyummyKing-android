@@ -2,6 +2,7 @@ package com.coo.y2.cooyummyking.fragment;
 
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -209,7 +211,41 @@ public class RecipeDetailFragment extends Fragment {
 
     @Override
     public void onDestroyView() {
-        // TODO ListView의 이미지들을 메모리 반환해줘야하는데 이너클래스로 썼더니 처리가 곤란..
         super.onDestroyView();
+        recursiveRecycle(getView());
+    }
+
+    private void recursiveRecycle(View root) {
+        if (root == null)
+            return;
+        if (root.getBackground() != null) {
+            root.getBackground().setCallback(null);
+            root.setBackground(null);
+        }
+        if (root instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup)root;
+            int count = group.getChildCount();
+            for (int i = 0; i < count; i++) {
+                recursiveRecycle(group.getChildAt(i));
+            }
+            if (!(group instanceof AdapterView)) {
+                group.removeAllViews();
+            } else {
+                count = group.getChildCount();
+                for (int i = 0; i < count; i++) {
+                    recursiveRecycle(group.getChildAt(i));
+                }
+                ((AdapterView)group).setAdapter(null);
+            }
+        }
+        if (root instanceof ImageView) {
+            Drawable drawable;
+            ImageView iv = (ImageView) root;
+            if ((drawable = iv.getDrawable()) == null) return;
+            drawable.setCallback(null);
+            iv.setImageDrawable(null);
+            iv = null;
+        }
+        root = null;
     }
 }

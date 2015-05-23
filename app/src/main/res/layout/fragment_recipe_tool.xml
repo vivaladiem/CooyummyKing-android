@@ -65,6 +65,9 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
                         android:padding="2dp"
+                        android:imeOptions="actionNext"
+                        android:ellipsize="end"
+                        android:singleLine="true"
                         android:textColor="@color/Coo_DarkGrey"
                         android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
@@ -96,9 +99,17 @@
                         android:layout_margin="8dp"
                         android:padding="2dp"
                         android:enabled="false"
+                        android:clickable="true"
                         android:textColor="@color/Coo_DarkGrey"
                         android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
+                <!-- 오 나의 멍청함이여..EditText는 도저히 이벤트처리가 안되서 만든 터치영역..
+                커스텀뷰로 하면 되긴 하겠지만 클래스 만들기 싫어.. 무거워.. -->
+                <View
+                    android:id="@+id/tool_info_time_area"
+                    android:layout_width="match_parent"
+                    android:layout_height="38dp"
+                    android:layout_alignBottom="@id/tool_info_time_group"/>
                 <LinearLayout
                     android:id="@+id/tool_info_theme_group"
                     android:layout_width="match_parent"
@@ -125,7 +136,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
                         android:padding="2dp"
-                        android:enabled="false"
+                        android:imeOptions="actionNext"
+                        android:singleLine="true"
                         android:textColor="@color/Coo_DarkGrey"
                         android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
@@ -155,6 +167,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
                         android:padding="2dp"
+                        android:imeOptions="actionNext"
+                        android:singleLine="true"
                         android:textColor="@color/Coo_DarkGrey"
                         android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
@@ -180,6 +194,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="8dp"
                         android:padding="2dp"
+                        android:imeOptions="actionDone"
+                        android:singleLine="true"
                         android:textColor="@color/Coo_DarkGrey"
                         android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>

@@ -10,6 +10,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -32,6 +35,7 @@ public class ToolDetailEditorFragment extends Fragment {
     private Animation mAnimSlideIn;
     private Animation mAnimFadeIn;
 
+    // Use in ToolDetailEditorPageFragment
     private DisplayImageOptions options = new DisplayImageOptions.Builder()
             .bitmapConfig(Bitmap.Config.RGB_565)
             .imageScaleType(ImageScaleType.EXACTLY)
@@ -39,6 +43,15 @@ public class ToolDetailEditorFragment extends Fragment {
             .displayer(new FadeInBitmapDisplayer(300))
             .build();
 
+//    private View.OnKeyListener keyListener = new View.OnKeyListener() {
+//        @Override
+//        public boolean onKey(View view, int keyCode, KeyEvent keyEvent) {
+//            if (keyCode == KeyEvent.KEYCODE_BACK) {
+//                view.clearFocus();
+//            }
+//            return false;
+//        }
+//    };
 
     @Nullable
     @Override
@@ -46,6 +59,7 @@ public class ToolDetailEditorFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_tool_detail_editor, container, false);
         initResources(v);
         initAnimation(v);
+        setHasOptionsMenu(true);
         return v;
     }
 
@@ -68,6 +82,8 @@ public class ToolDetailEditorFragment extends Fragment {
 
         int position = getArguments().getInt("position");
         mViewPager.setCurrentItem(position);
+
+        try {getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);} catch(NullPointerException e) {e.printStackTrace();}
     }
 
     private void initAnimation(View v) {
@@ -142,4 +158,20 @@ public class ToolDetailEditorFragment extends Fragment {
 
     //onBackPressed or Toolbar 왼쪽 썸네일 버튼 누르면 데이터 Intent로 보내면서 다시 ToolFragment로 가기
     // Toolbar 오른쪽 완료버튼 누르면 바로 레시피 작성 완성 미리보기 Fragment로 가기
+
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_tool_detail_editor, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch(item.getItemId()) {
+            case R.id.toolbar_tool_detail_editor_thumbnail:
+                getFragmentManager().popBackStack();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }
