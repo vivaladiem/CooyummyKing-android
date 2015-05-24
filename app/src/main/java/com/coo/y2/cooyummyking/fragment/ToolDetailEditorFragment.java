@@ -19,6 +19,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
 import com.coo.y2.cooyummyking.R;
+import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.entity.Recipe;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -75,15 +76,14 @@ public class ToolDetailEditorFragment extends Fragment {
             }
 
             @Override
-            public int getCount() {
-                return Recipe.imagePaths.size();
+            public int getCount() { return Recipe.imagePaths.size();
             }
         });
 
         int position = getArguments().getInt("position");
         mViewPager.setCurrentItem(position);
 
-        try {getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);} catch(NullPointerException e) {e.printStackTrace();}
+        try {((MainActivity)getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(false);} catch(NullPointerException e) {e.printStackTrace();}
     }
 
     private void initAnimation(View v) {
@@ -122,6 +122,10 @@ public class ToolDetailEditorFragment extends Fragment {
         mBottomBar.startAnimation(mAnimSlideIn);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
 
     @Override
     public void onDestroyView() {

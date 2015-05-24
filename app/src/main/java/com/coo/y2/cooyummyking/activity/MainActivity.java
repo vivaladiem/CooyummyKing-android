@@ -9,6 +9,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,8 +18,10 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.coo.y2.cooyummyking.R;
+import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.fragment.MainFragment;
 import com.coo.y2.cooyummyking.fragment.ToolFragment;
+import com.coo.y2.cooyummyking.util.RecipeSerializer;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -65,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         initToolbar();
         initBottomTab();
 //        addDrawerItems();
+
     }
     private void initFragment() {
         FragmentManager fm = getSupportFragmentManager();
@@ -139,6 +143,24 @@ public class MainActivity extends AppCompatActivity {
             mDrawerList.setAdapter(mAdapter);
         }
     */
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Temp Recipe Save
+        // ToolFragment가 이 Activity 위에 있으므로 생명주기상 여기에서 작성중인 레시피 저장을 한다.
+
+        if (!Recipe.isChanged) return; // if recipe has no change(include didn't start making one)
+        RecipeSerializer serializer = new RecipeSerializer(this);
+        try {
+            serializer.saveTempData(Recipe.getScheme());
+            Recipe.isChanged = false; // code for onPause is called by starting other Activity
+            Log.i("CYMK", "Temp recipe data saved");
+        } catch(Exception e) {
+            Log.i("CYMK", "Failed to save recipe temp data");
+        }
+    }
 
     // ------------------------ Set Toolbar and Menu --------------------------------- //
     @Override

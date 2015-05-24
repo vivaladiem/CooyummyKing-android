@@ -3,6 +3,7 @@ package com.coo.y2.cooyummyking.fragment;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
@@ -11,6 +12,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -30,6 +32,7 @@ import com.coo.y2.cooyummyking.activity.GalleryActivity;
 import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.adapter.MyDynamicGridAdapter;
 import com.coo.y2.cooyummyking.entity.Recipe;
+import com.coo.y2.cooyummyking.util.RecipeSerializer;
 import com.coo.y2.cooyummyking.widget.MyWrapableGridView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -47,7 +50,8 @@ import java.util.ArrayList;
 public class ToolFragment extends Fragment {
 
     // ----- Variables for Recipe data ----------- //
-    private Recipe mRecipe = Recipe.getScheme();
+//    private Recipe mRecipe = Recipe.getScheme();
+    private Recipe mRecipe;
 
     //------ Variables for view --------------//
     private ScrollView mScrollView;
@@ -62,7 +66,7 @@ public class ToolFragment extends Fragment {
     private EditText mTxtSource;
     private InputMethodManager imm;
     private boolean isFinish = false; // 나의 멍청함을 탓하라...
-    public static boolean isDialogFromTouch = false;
+    public boolean isDialogFromTouch = false;
 
     //------ Variables for BottomBar Scroll -------//
     private ViewGroup mContainer; // For Reset Padding
@@ -85,6 +89,28 @@ public class ToolFragment extends Fragment {
     //------- Variables for DetailEditor ----------//
     public static Bitmap screenImage; // Detail Editor에서 Background로 사용할 스크린캡쳐된 이미지
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // onBackStack에서 돌아올 때 반복되지 말아야 하는 것들의 처리를 합니다.
+
+        initRecipeScheme();
+    }
+
+    private void initRecipeScheme() {
+        if (Recipe.isSchemeLoaded()) {
+            mRecipe = Recipe.getScheme();
+        } else {
+            RecipeSerializer serializer = new RecipeSerializer(getActivity());
+            mRecipe = Recipe.loadTempScheme(serializer);
+            if (mRecipe == null) {
+                mRecipe = Recipe.getScheme();
+                Log.i("CYMK", "새로운 레시피 작성");
+            } else {
+                Log.i("CYMK", "임시저장된 레시피 로드됨");
+            }
+        }
+    }
 
     @Nullable
     @Override
@@ -97,7 +123,6 @@ public class ToolFragment extends Fragment {
         mContainer = container;
 
         initResources(mScrollView);
-        loadSavedData();
         initBottomTabAnimation();
         initScrollViewFlicker();
         initEvents();
@@ -160,6 +185,12 @@ public class ToolFragment extends Fragment {
 
         mTimeEditArea = v.findViewById(R.id.tool_info_time_area);
 
+        mTxtTitle.setText(mRecipe.title);
+        mTxtTime.setText(timeToText(mRecipe.cookingTime));
+        mTxtTheme.setText(mRecipe.theme);
+        mTxtIngredient.setText(mRecipe.ingredients);
+        mTxtSource.setText(mRecipe.sources);
+
     }
 
     View.OnFocusChangeListener focusChangeListener = new View.OnFocusChangeListener() {
@@ -176,7 +207,8 @@ public class ToolFragment extends Fragment {
                     // TBD
                 }
             } else {
-                v.setSelection(0); // 첫 줄이 보이도록 스크롤을 맨 위로.
+//                v.setSelection(0); // 첫 줄이 보이도록 스크롤을 맨 위로 // 여러줄일 때 약간 내려간 듯 보이는 문제점..
+                v.scrollTo(0, 0);
                 v.setMaxLines(1);
             }
         }
@@ -191,11 +223,6 @@ public class ToolFragment extends Fragment {
             return false;
         }
     };
-
-    private void loadSavedData() {
-        // 저장되었던 정보들을 처리합니다.
-        // view 굳이 멤버로 만들 필요 없으니 initResources에서 처리해야 할지도..
-    }
 
     private void initBottomTabAnimation() {
         mOutAnim = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_slide_out_bottom);
@@ -369,18 +396,13 @@ public class ToolFragment extends Fragment {
     private void openTimerDialog() {
         if (isFinish) return;
         FragmentManager fm = getChildFragmentManager();
-//        JogDialogFragment jogFragment = new JogDialogFragment();
         JogDialogFragment jogFragment = JogDialogFragment.newInstance(Recipe.getScheme().cookingTime);
         jogFragment.show(fm, "dial_timer");
     }
 
     public void onTimerDialogClose(int time) {
-        String txt = "";
-        int h = time / 60;
-        int m = time % 60;
-        if (h != 0) txt = h + getResources().getString(R.string.tool_info_time_hour);
-        if (m != 0) txt = txt + " " + m + getResources().getString(R.string.tool_info_time_minute);
-        mTxtTime.setText(txt);
+
+        mTxtTime.setText(timeToText(time));
         Recipe.getScheme().cookingTime = time;
 
         if (isDialogFromTouch) {
@@ -388,8 +410,19 @@ public class ToolFragment extends Fragment {
             isDialogFromTouch = false;
             return;
         }
+
         mTxtTheme.requestFocus(); // txtTheme에 포커스 활성화
         imm.showSoftInput(mTxtTheme, InputMethodManager.SHOW_FORCED); // 키보드를 보여줌.
+    }
+
+    private String timeToText(int time) {
+        StringBuilder txt = new StringBuilder();
+        Resources resources = getResources();
+        int h = time / 60;
+        int m = time % 60;
+        if (h != 0) txt.append(h).append(resources.getString(R.string.tool_info_time_hour));
+        if (m != 0) txt.append(" ").append(m).append(resources.getString(R.string.tool_info_time_minute));
+        return txt.toString();
     }
 
 
@@ -405,6 +438,36 @@ public class ToolFragment extends Fragment {
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // Recipe Data는 정보를 입력하는 각 프래그먼트의 onPause에서 Recipe에 저장하고, MainActivity의 OnPause에서 파일에 저장한다.
+        String txt;
+        if (!(txt = mTxtTitle.getText().toString()).equals(mRecipe.title)) {
+            mRecipe.title = txt;
+            Recipe.isChanged = true;
+        }
+
+        // TODO 언어따라 다르니 코드로 배정 - 적어도 테마, 주재료 등 값 정해져있는 건 자동번역이 가능하게 됨
+        if (!(txt = mTxtTheme.getText().toString()).equals(mRecipe.theme)) {
+            //getText()가 아니라 다이얼로그 닫길 때 선택한 것으로, 닫길 때 할당되어야.(요리시간처럼) 그러니 나중엔 이 코드는 필요 없게됨.
+            mRecipe.theme = txt;
+            Recipe.isChanged = true;
+        }
+
+        if (!(txt = mTxtIngredient.getText().toString()).equals(mRecipe.ingredients)) {
+            mRecipe.ingredients = txt;
+            Recipe.isChanged = true;
+        }
+
+        if (!(txt = mTxtSource.getText().toString()).equals(mRecipe.sources)) {
+            mRecipe.sources = txt;
+            Recipe.isChanged = true;
+        }
+
     }
 
     @Override
@@ -436,7 +499,6 @@ public class ToolFragment extends Fragment {
         mGridView = null;
         mAdapter = null;
 
-
         recursiveRecycle(getView());
         super.onDestroyView();
     }
@@ -446,13 +508,13 @@ public class ToolFragment extends Fragment {
         // DetailEditor로 갈 때는 작동 되지 않아야 하는 것들 여기에서 처리
         screenImage = null;
 
-        // 저장 후 참조끊기. 임시저장기능 추가해야.
-        // 완전 허술한 구조...길이 같지 않으면 오류나는.. 1차원으로 나눴기때문에 어쩔 수 없긴 하지만, 보강해야
-        int count = mRecipe.instructions.size();
-        for (int i = count - 1; i >= 0; i--) { // 아니 대체 왜 --i가 먼저 --되고 진행하는게 아닌거야..
-            mRecipe.instructions.remove(i);
-            Recipe.imagePaths.remove(i);
-        }
+//        // 저장 후 참조끊기. 임시저장기능 추가해야.
+//        // 완전 허술한 구조...길이 같지 않으면 오류나는.. 1차원으로 나눴기때문에 어쩔 수 없긴 하지만, 보강해야
+//        int count = mRecipe.instructions.size();
+//        for (int i = count - 1; i >= 0; i--) { // 아니 대체 왜 --i가 먼저 --되고 진행하는게 아닌거야..
+//            mRecipe.instructions.remove(i);
+//            Recipe.imagePaths.remove(i);
+//        }
 
         ImageLoader.getInstance().clearMemoryCache();
 

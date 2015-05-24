@@ -57,9 +57,11 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
         return convertView;
     }
 
+    // TODO TempFileManager 만들어서 오류없이 누락없이 되도록 수정.
     @Override
     public int getCount() {
-        return mRecipe.instructions.isEmpty() ? 0 : mRecipe.instructions.size();
+//        return mRecipe.instructions.isEmpty() ? 0 : mRecipe.instructions.size();
+        return mRecipe.instructions.size();
     }
 
     private class ViewHolder {
@@ -86,13 +88,16 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
         if (instructions == null) {
             ArrayList<String> inst = new ArrayList<>();
             int count = imageUrls.size();
-            for (int i = 0; i < count; i++) inst.add(null);
+            for (int i = 0; i < count; i++) {
+                inst.add(""); // ""을 null로 취급하는 기기가 있을까 걱정됨... / null을 넣으면 'null'이라 찍혀나와서 쓰면 안됨
+            }
             instructions = inst;
         }
         mRecipe.instructions.addAll(instructions);
         Recipe.imagePaths.addAll(imageUrls);
         mRecipe.mainImageNum = Recipe.imagePaths.size();
         notifyDataSetChanged();
+        Recipe.isChanged = true;
     }
 
 }

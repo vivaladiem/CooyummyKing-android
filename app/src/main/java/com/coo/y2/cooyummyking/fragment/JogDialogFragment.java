@@ -33,7 +33,7 @@ public class JogDialogFragment extends DialogFragment {
     private View v;
 
     // Jog dial
-    Bitmap imageOriginal, imageScaled;
+    private Bitmap imageOriginal, imageScaled;
     private Matrix matrix;
     private ImageView dialer;
     private int dialerWidth, dialerHeight;
@@ -41,8 +41,9 @@ public class JogDialogFragment extends DialogFragment {
     private final int timeMax = 120 + 1;
 
     // Cooking time
+    private int tickNumber = 0;
     private int mCookingTime;
-    private StringBuilder mTimxtxt = new StringBuilder();
+    private StringBuilder mTimeTxt = new StringBuilder();
 
     // Variables for play tick sound
     private AssetFileDescriptor mDescriptor;
@@ -61,8 +62,6 @@ public class JogDialogFragment extends DialogFragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
-        int savedTick = getArguments().getInt("time");
-        final float savedDegree = (float) savedTick * 360f / (float) timeMax;
 
         // Init SoundPool
         try {
@@ -73,11 +72,19 @@ public class JogDialogFragment extends DialogFragment {
 
         soundID = mSoundPool.load(mDescriptor, 1);
 
+
         // Init View
         v = inflater.inflate(R.layout.tool_timer_dialog, container, false);
         tvTimeDisplay = (TextView) v.findViewById(R.id.tool_timer_display);
-        tvTimeDisplay.setText(String.valueOf(savedTick));
+
+
+        // Load and apply previously set time. if no past value, get 0
+        int savedTick = getArguments().getInt("time");
+        final float savedDegree = (float) savedTick * 360f / (float) timeMax;
         mCookingTime = savedTick; // 설정값 있을 때 아무것도 건들지 않고 닫았을 경우를 위함
+        tickNumber = savedTick;
+        tvTimeDisplay.setText(timeToText());
+
 
         // Init Jog Dial
         if (imageOriginal == null)
@@ -115,7 +122,8 @@ public class JogDialogFragment extends DialogFragment {
                     dialer.setImageMatrix(matrix);
 //                    Log.e("Rotation degree :" + rotationDegrees, String.valueOf(tickNumber));
 
-                    rotateDialer(savedDegree); // load previous time
+                    // Rotate dial to previously set time
+                    rotateDialer(savedDegree);
                 }
             }
         });
@@ -142,24 +150,30 @@ public class JogDialogFragment extends DialogFragment {
 //        mAudioManager.playSoundEffect(AudioManager.FX_KEY_CLICK, 0.5f); // 이상하게 안먹힘
         mSoundPool.play(soundID, 0.5f, 0.5f, 1, 0, 1f);
 
+        tvTimeDisplay.setText(timeToText());
+        mCookingTime = tickNumber;
+    }
+
+    private synchronized String timeToText() {
         int h = tickNumber / 60;
         int m = tickNumber % 60;
-        if (h != 0) {
-            mTimxtxt.append(h).append("h ").append(m).append("m");
-        } else {
-            mTimxtxt.append(m).append("m");
-        }
-        tvTimeDisplay.setText(mTimxtxt.toString());
-        mTimxtxt.delete(0, mTimxtxt.length());
-        mCookingTime = tickNumber;
 
+        if (h != 0) {
+            mTimeTxt.append(h).append("h ").append(m).append("m");
+        } else {
+            mTimeTxt.append(m).append("m");
+        }
+
+        String txt = mTimeTxt.toString();
+        mTimeTxt.delete(0, mTimeTxt.length()); // 동시접근에서 문제가 생길 수 있을듯.. 아직 내용이 남아있는데 다시 호출시 내용의 뒤섞임. 실제 발생은 아직 안했지만
+
+        return txt;
     }
 
     // -------------------------------------------------------- //
     //               Init Jog Dial Function                     //
     // -------------------------------------------------------- //
 
-    int tickNumber = 0;
     private void rotateDialer(float degrees) {
         // if(!rotationDone) {
 
@@ -273,7 +287,7 @@ public class JogDialogFragment extends DialogFragment {
         }
         mDescriptor = null;
         mSoundPool = null;
-        mTimxtxt = null;
+        mTimeTxt = null;
         v = null;
         imageOriginal.recycle();
         imageScaled.recycle();

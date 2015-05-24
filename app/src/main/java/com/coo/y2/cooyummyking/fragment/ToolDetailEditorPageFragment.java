@@ -26,7 +26,7 @@ public class ToolDetailEditorPageFragment extends Fragment {
     private Recipe mRecipe = Recipe.getScheme();
 
     private ImageView mImageView;
-    private EditText mEtInstruction;
+    private EditText mEdInstruction;
 
     private DisplayImageOptions mOptions;
 //    private View.OnKeyListener mKeyListener;
@@ -60,16 +60,27 @@ public class ToolDetailEditorPageFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.tool_detail_editor_viewpager, container, false);
         mImageView = (ImageView) v.findViewById(R.id.tool_detail_editor_image);
-        mEtInstruction = (EditText) v.findViewById(R.id.tool_detail_editor_text);
+        mEdInstruction = (EditText) v.findViewById(R.id.tool_detail_editor_text);
         TextView tvTagNum = (TextView)  v.findViewById(R.id.tool_detail_editor_tag_num);
 
         ImageLoader.getInstance().displayImage("file://" + mImageUrl, mImageView, mOptions);
-        mEtInstruction.setText(mInstruction);
+        mEdInstruction.setText(mInstruction);
         tvTagNum.setText(String.valueOf(mPosition + 1));
 
         if (mRecipe.mainImageNum == mPosition + 1) v.findViewById(R.id.tool_detail_editor_tag_main).setVisibility(View.VISIBLE);
 
         return v;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        // Save instruction text and image
+        String inst;
+        if ((inst = mEdInstruction.getText().toString()).equals(mRecipe.instructions.get(mPosition))) return;
+        mRecipe.instructions.set(mPosition, inst);
+        Recipe.isChanged = true;
     }
 
     @Override
@@ -79,7 +90,5 @@ public class ToolDetailEditorPageFragment extends Fragment {
         mImageView.setImageDrawable(null);
         mImageView = null;
 
-//        부모Fragment들의 Destroy와 순서가 보장이 안된다면 데이터 유실이 발생할 수 있으니 editText focus change에서 저장. or destroy 순서 확인
-        mRecipe.instructions.set(mPosition, mEtInstruction.getText().toString());
     }
 }

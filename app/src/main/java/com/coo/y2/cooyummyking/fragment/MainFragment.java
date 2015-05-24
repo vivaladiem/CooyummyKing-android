@@ -53,8 +53,9 @@ public class MainFragment extends Fragment {
     private final int RECIPE_COUNT = 12;
     private ImageView[] mIvRecipeImages = new ImageView[RECIPE_COUNT];
     private ArrayList<Recipe> mRecipes = new ArrayList<>();
+    private Toast mErrToast;
 
-    DisplayImageOptions mImageLoaderOptions = new DisplayImageOptions.Builder()
+    private DisplayImageOptions mImageLoaderOptions = new DisplayImageOptions.Builder()
             .bitmapConfig(Bitmap.Config.RGB_565)
             .imageScaleType(ImageScaleType.EXACTLY)
             .cacheInMemory(true)
@@ -63,6 +64,11 @@ public class MainFragment extends Fragment {
             .build();
 
     private boolean isNew = true; // BackStack에서 돌아왔을 때인지 나타내는 변수
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -78,10 +84,11 @@ public class MainFragment extends Fragment {
         return v;
     }
 
-    // TODO 불가능하겠지만 스크린이 변해서 화면이 이상해질 경우 이 설정만 지워서 다시 맞추게끔 하면 좋음
+    // TODO 그런일은 없겠짐나 스크린이 변해서 화면이 이상해질 경우 이 설정만 지워서 다시 맞추게끔 하면 좋음
     // 아님 GridLayout으로 (GridView아님) 바꾸던가. 이게 더 효율적이긴하겠지.
     private void initResources(View view) {
         SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
+
         int recipeSideLength = prefs.getInt(NORMAL_RECIPE_LENGTH, 0);
         int hitRecipeSideLength = prefs.getInt(HIT_RECIPE_LENGTH, 0);
 
@@ -116,6 +123,11 @@ public class MainFragment extends Fragment {
     }
 
     private void initEvents() {
+        // Set err msg / 나중엔 서버닫김 확인 후 닫겼거나 네트워크 연결 끊겼을때만 하는것도 괜찮
+        final String errMsg = getResources().getString(R.string.err_no_recipe);
+        mErrToast = Toast.makeText(getActivity(), errMsg, Toast.LENGTH_SHORT);
+
+
         for (int i = 0; i < RECIPE_COUNT; i++) {
             mIvRecipeImages[i].setTag(i);
             mIvRecipeImages[i].setOnClickListener(new View.OnClickListener() {
@@ -126,20 +138,19 @@ public class MainFragment extends Fragment {
                     try {
                         recipe = mRecipes.get((int) v.getTag());
                     } catch (IndexOutOfBoundsException e) {
-                        Toast.makeText(getActivity(), "레시피를 불러올 수 없습니다", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getActivity(), errMsg, Toast.LENGTH_SHORT).show();
+                        mErrToast.show();
                         return;
                     }
-//                    Fragment fragment = new RecipeDetailFragment(mImageLoaderOptions);
                     Fragment fragment = RecipeDetailFragment.newInstance(mImageLoaderOptions);
                     Bundle data = new Bundle();
                     data.putInt(RecipeDetailFragment.EXTRA_RECIPEID, recipe.id);
                     data.putInt(RecipeDetailFragment.EXTRA_MAIN_IMAGE_NUM, recipe.mainImageNum);
                     data.putString(RecipeDetailFragment.EXTRA_TITLE, recipe.title);
                     fragment.setArguments(data);
+
                     FragmentManager fm = getActivity().getSupportFragmentManager();
                     fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // 기존 백스택을 비운다
-//                    HttpUtil.cancle(); // 어차피 onStop에서 하니까 여기서 할 필요 없다.
-//                    ImageLoader.getInstance().stop();
                     fm.beginTransaction()
                             .replace(R.id.fragmentContainer, fragment)
                             .addToBackStack(null)
@@ -150,7 +161,10 @@ public class MainFragment extends Fragment {
     }
 
     private void executeGetRecipes(boolean willReload) {
-        if (!isInternetAvailable(getActivity())) return; // Toast나 Dialog 등 처리
+        if (!isInternetAvailable(getActivity())) {
+            Toast.makeText(getActivity(), getResources().getString(R.string.err_network_unavailable), Toast.LENGTH_SHORT).show();
+            return; // Toast나 Dialog 등 처리
+        }
         if (!willReload) { loadRecipeImages(); return; }
 
         HttpUtil.get(URL.GET_RECIPES, null, null, new JsonHttpResponseHandler() {
@@ -224,12 +238,14 @@ public class MainFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroy();
-        for (ImageView iv : mIvRecipeImages) {
-            returnBitmapMemory(iv);
-            iv.setOnClickListener(null);
+        int count = mIvRecipeImages.length;
+        for (int i = 0; i < count; i++) {
+            returnBitmapMemory(mIvRecipeImages[i]);
+            mIvRecipeImages[i].setOnClickListener(null);
+            mIvRecipeImages[i] = null; // 아니면 어차피 자주 오는곳이니까 initResources에서 null인지 확인해 집어넣는 식으로 해도 괜찮.
         }
+        mErrToast = null;
         isNew = false;
-//        mIvRecipeImages = null;
     }
 
     @Override
