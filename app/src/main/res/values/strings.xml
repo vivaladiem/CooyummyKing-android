@@ -29,7 +29,7 @@
     <string name="tool_info_caption">기본정보</string>
     <string name="tool_info_title_caption">제목</string>
     <string name="tool_info_time_caption">시간</string>
-    <string name="tool_info_time_hour">시</string>
+    <string name="tool_info_time_hour">시간</string>
     <string name="tool_info_time_minute">분</string>
     <string name="tool_info_theme_caption">테마</string>
     <string name="tool_info_ingredient_caption">재료</string>

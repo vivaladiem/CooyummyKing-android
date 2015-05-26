@@ -35,24 +35,47 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
         super(context, columnCount);
     }
 
+//    @Override
+//     public View getView(int position, View convertView, ViewGroup parent) {
+//        ViewHolder holder;
+//        if (convertView == null) {
+//            convertView = LayoutInflater.from(getContext()).inflate(R.layout.tool_lowerpage_overview_content, parent, false);
+//            holder = new ViewHolder(convertView);
+//            convertView.setTag(R.string.toolbar_ham, holder);
+//        } else {
+//            holder = (ViewHolder) convertView.getTag(R.string.toolbar_ham);
+//        }
+//        holder.mTvTagNum.setText(String.valueOf(position + 1));
+//        ImageLoader.getInstance().displayImage("file://" + Recipe.imagePaths.get(position), holder.mIvRecipeImage, mOptions);
+//        holder.mTvRecipeText.setText(mRecipe.instructions.get(position));
+//
+//        if (mRecipe.mainImageNum == position + 1) {
+//            holder.mTagMain.setVisibility(View.VISIBLE);
+//        } else {
+//            holder.mTagMain.setVisibility(View.GONE);
+//        }
+//        return convertView;
+//    }
+
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
         if (convertView == null) {
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.tool_lowerpage_overview_content, parent, false);
-            holder = new ViewHolder(convertView);
-            convertView.setTag(holder);
-        } else {
-            holder = (ViewHolder) convertView.getTag();
         }
-        holder.mTvTagNum.setText(String.valueOf(position + 1));
-        ImageLoader.getInstance().displayImage("file://" + Recipe.imagePaths.get(position), holder.mIvRecipeImage, mOptions);
-        holder.mTvRecipeText.setText(mRecipe.instructions.get(position));
+        TextView mTvTagNum = (TextView) convertView.findViewById(R.id.tool_making_tag_num);
+        ImageView mIvRecipeImage = (ImageView) convertView.findViewById(R.id.tool_making_image);
+        TextView mTvRecipeText = (TextView) convertView.findViewById(R.id.tool_making_text);
+        View mTagMain = convertView.findViewById(R.id.tool_making_tag_main);
+
+
+        mTvTagNum.setText(String.valueOf(position + 1));
+        ImageLoader.getInstance().displayImage("file://" + Recipe.imagePaths.get(position), mIvRecipeImage, mOptions);
+        mTvRecipeText.setText(mRecipe.instructions.get(position));
 
         if (mRecipe.mainImageNum == position + 1) {
-            holder.mTagMain.setVisibility(View.VISIBLE);
+            mTagMain.setVisibility(View.VISIBLE);
         } else {
-            holder.mTagMain.setVisibility(View.GONE);
+            mTagMain.setVisibility(View.GONE);
         }
         return convertView;
     }
@@ -64,19 +87,19 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
         return mRecipe.instructions.size();
     }
 
-    private class ViewHolder {
-        public TextView mTvTagNum;
-        public ImageView mIvRecipeImage;
-        public TextView mTvRecipeText;
-        public View mTagMain;
-
-        ViewHolder (View v) {
-            mTvTagNum = (TextView)v.findViewById(R.id.tool_making_tag_num);
-            mIvRecipeImage = (ImageView) v.findViewById(R.id.tool_making_image);
-            mTvRecipeText = (TextView) v.findViewById(R.id.tool_making_text);
-            mTagMain = v.findViewById(R.id.tool_making_tag_main);
-        }
-    }
+//    private class ViewHolder {
+//        public TextView mTvTagNum;
+//        public ImageView mIvRecipeImage;
+//        public TextView mTvRecipeText;
+//        public View mTagMain;
+//
+//        ViewHolder (View v) {
+//            mTvTagNum = (TextView)v.findViewById(R.id.tool_making_tag_num);
+//            mIvRecipeImage = (ImageView) v.findViewById(R.id.tool_making_image);
+//            mTvRecipeText = (TextView) v.findViewById(R.id.tool_making_text);
+//            mTagMain = v.findViewById(R.id.tool_making_tag_main);
+//        }
+//    }
 
     public void addItem(String instruction, String imageUrl) {
         mRecipe.instructions.add(instruction);

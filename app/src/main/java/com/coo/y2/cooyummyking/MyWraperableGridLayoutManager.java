@@ -34,7 +34,6 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
         int width = 0;
         int height = 0;
 
-
         // 각 row의 아이템의 높이가 일정할 때 성립. 아님 3개 값 따로 모아뒀다가 Math.max를 해야..
         int itemCount = getItemCount();
         int spanCount = getSpanCount();
@@ -50,8 +49,9 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
             if (i < spanCount) {
                 width = width + mMeasuredDimension[0];
             }
-
         }
+
+        height += getPaddingTop() + getPaddingBottom();
 
         switch(widthMode) {
             case View.MeasureSpec.AT_MOST:
@@ -157,6 +157,5 @@ public class MyWraperableGridLayoutManager extends GridLayoutManager {
             recycler.recycleView(view);
         }
     }
-
 
 }

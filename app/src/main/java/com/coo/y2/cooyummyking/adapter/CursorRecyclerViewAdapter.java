@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 
 /**
  * Created by Y2 on 2015-05-13.
+ * RecyclerView에서 커서를 사용할 수 있게 해줌. GalleryCursorAdapter 참고
  */
 public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 

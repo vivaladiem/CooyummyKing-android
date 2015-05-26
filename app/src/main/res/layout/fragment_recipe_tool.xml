@@ -278,15 +278,26 @@
             </RelativeLayout>
         </LinearLayout>
 
+        <!--
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/tool_making_sector"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingTop="@dimen/tool_padding"
+            android:paddingLeft="@dimen/tool_padding"
+            android:paddingBottom="@dimen/tool_padding_bottom"
+            android:paddingRight="@dimen/tool_padding"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:background="@drawable/tool_background_3"/>-->
         <!-- 현재 wrap_content를 지원하지 않아 코드에서 높이를 맞춰야 -->
         <com.coo.y2.cooyummyking.widget.MyWrapableGridView
             android:id="@+id/tool_making_sector"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minHeight="180dp"
-            android:paddingTop="12dp"
+            android:paddingTop="@dimen/tool_padding"
             android:paddingLeft="@dimen/tool_padding"
-            android:paddingBottom="36dp"
+            android:paddingBottom="@dimen/tool_padding_bottom"
             android:paddingRight="@dimen/tool_padding"
             android:horizontalSpacing="8dp"
             android:verticalSpacing="24dp"

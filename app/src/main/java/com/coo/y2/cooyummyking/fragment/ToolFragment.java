@@ -36,6 +36,8 @@ import com.coo.y2.cooyummyking.util.RecipeSerializer;
 import com.coo.y2.cooyummyking.widget.MyWrapableGridView;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
+import org.askerov.dynamicgrid.DynamicGridView;
+
 import java.util.ArrayList;
 
 /**
@@ -57,6 +59,8 @@ public class ToolFragment extends Fragment {
     private ScrollView mScrollView;
     private MyWrapableGridView mGridView;
     private MyDynamicGridAdapter mAdapter;
+    //    private RecyclerView mRecyclerView;
+//    private MyRecyclerAdapter mAdapter;
     private View mTimeEditArea;
 
     private EditText mTxtTitle;
@@ -65,8 +69,8 @@ public class ToolFragment extends Fragment {
     private EditText mTxtIngredient;
     private EditText mTxtSource;
     private InputMethodManager imm;
-    private boolean isFinish = false; // 나의 멍청함을 탓하라...
-    public boolean isDialogFromTouch = false;
+    private boolean isFinish = false; // 나의 멍청함을 탓하라...달리 해결책을 모르겠다..// 뒤로가기로 종료 할 때 EditText의ImeOption이 수행되서 Jogdialog 실행되며 에러나는 현상 막기 위한 변수
+    public boolean isDialogFromTouch = false; // If so, don't move focus to next EditText
 
     //------ Variables for BottomBar Scroll -------//
     private ViewGroup mContainer; // For Reset Padding
@@ -100,15 +104,16 @@ public class ToolFragment extends Fragment {
     private void initRecipeScheme() {
         if (Recipe.isSchemeLoaded()) {
             mRecipe = Recipe.getScheme();
+            return;
+        }
+
+        RecipeSerializer serializer = new RecipeSerializer(getActivity());
+        mRecipe = Recipe.loadTempScheme(serializer);
+        if (mRecipe == null) {
+            mRecipe = Recipe.getScheme();
+            Log.i("CYMK", "새로운 레시피 작성");
         } else {
-            RecipeSerializer serializer = new RecipeSerializer(getActivity());
-            mRecipe = Recipe.loadTempScheme(serializer);
-            if (mRecipe == null) {
-                mRecipe = Recipe.getScheme();
-                Log.i("CYMK", "새로운 레시피 작성");
-            } else {
-                Log.i("CYMK", "임시저장된 레시피 로드됨");
-            }
+            Log.i("CYMK", "임시저장된 레시피 로드됨");
         }
     }
 
@@ -149,12 +154,13 @@ public class ToolFragment extends Fragment {
         mGridView.setAdapter(mAdapter);
 
         //------------- recyclerView -------------------- //
-//        RecyclerView recyclerView = (RecyclerView) v.findViewById(R.id.tool_making_sector);
+//        mRecyclerView = (RecyclerView) v.findViewById(R.id.tool_making_sector);
+//        GridLayoutManager layoutManager = new GridLayoutManager(getActivity(), 3);
 //        MyWraperableGridLayoutManager layoutManager = new MyWraperableGridLayoutManager(getActivity(), 3);
-//        MyRecyclerAdapter adapter = new MyRecyclerAdapter(mSavedInstructions, mSavedImageUrls);
+//        mAdapter = new MyRecyclerAdapter(getActivity(), mRecyclerView);
 //
-//        recyclerView.setLayoutManager(layoutManager);
-//        recyclerView.setAdapter(adapter);
+//        mRecyclerView.setLayoutManager(layoutManager);
+//        mRecyclerView.setAdapter(mAdapter);
         //------------------------------------------------//
 
         mTxtTitle = (EditText) v.findViewById(R.id.tool_info_title);
@@ -208,7 +214,7 @@ public class ToolFragment extends Fragment {
                 }
             } else {
 //                v.setSelection(0); // 첫 줄이 보이도록 스크롤을 맨 위로 // 여러줄일 때 약간 내려간 듯 보이는 문제점..
-                v.scrollTo(0, 0);
+                v.scrollTo(1, 1);
                 v.setMaxLines(1);
             }
         }
@@ -270,17 +276,9 @@ public class ToolFragment extends Fragment {
                 return true;
             }
         });
-//
-//        mGridView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-//            @Override
-//            public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
-//                // GridView의 최소한의 높이로 인해 page = 1이 되어 곤란하므로 불러온 사진이 없을 땐 이렇게 처리함.
-//                if (((ViewGroup) view).getChildCount() != 0)
-//                    mGstListener.setTotalHeightAndPage(view.getHeight());
-//            }
-//        });
 
         mGridView.addOnLayoutChangeListener(layoutChangeListener);
+//        mRecyclerView.addOnLayoutChangeListener(layoutChangeListener);
     }
 
     View.OnLayoutChangeListener layoutChangeListener = new View.OnLayoutChangeListener() {
@@ -351,6 +349,69 @@ public class ToolFragment extends Fragment {
         mTimeEditArea.setOnClickListener(timerClickListener);
 
 
+        mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int position, long id) {
+
+                mGridView.startEditMode(position);
+                return true;
+            }
+        });
+
+        mGridView.setOnDropListener(new DynamicGridView.OnDropListener() {
+            @Override
+            public void onActionDrop() {
+                mGridView.stopEditMode();
+            }
+        });
+
+        mGridView.setOnDragListener(new DynamicGridView.OnDragListener() {
+            @Override
+            public void onDragStarted(int position) {
+                Log.d("CYMK", "drag started at position " + position);
+            }
+
+            @Override
+            public void onDragPositionsChanged(int oldPosition, int newPosition) {
+                mRecipe.instructions.add(newPosition, mRecipe.instructions.remove(oldPosition));
+                Recipe.imagePaths.add(newPosition, Recipe.imagePaths.remove(oldPosition));
+                Log.d("CYMK", String.format("drag item position changed from %d to %d", oldPosition, newPosition));
+            }
+        });
+
+//        mRecyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(), new RecyclerItemClickListener.OnItemClickListener() {
+//            @Override
+//            public void onItemClick(View view, int position) {
+//                // Take ScreenShot for DetailEditorFragment's background
+//                int width = mContainer.getMeasuredWidth();
+//                int height = mContainer.getMeasuredHeight();
+//                float scaleFactor = 2;
+//
+//                screenImage = Bitmap.createBitmap((int) (width / scaleFactor), (int) (height / scaleFactor), Bitmap.Config.RGB_565);
+//                Canvas canvas = new Canvas(screenImage);
+//                canvas.scale(1 / scaleFactor, 1 / scaleFactor);
+//
+//
+//                mScrollView.setDrawingCacheEnabled(true);
+//                canvas.drawBitmap(mScrollView.getDrawingCache(), 0, 0, null);
+//                mScrollView.setDrawingCacheEnabled(false);
+//                canvas.scale(scaleFactor, scaleFactor);
+//
+//                // Open Detail Editor Fragment
+//                FragmentManager fm = getActivity().getSupportFragmentManager();
+//                Fragment fragment = new ToolDetailEditorFragment();
+//                Bundle args = new Bundle();
+//                args.putInt("position", position);
+//                fragment.setArguments(args);
+////                fragment.setTargetFragment(ToolFragment.this, ToolDetailEditorFragment.INTENT_REQUESTCODE); 정보를 static으로 관리하므로 필요가 없음.
+//
+//                fm.beginTransaction()
+//                        .addToBackStack(null)
+//                        .replace(R.id.fragmentContainer, fragment)
+//                        .commit();
+//            }
+//        }));
+
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
@@ -420,8 +481,8 @@ public class ToolFragment extends Fragment {
         Resources resources = getResources();
         int h = time / 60;
         int m = time % 60;
-        if (h != 0) txt.append(h).append(resources.getString(R.string.tool_info_time_hour));
-        if (m != 0) txt.append(" ").append(m).append(resources.getString(R.string.tool_info_time_minute));
+        if (h != 0) txt.append(h).append(resources.getString(R.string.tool_info_time_hour)).append(" "); // 어설프다 어설퍼..
+        if (m != 0) txt.append(m).append(resources.getString(R.string.tool_info_time_minute));
         return txt.toString();
     }
 
@@ -495,9 +556,15 @@ public class ToolFragment extends Fragment {
 
         mGridView.setOnItemClickListener(null);
         mGridView.removeOnLayoutChangeListener(layoutChangeListener);
-//        mGridView.setAdapter(null);
+        //mGridView.setAdapter(null);
         mGridView = null;
-        mAdapter = null;
+
+//        mRecyclerView.removeOnLayoutChangeListener(layoutChangeListener);
+//        mRecyclerView.setLayoutManager(null);
+//        mRecyclerView.setAdapter(null);
+//        mRecyclerView = null;
+
+//        mAdapter = null;
 
         recursiveRecycle(getView());
         super.onDestroyView();

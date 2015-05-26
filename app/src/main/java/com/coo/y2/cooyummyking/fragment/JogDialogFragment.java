@@ -1,6 +1,7 @@
 package com.coo.y2.cooyummyking.fragment;
 
 import android.content.res.AssetFileDescriptor;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -10,7 +11,6 @@ import android.media.SoundPool;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.HapticFeedbackConstants;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -42,8 +42,10 @@ public class JogDialogFragment extends DialogFragment {
 
     // Cooking time
     private int tickNumber = 0;
+    private int preTickNumber;
     private int mCookingTime;
     private StringBuilder mTimeTxt = new StringBuilder();
+    private Resources resources;
 
     // Variables for play tick sound
     private AssetFileDescriptor mDescriptor;
@@ -76,7 +78,7 @@ public class JogDialogFragment extends DialogFragment {
         // Init View
         v = inflater.inflate(R.layout.tool_timer_dialog, container, false);
         tvTimeDisplay = (TextView) v.findViewById(R.id.tool_timer_display);
-
+        resources = getResources();
 
         // Load and apply previously set time. if no past value, get 0
         int savedTick = getArguments().getInt("time");
@@ -158,11 +160,8 @@ public class JogDialogFragment extends DialogFragment {
         int h = tickNumber / 60;
         int m = tickNumber % 60;
 
-        if (h != 0) {
-            mTimeTxt.append(h).append("h ").append(m).append("m");
-        } else {
-            mTimeTxt.append(m).append("m");
-        }
+        if (h != 0) mTimeTxt.append(h).append(resources.getString(R.string.tool_info_time_hour)).append(" "); // 어설프다 어설퍼..
+        if (m != 0) mTimeTxt.append(m).append(resources.getString(R.string.tool_info_time_minute));
 
         String txt = mTimeTxt.toString();
         mTimeTxt.delete(0, mTimeTxt.length()); // 동시접근에서 문제가 생길 수 있을듯.. 아직 내용이 남아있는데 다시 호출시 내용의 뒤섞임. 실제 발생은 아직 안했지만
@@ -174,25 +173,51 @@ public class JogDialogFragment extends DialogFragment {
     //               Init Jog Dial Function                     //
     // -------------------------------------------------------- //
 
+//    private void rotateDialer(float degrees) {
+//        // if(!rotationDone) {
+//
+//        this.rotationDegrees += degrees;
+//        this.rotationDegrees = this.rotationDegrees % 360;
+//
+//        tickNumber = (int)this.rotationDegrees * timeMax / 360;
+//        // It could be negative
+//        if (tickNumber < 0) tickNumber = timeMax + tickNumber;
+//
+//
+//        //this.rotationDegrees  = Math.abs(rotationDegrees);
+//        this.tickNumber = Math.abs(tickNumber);
+//
+//        Log.e("Rotation degree :" + rotationDegrees, String.valueOf(tickNumber));
+//        matrix.postRotate(degrees, dialerWidth / 2, dialerHeight / 2);
+//        dialer.setImageMatrix(matrix);
+//
+//
+//        // }
+//    }
+
+
+    // 회전수 반영 테스트
     private void rotateDialer(float degrees) {
-        // if(!rotationDone) {
+        // if(rotationDone) return;
+
+        preTickNumber = tickNumber;
 
         this.rotationDegrees += degrees;
-        this.rotationDegrees = this.rotationDegrees % 360;
+//        this.rotationDegrees = this.rotationDegrees % 360;
+//        Log.i("CYMK", "rotation Degree: " + (int) this.rotationDegrees);
+
+        if (this.rotationDegrees < 0) {
+            this.rotationDegrees -= degrees;
+            return;
+        }
+
 
         tickNumber = (int)this.rotationDegrees * timeMax / 360;
-        // It could be negative
-        if (tickNumber < 0) tickNumber = timeMax + tickNumber;
 
-
-        //this.rotationDegrees  = Math.abs(rotationDegrees);
-        this.tickNumber = Math.abs(tickNumber);
-
-        Log.e("Rotation degree :" + rotationDegrees, String.valueOf(tickNumber));
         matrix.postRotate(degrees, dialerWidth / 2, dialerHeight / 2);
         dialer.setImageMatrix(matrix);
 
-        // }
+        if (preTickNumber != tickNumber) onTick();
     }
 
     /**
@@ -204,17 +229,14 @@ public class JogDialogFragment extends DialogFragment {
         double delta_y = (dialerHeight) /2 - yTouch;
         double radians = Math.atan2(delta_y, delta_x);
 
-        double dx = xTouch - dialerWidth;
-        double dy = (dialerHeight - ((dialerHeight) /2)) -  yTouch;
-        double dRadi = Math.atan2(dy, dx);
-//        Log.e("MY degree", String.valueOf( Math.toDegrees(dRadi)));
-        //return Math.toDegrees(dRadi);
-        return Math.toDegrees(radians);
+        double degree = Math.toDegrees(radians);
+        if (degree < 0) degree += 360.0d;
+//        return Math.toDegrees(radians);
+        return degree;
     }
 
     private class DialOnTouchListener implements View.OnTouchListener {
         private double startAngle;
-        private int preTickNumber;
 
         @Override
         public boolean onTouch(View v, MotionEvent event) {
@@ -234,25 +256,23 @@ public class JogDialogFragment extends DialogFragment {
                     break;
 
                 case MotionEvent.ACTION_MOVE:
-                    /*double rotationAngleRadians = Math.atan2(event.getX() - (dialer.getWidth() / 2 ),     ( (dialer.getHeight() / 2 ) - event.getY()));
-                    double angle = (int) Math.toDegrees(rotationAngleRadians);
-                    Log.i("gg", "rotaion angle"+angle);*/
-
                     double currentAngle = getAngle(event.getX(), event.getY());
                     //if(currentAngle < 130 || currentAngle < 110){
 //                    Log.e("Start angle :"+startAngle, "Current angle:"+currentAngle);
-                    preTickNumber = tickNumber;
 
-                    rotateDialer((float) (startAngle - currentAngle));
-                    startAngle = currentAngle;
+                    // 360도에서 0도로 갈 경우에 대응하는 코드.
+                    // 나의 멍청함을 나타내는 코드
+                    // 회전수를 쌓아가는데 한바퀴 돌면 -360도를 해버려서 회전수가 쌓이지 않는 문제를 해결.
+                    // 자꾸 이따구로 할거야?ㅠ
+                    double delta_angle = startAngle - currentAngle;
+                    if (delta_angle < -180) delta_angle += 360.0d;
+                    if (delta_angle > 180) delta_angle -= 360.0d;
+//                    rotateDialer((float) (startAngle - currentAngle));
+                    rotateDialer((float) delta_angle);
                     //}
 
-
-                    // emit tickNumber change
-                    if (preTickNumber != tickNumber) onTick();
-
-
-                    //Log.e("MOVE start Degree:"+startAngle, "Current Degree :"+currentAngle);
+//                    Log.e("MOVE start Degree:"+startAngle, "Current Degree :"+currentAngle);
+                    startAngle = currentAngle;
                     break;
 
                 case MotionEvent.ACTION_UP:
