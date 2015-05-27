@@ -37,10 +37,10 @@ import java.util.ArrayList;
 public class RecipeDetailFragment extends Fragment {
     public static final String EXTRA_RECIPEID = "com.coo.y2.cooyummyking.recipeId";
     public static final String EXTRA_USERID = "com.coo.y2.cooyummyking.userId";
-    public static final String EXTRA_MAIN_IMAGE_NUM = "com.coo.y2.cooyummyking.mainImageNum";
+    public static final String EXTRA_MAIN_IMAGE_INDEX = "com.coo.y2.cooyummyking.mainImageIndex";
     public static final String EXTRA_TITLE = "com.coo.y2.cooyummyking.title";
 
-    private Recipe recipe;
+    private Recipe mRecipe;
     private DisplayImageOptions mOptions;
 
     public static RecipeDetailFragment newInstance(DisplayImageOptions options) {
@@ -77,11 +77,13 @@ public class RecipeDetailFragment extends Fragment {
                 super.onSuccess(statusCode, headers, response);
 
                 // TODO ingredients, theme 등 채워야
+                // 가지고있는 레시피 정보를 할당합니다.
                 Bundle args = getArguments();
                 int id = args.getInt(EXTRA_RECIPEID);
-                int mainImageNum = args.getInt(EXTRA_MAIN_IMAGE_NUM);
+                int mainImageNum = args.getInt(EXTRA_MAIN_IMAGE_INDEX);
                 String title = args.getString(EXTRA_TITLE);
 
+                // 네트워크로 받은 레시피 정보를 할당합니다.
                 JSONObject recipeData;
                 try {
                     recipeData = response.getJSONObject("recipe");
@@ -99,22 +101,22 @@ public class RecipeDetailFragment extends Fragment {
             }
 
             private void buildRecipe(JSONObject data) {
-                recipe = Recipe.loadRecipe(data);
+                mRecipe = Recipe.loadRecipe(data);
             }
 
             private void initWriterInfo(View v) {
-                ((TextView) v.findViewById(R.id.detail_writer_nickname)).setText(recipe.userName); // TODO User.USERNAME 등 상수로 변경
+                ((TextView) v.findViewById(R.id.detail_writer_nickname)).setText(mRecipe.userName); // TODO User.USERNAME 등 상수로 변경
                 CircleImageView ivProfileImage = (CircleImageView) v.findViewById(R.id.detail_writer_thumb);
                 ivProfileImage.setBorderColor(Color.TRANSPARENT);
                 ivProfileImage.setBorderWidth(0);
-                ImageLoader.getInstance().displayImage(recipe.getWriterProfileImageUrl(recipe.userId), ivProfileImage, mOptions);
+                ImageLoader.getInstance().displayImage(mRecipe.getWriterProfileImageUrl(mRecipe.userId), ivProfileImage, mOptions);
 
             }
 
             private void initAdapterAndDisplayRecipe(View v) {
                 ListView lv = (ListView) v.findViewById(R.id.detail_recipe_instruction_listview);
                 RecipeDetailAdapter adapter =
-                        new RecipeDetailAdapter(recipe.instructions);
+                        new RecipeDetailAdapter(mRecipe.instructions);
                 lv.setAdapter(adapter);
             }
 
@@ -127,7 +129,7 @@ public class RecipeDetailFragment extends Fragment {
         public TextView instTextView;
     }
 
-    // 커스텀 ArrayAdapter를 정의합니다.
+    // ListView에서 사용할 Adapter를 정의합니다.
     class RecipeDetailAdapter extends ArrayAdapter<String> {
         private final int TYPE_FIRST = 0;
         private final int TYPE_CONTENT = 1;
@@ -164,27 +166,29 @@ public class RecipeDetailFragment extends Fragment {
 
                 int type = getItemViewType(position);
                 switch(type) {
-                    case TYPE_FIRST:
+                    case TYPE_FIRST: // 레시피 개요가 포함된 페이지를 인플레이트합니다.
                         convertView = getActivity().getLayoutInflater()
                                 .inflate(R.layout.listview_recipe_instruction_first, parent, false);
 
+                        String url = Recipe.getImageUrl(mRecipe.id, mRecipe.mainImageIndex);
                         ImageView ivMainImage = (ImageView) convertView.findViewById(R.id.detail_recipe_main_image);
-                        ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageNum), ivMainImage); // TODO 캐시를 통해 본문에서 이 이미지를 다시 다운로드하지 않게 해야함.
+                        ImageLoader.getInstance().displayImage(url, ivMainImage, mOptions);
 
                         TextView tvTitle = (TextView) convertView.findViewById(R.id.detail_recipe_title);
-                        tvTitle.setText(recipe.title);
+                        tvTitle.setText(mRecipe.title);
                         break;
-                    case TYPE_END:
+                    case TYPE_END: // 레시피 좋아요, 스크랩 정보가 포함된 페이지를 인플레이트합니다.(같은 레이아웃, viewstub 사용)
                         convertView = getActivity().getLayoutInflater()
                                 .inflate(R.layout.listview_recipe_instruction, parent, false);
                         View bottom = ((ViewStub) convertView.findViewById(R.id.detail_recipe_instruction_end_stub)).inflate();
-                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_like)).setText(recipe.likeCount + "명");
-                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_scrap)).setText(recipe.scrapCount + "명");
+                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_like)).setText(mRecipe.likeCount + "명");
+                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_scrap)).setText(mRecipe.scrapCount + "명");
                         break;
-                    default:
+                    default: // 내용을 인플레이트합니다.
                         convertView = getActivity().getLayoutInflater()
                                 .inflate(R.layout.listview_recipe_instruction, parent, false);
                 }
+
                 holder.instImageView = (ImageView) convertView.findViewById(R.id.detail_recipe_instruction_iv);
                 holder.instTextView = (TextView) convertView.findViewById(R.id.detail_recipe_instruction_tv);
 
@@ -195,14 +199,16 @@ public class RecipeDetailFragment extends Fragment {
             }
 
             String instruction = getItem(position);
-            String imageUrl = recipe.getImageUrl(position + 1);
-            ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, new SimpleImageLoadingListener() {
+            String imageUrl = Recipe.getImageUrl(mRecipe.id, position);
+
+            ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, mOptions, new SimpleImageLoadingListener() {
                 @Override
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                     super.onLoadingComplete(imageUri, view, loadedImage);
                     view.setVisibility(View.VISIBLE);
                 }
             });
+
 
             holder.instTextView.setText(instruction);
             return convertView;
@@ -231,10 +237,6 @@ public class RecipeDetailFragment extends Fragment {
             if (!(group instanceof AdapterView)) {
                 group.removeAllViews();
             } else {
-                count = group.getChildCount();
-                for (int i = 0; i < count; i++) {
-                    recursiveRecycle(group.getChildAt(i));
-                }
                 ((AdapterView)group).setAdapter(null);
             }
         }

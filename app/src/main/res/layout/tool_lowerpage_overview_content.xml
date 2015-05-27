@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- When Parent is RecyclerView -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/tool_overview_item_margin_top_bottom"
                 android:layout_marginLeft="@dimen/tool_overview_item_margin_side"
                 android:layout_marginRight="@dimen/tool_overview_item_margin_side"
                 android:layout_marginBottom="@dimen/tool_overview_item_margin_top_bottom"
                 android:padding="@dimen/tool_overview_item_padding"
+                android:filterTouchesWhenObscured="true"
                 android:clipToPadding="false"
                 android:clipChildren="false"
                 android:background="@drawable/tool_overview_item_background">

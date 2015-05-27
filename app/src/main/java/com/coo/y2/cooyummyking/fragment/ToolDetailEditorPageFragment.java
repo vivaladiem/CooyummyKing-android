@@ -67,7 +67,7 @@ public class ToolDetailEditorPageFragment extends Fragment {
         mEdInstruction.setText(mInstruction);
         tvTagNum.setText(String.valueOf(mPosition + 1));
 
-        if (mRecipe.mainImageNum == mPosition + 1) v.findViewById(R.id.tool_detail_editor_tag_main).setVisibility(View.VISIBLE);
+        if (mRecipe.mainImageIndex == mPosition) v.findViewById(R.id.tool_detail_editor_tag_main).setVisibility(View.VISIBLE);
 
         return v;
     }

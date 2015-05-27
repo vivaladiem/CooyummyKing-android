@@ -81,9 +81,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void initToolbar() {
-        sIvBtnList = (ImageView) findViewById(R.id.bottombar_list);
-        sIvBtnTool = (ImageView) findViewById(R.id.bottombar_tool);
-        sIvBtnMypage = (ImageView) findViewById(R.id.bottombar_mypage);
         Toolbar mToolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -99,6 +96,11 @@ public class MainActivity extends AppCompatActivity {
     // Selected 상태는 각 Fragment에서 처리하기로.(여기서는 PopBackStack할 때 처리가 곤란)
     private void initBottomTab() {
         sBottomBar = findViewById(R.id.bottombar);
+        sIvBtnList = (ImageView) findViewById(R.id.bottombar_list);
+        sIvBtnTool = (ImageView) findViewById(R.id.bottombar_tool);
+        sIvBtnMypage = (ImageView) findViewById(R.id.bottombar_mypage);
+
+        // TODO 버튼 사이 뷰 인것같은데, 간혹 버튼사이 밑으로 끝 쪽 터치되면 아래로 이벤트 전달되는 문제 발생.
         sIvBtnList.setSelected(true);
         sIvBtnList.setOnClickListener(new View.OnClickListener() {
             @Override

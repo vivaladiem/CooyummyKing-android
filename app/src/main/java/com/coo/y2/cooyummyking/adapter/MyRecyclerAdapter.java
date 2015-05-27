@@ -105,7 +105,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
         ImageLoader.getInstance().displayImage("file://" + Recipe.imagePaths.get(position), holder.mIvRecipeImage, mOptions);
         holder.mTvRecipeText.setText(mRecipe.instructions.get(position));
 
-        if (mRecipe.mainImageNum == position + 1) {
+        if (mRecipe.mainImageIndex == position + 1) {
             holder.mTagMain.setVisibility(View.VISIBLE);
         } else {
             holder.mTagMain.setVisibility(View.GONE);
@@ -150,7 +150,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
         }
         mRecipe.instructions.addAll(instructions);
         Recipe.imagePaths.addAll(imagePaths);
-        mRecipe.mainImageNum = Recipe.imagePaths.size();
+        mRecipe.mainImageIndex = Recipe.imagePaths.size();
         Recipe.isChanged = true;
 
 

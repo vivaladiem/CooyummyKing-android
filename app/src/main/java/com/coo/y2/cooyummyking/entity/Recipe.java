@@ -15,7 +15,7 @@ public class Recipe {
     public static final String RECIPE_ID = "id";
     public static final String RECIPE_TITLE = "title";
     public static final String RECIPE_INST = "instruction";
-    public static final String RECIPE_MAINIMG = "main_image_num";
+    public static final String RECIPE_MAINIMG = "main_image_index";
     public static final String RECIPE_COOKINGTIME = "cooking_time";
     public static final String RECIPE_THEME = "theme";
     public static final String RECIPE_INGREDIENTS = "ingredients";
@@ -33,7 +33,7 @@ public class Recipe {
     public String userName;
     public String title;
     public ArrayList<String> instructions;
-    public int mainImageNum;
+    public int mainImageIndex;
     public int cookingTime;
     public String theme;
     public String ingredients;
@@ -45,7 +45,8 @@ public class Recipe {
     // ------------------------- Related to tool -------------------------- //
     private static Recipe sRecipe;
     public static ArrayList<String> imagePaths = new ArrayList<>();
-    public static boolean isChanged = false; // 레시피 저장 여부를 알기 위한 전역변수
+    public static boolean isChanged = false; // 레시피 저장 여부를 알기 위한 전역변수 // 이것 빼먹으면 문제가 생기니 적어도 할당은 세터로 하는것이 좋을지도..
+    public static boolean isMainImgManuallySet = false;
 
     public static Recipe getScheme() {
         if (sRecipe == null) {
@@ -80,6 +81,7 @@ public class Recipe {
             json = serializer.loadTempData();
         } catch(Exception e) {
             // 파일이 없는 등 로드에 실패했을 때
+            return null;
         }
 
         if (json == null) {
@@ -90,7 +92,7 @@ public class Recipe {
         sRecipe = new Recipe();
         sRecipe.title = json.optString(RECIPE_TITLE);
         sRecipe.instructions = new ArrayList<>(Arrays.asList(json.optString(RECIPE_INST).split("\\|\\|", -1)));
-        sRecipe.mainImageNum = json.optInt(RECIPE_MAINIMG);
+        sRecipe.mainImageIndex = json.optInt(RECIPE_MAINIMG);
         sRecipe.cookingTime = json.optInt(RECIPE_COOKINGTIME);
         sRecipe.theme = json.optString(RECIPE_THEME);
         sRecipe.ingredients = json.optString(RECIPE_INGREDIENTS);
@@ -105,31 +107,19 @@ public class Recipe {
 
     // temp file delete도 해야.
 
-//    public JSONObject toJSON() throws JSONException{
-//        JSONObject json = new JSONObject();
-//        json.put(RECIPE_TITLE, title);
-//        json.put(RECIPE_INST, TextUtils.join("||", instructions));
-//        json.put(RECIPE_COOKINGTIME, cookingTime);
-//        json.put(RECIPE_THEME, theme);
-//        json.put(RECIPE_INGREDIENTS, ingredients);
-//        json.put(RECIPE_SOURCES, sources);
-//        return json;
-//    }
-//
-//    public void saveTempData(Context context) throws IOException, JSONException{
-//        OutputStream out = context.openFileOutput(mFileName, Context.MODE_PRIVATE);
-//        Writer writer = new OutputStreamWriter(out);
-//        writer.write(sRecipe.toJSON().toString());
-//
-//        if (writer != null) writer.close();
-//    }
+    public static int getStepSize() {
+        // 뭔가 더 확실한 조치를 취해야 할 것 같기는 한데..
+        // 근데 오류가 발생하는 경우가 있긴 할지 잘 모르겠다.
+        // image Url에 맞춰 instructions 추가시키는 도중에 에러난다면 발생하려나
+        return Math.min(getScheme().instructions.size(), Recipe.imagePaths.size());
+    }
     // ----------------------------------------------------------------------- //
 
 
     /**
-     * load recipe from network or scraped data
-     * @param json : downloaded JSONObject data
-     * @return : recipe instance
+     * Load recipe from network or scraped data
+     * @param json : Downloaded JSONObject data
+     * @return : Recipe instance
      */
     public static Recipe loadRecipe(JSONObject json) {
         if (json == null) {
@@ -141,7 +131,7 @@ public class Recipe {
         recipe.userName = json.optString(User.USER_NAME);
         recipe.title = json.optString(RECIPE_TITLE);
         recipe.instructions = new ArrayList<>(Arrays.asList(json.optString(RECIPE_INST).split("\\|\\|"))); // Split by || // asList가 참조값을 가지게 하는거라 어딘가 누수 생길지도
-        recipe.mainImageNum = json.optInt(RECIPE_MAINIMG);
+        recipe.mainImageIndex = json.optInt(RECIPE_MAINIMG);
         recipe.cookingTime = json.optInt(RECIPE_COOKINGTIME);
         recipe.theme = json.optString(RECIPE_THEME);
         recipe.ingredients = json.optString(RECIPE_INGREDIENTS);
@@ -153,10 +143,18 @@ public class Recipe {
         return recipe;
     }
 
-    // static으로 하는게 좋으려나
-    public String getImageUrl(int imageNum) {
-        return String.format(URL.GET_IMAGE_URL, this.id, imageNum);
+    /**
+     * Get server url of image
+     * @param imageIndex : image index
+     * @param recipeId : image id
+     * @return : String url
+     */
+    public static String getImageUrl(int recipeId, int imageIndex) {
+        return String.format(URL.GET_IMAGE_URL, recipeId, imageIndex);
     }
+//    public String getImageUrl(int imageNum) {
+//        return String.format(URL.GET_IMAGE_URL, this.id, imageNum);
+//    }
 
     // 임시로 작성. User에 있어야.
     public String getWriterProfileImageUrl(int userId) {

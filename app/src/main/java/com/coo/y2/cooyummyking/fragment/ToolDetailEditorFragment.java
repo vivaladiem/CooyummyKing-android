@@ -41,7 +41,7 @@ public class ToolDetailEditorFragment extends Fragment {
             .bitmapConfig(Bitmap.Config.RGB_565)
             .imageScaleType(ImageScaleType.EXACTLY)
             .considerExifParams(true)
-            .displayer(new FadeInBitmapDisplayer(300))
+            .displayer(new FadeInBitmapDisplayer(200))
             .build();
 
 //    private View.OnKeyListener keyListener = new View.OnKeyListener() {

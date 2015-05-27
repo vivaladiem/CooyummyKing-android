@@ -72,7 +72,7 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
         ImageLoader.getInstance().displayImage("file://" + Recipe.imagePaths.get(position), mIvRecipeImage, mOptions);
         mTvRecipeText.setText(mRecipe.instructions.get(position));
 
-        if (mRecipe.mainImageNum == position + 1) {
+        if (mRecipe.mainImageIndex == position + 1) {
             mTagMain.setVisibility(View.VISIBLE);
         } else {
             mTagMain.setVisibility(View.GONE);
@@ -118,7 +118,7 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
         }
         mRecipe.instructions.addAll(instructions);
         Recipe.imagePaths.addAll(imageUrls);
-        mRecipe.mainImageNum = Recipe.imagePaths.size();
+        mRecipe.mainImageIndex = Recipe.imagePaths.size();
         notifyDataSetChanged();
         Recipe.isChanged = true;
     }

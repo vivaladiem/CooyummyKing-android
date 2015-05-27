@@ -12,13 +12,17 @@
         android:orientation="vertical">
         <!-- tool_upperpage의 height를 코드상에서 한 화면의 크기에 맞춰야 함 -->
         <!-- TODO ReDesign is Needed. 옵티머스 뷰와 타블렛에선 엉망이다... 정보란이 다 짤리거나 엄-청 남거나..
-         아마 타블렛은 아래 OverView까지 다 한페이지에 넣고,
-         옵티머스 뷰에선 사진로드 부분을 없애고 OverView 상단에 아이콘을 넣어주는 식으로 해야할듯.-->
+         아마 타블렛과 옵티머스뷰는 윗 페이지를 없애고 요리과정부분만 남겨서 Overview item의 첫번째가 이 info 페이지를 대신하는것으로 해야겠다.
+         누르면 뜨는 뷰페이저에서 작성 가능하게.(스토리보드 참고)
+         사진로드버튼은 '요리과정' 글씨 라인 오른쪽이나 화면 하단에 배치. 하단바는 똑같이 처음엔 뜨고 내용이 길어져서 스크롤하면 사라지고. -->
+        <!-- 그런데 타블렛이라고 해도 OverView페이지에 그리드뷰는 쓰면 안됨. 배경하고 따로 움직여서 이상함
+        그리드레이아웃을 wrap_content로 해서 써야.(현재 적용된 것으로)-->
         <LinearLayout
             android:id="@+id/tool_upperpage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+            <!-- TODO GridLayout으로 바꾸기 -->
             <RelativeLayout
                 android:id="@+id/tool_background_1"
                 android:layout_width="match_parent"
@@ -99,7 +103,6 @@
                         android:layout_margin="8dp"
                         android:padding="2dp"
                         android:enabled="false"
-                        android:clickable="true"
                         android:textColor="@color/Coo_DarkGrey"
                         android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
@@ -212,12 +215,12 @@
                 android:layout_height="wrap_content"
                 android:padding="@dimen/tool_padding"
                 android:background="@drawable/tool_background_2_pt">
+                <!-- 이상하게 이 삼각형을 TextView에 drawableLeft을 해서 처리하면 없어져서 안보인다.. 크기조절을 어떻게 해도.. -->
                 <View
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_centerVertical="true"
                     android:background="@drawable/shape_triangle"/>
-                <!-- 이상하게 drawableLeft를 하면 없어져서 안보인다.. 크기조절을 어떻게 해도.. -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -291,6 +294,7 @@
             android:clipToPadding="false"
             android:background="@drawable/tool_background_3"/>-->
         <!-- 현재 wrap_content를 지원하지 않아 코드에서 높이를 맞춰야 -->
+        <!--
         <com.coo.y2.cooyummyking.widget.MyWrapableGridView
             android:id="@+id/tool_making_sector"
             android:layout_width="match_parent"
@@ -304,8 +308,21 @@
             android:numColumns="@integer/dynamic_gridview_column_count"
             android:clipChildren="false"
             android:clipToPadding="false"
+            android:background="@drawable/tool_background_3"/>-->
+        <android.support.v7.widget.GridLayout
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/tool_making_sector"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/tool_padding"
+            android:paddingLeft="@dimen/tool_padding"
+            android:paddingBottom="@dimen/tool_padding_bottom"
+            android:paddingRight="@dimen/tool_padding"
+            app:columnCount="3"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:background="@drawable/tool_background_3"/>
-        <!--
+        <!-- 하단 사진추가 버튼. 근데 활용성 낮아서 안씀
         <ImageView
             android:id="@+id/tool_btn_add"
             android:layout_width="wrap_content"
