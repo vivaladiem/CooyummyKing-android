@@ -45,7 +45,7 @@ public class RecipeSerializer {
         json.put(Recipe.RECIPE_THEME, recipe.theme);
         json.put(Recipe.RECIPE_INGREDIENTS, recipe.ingredients);
         json.put(Recipe.RECIPE_SOURCES, recipe.sources);
-        json.put(Recipe.RECIPE_IMAGE_PATH, TextUtils.join(", ", Recipe.imagePaths));
+        json.put(Recipe.RECIPE_IMAGE_PATH, TextUtils.join(", ", Recipe.localImagePaths));
         json.put(Recipe.RECIPE_MAINIMG, recipe.mainImageIndex);
         return json;
     }

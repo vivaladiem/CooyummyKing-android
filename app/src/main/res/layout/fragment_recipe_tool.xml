@@ -31,7 +31,6 @@
                 android:padding="@dimen/tool_padding"
                 android:orientation="vertical"
                 android:background="@drawable/tool_background_1">
-                <!-- TODO 삼각형 추가 -->
                 <View
                     android:layout_width="16dp"
                     android:layout_height="16dp"
@@ -203,7 +202,6 @@
                         android:background="@drawable/shape_background_white_with_grey_stroke"/>
                 </LinearLayout>
             </RelativeLayout>
-            <!-- TODO 배경 포샵으로 정확히 잘라내서 하기(이어지게끔 잘라낸 부분들로 위 배경도 모두 바꿔서) -->
             <View
                 android:id="@+id/tool_background_link_1"
                 android:layout_width="match_parent"

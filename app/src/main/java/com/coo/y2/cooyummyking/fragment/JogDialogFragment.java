@@ -160,7 +160,7 @@ public class JogDialogFragment extends DialogFragment {
         int h = tickNumber / 60;
         int m = tickNumber % 60;
 
-        if (h != 0) mTimeTxt.append(h).append(resources.getString(R.string.tool_info_time_hour)).append(" "); // 어설프다 어설퍼..
+        if (h != 0) mTimeTxt.append(h).append(resources.getString(R.string.tool_info_time_hour)).append(" ");
         if (m != 0) mTimeTxt.append(m).append(resources.getString(R.string.tool_info_time_minute));
 
         String txt = mTimeTxt.toString();
@@ -206,6 +206,7 @@ public class JogDialogFragment extends DialogFragment {
 //        this.rotationDegrees = this.rotationDegrees % 360;
 //        Log.i("CYMK", "rotation Degree: " + (int) this.rotationDegrees);
 
+        // 0도의 밑으로는 갈 수 없게 합니다.
         if (this.rotationDegrees < 0) {
             this.rotationDegrees -= degrees;
             return;

@@ -46,5 +46,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/tool_detail_editor_image"
         android:minLines="3"
-        android:textColor="@color/Coo_DarkGrey"/>
+        android:hint="@string/tool_detail_edit_instruction_hint"
+        android:textColor="@color/Coo_DarkGrey"
+        android:textColorHint="@color/Coo_LightGrey"/>
 </RelativeLayout>

@@ -102,7 +102,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.mTvTagNum.setText(String.valueOf(position + 1));
-        ImageLoader.getInstance().displayImage("file://" + Recipe.imagePaths.get(position), holder.mIvRecipeImage, mOptions);
+        ImageLoader.getInstance().displayImage("file://" + mRecipe.getImagePath(position), holder.mIvRecipeImage, mOptions);
         holder.mTvRecipeText.setText(mRecipe.instructions.get(position));
 
         if (mRecipe.mainImageIndex == position + 1) {
@@ -129,10 +129,10 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     public void addItem(int position, String instruction, String imageUrl) {
         if (position == -1) {
             mRecipe.instructions.add(instruction);
-            Recipe.imagePaths.add(imageUrl);
+            Recipe.localImagePaths.add(imageUrl);
         } else {
             mRecipe.instructions.add(position, instruction);
-            Recipe.imagePaths.add(position, imageUrl);
+            Recipe.localImagePaths.add(position, imageUrl);
         }
         notifyItemInserted(position);
     }
@@ -149,8 +149,8 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
             instructions = inst;
         }
         mRecipe.instructions.addAll(instructions);
-        Recipe.imagePaths.addAll(imagePaths);
-        mRecipe.mainImageIndex = Recipe.imagePaths.size();
+        Recipe.localImagePaths.addAll(imagePaths);
+        mRecipe.mainImageIndex = Recipe.localImagePaths.size();
         Recipe.isChanged = true;
 
 
@@ -159,13 +159,13 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
 
     public void removeItem(int position) {
         mRecipe.instructions.remove(position);
-        Recipe.imagePaths.remove(position);
+        Recipe.localImagePaths.remove(position);
         notifyItemRemoved(position);
     }
 
     public void changePosition(int before, int after) {
         mRecipe.instructions.add(after, mRecipe.instructions.remove(before));
-        Recipe.imagePaths.add(after, Recipe.imagePaths.remove(before));
+        Recipe.localImagePaths.add(after, Recipe.localImagePaths.remove(before));
         notifyItemMoved(before, after);
     }
 
@@ -175,7 +175,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     }
 
     public void setImage(int position, String imageUrl) {
-        Recipe.imagePaths.set(position, imageUrl);
+        Recipe.localImagePaths.set(position, imageUrl);
         notifyItemChanged(position);
     }
 

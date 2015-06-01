@@ -21,11 +21,11 @@ import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.fragment.MainFragment;
 import com.coo.y2.cooyummyking.fragment.ToolFragment;
+import com.coo.y2.cooyummyking.listener.OnBackPressedListener;
 import com.coo.y2.cooyummyking.util.RecipeSerializer;
 
 
 public class MainActivity extends AppCompatActivity {
-    //    private Toolbar mToolbar; // 툴바는 액션바를 대체하는 신규기능 / To local
     public static View sBottomBar;
     public static ImageView sIvBtnList;
     public static ImageView sIvBtnTool;
@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;
     //    private ListView mDrawerList;
     private ActionBarDrawerToggle mDrawerToggle;
+    private OnBackPressedListener onFragmentBackPressedListener;
 //    private Typeface mTypeface;
 
 //    @Override
@@ -69,7 +70,209 @@ public class MainActivity extends AppCompatActivity {
         initBottomTab();
 //        addDrawerItems();
 
+//        filters = new FilterList();
+//
+//        filters.addFilter("filter_1977", FilterType.I_1977);
+//        filters.addFilter("filter_amaro", FilterType.I_AMARO);
+//        filters.addFilter("filter_brannan", FilterType.I_BRANNAN);
+//        filters.addFilter("filter_earlybird", FilterType.I_EARLYBIRD);
+//        filters.addFilter("filter_hefe", FilterType.I_HEFE);
+//        filters.addFilter("filter_hudson", FilterType.I_HUDSON);
+//        filters.addFilter("filter_inkwell", FilterType.I_INKWELL);
+//        filters.addFilter("filter_lomo", FilterType.I_LOMO);
+//        filters.addFilter("filter_lord_kelvin", FilterType.I_LORDKELVIN);
+//        filters.addFilter("filter_nashville", FilterType.I_NASHVILLE);
+//        filters.addFilter("filter_rise", FilterType.I_NASHVILLE);
+//        filters.addFilter("filter_sierra", FilterType.I_SIERRA);
+//        filters.addFilter("filter_sutro", FilterType.I_SUTRO);
+//        filters.addFilter("filter_toaster", FilterType.I_TOASTER);
+//        filters.addFilter("filter_valencia", FilterType.I_VALENCIA);
+//        filters.addFilter("filter_walden", FilterType.I_WALDEN);
+//        filters.addFilter("filter_xproll", FilterType.I_XPROII);
+//        filters.addFilter("filter_contrast", FilterType.CONTRAST);
+//        filters.addFilter("filter_sepia", FilterType.SEPIA);
+//        filters.addFilter("filter_vignette", FilterType.VIGNETTE);
+//        filters.addFilter("filter_tone_curve", FilterType.TONE_CURVE);
+//        filters.addFilter("filter_amatorka", FilterType.LOOKUP_AMATORKA);
+////
+//        gpu = new GPUImage(this);
+//        new AsyncFilterTask().execute();
+//        Log.i("CYMK", "file dir : " + getFilesDir());
+//        Log.i("CYMK", "exeternal files dir : " + getExternalFilesDir(Environment.getExternalStorageDirectory().getAbsolutePath() + "/.coos/"));
     }
+
+//    FilterList filters;
+//    GPUImage gpu;
+//
+//    private class AsyncFilterTask extends AsyncTask <Void, Integer, Void> {
+//        int count = filters.names.size();
+//
+//        @Override
+//        protected Void doInBackground(Void... params) {
+//            for (int i = 0; i < count; i++) {
+//                gpu.setImage(((BitmapDrawable) getResources().getDrawable(R.drawable.icecream6)).getBitmap());
+//                publishProgress(i);
+//            }
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onProgressUpdate(Integer... values) {
+//            int i = values[0];
+//            if (i < count)
+//            gpu.setFilter(createFilterForType(MainActivity.this, filters.filters.get(i)));
+//            Bitmap bmp = gpu.getBitmapWithFilterApplied();
+//            String filterName = filters.names.get(i);
+//            Log.i("CYMK", filterName + " image saved " + saveBitmap(filters.names.get(i), bmp));
+//        }
+//    }
+//
+//    String dir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/.Coos/";
+//    private boolean saveBitmap(String fileName, Bitmap bitmap) {
+//        File file = new File(StorageUtils.getCacheDirectory(this).getAbsolutePath() + "/" + fileName + ".png");
+//        OutputStream out;
+//        boolean isSuccess = false;
+//        try {
+//            file.createNewFile();
+//            out = new FileOutputStream(file);
+//            isSuccess = bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+//        } catch(IOException e) {
+//            e.printStackTrace();
+//        } finally {
+//        }
+//        return isSuccess;
+//    }
+//
+//    private static GPUImageFilter createFilterForType(final Context context, final FilterType type) {
+//        switch (type) {
+//            case CONTRAST:
+//                return new GPUImageContrastFilter(2.0f);
+//            case GAMMA:
+//                return new GPUImageGammaFilter(2.0f);
+//            case INVERT:
+//                return new GPUImageColorInvertFilter();
+//            case PIXELATION:
+//                return new GPUImagePixelationFilter();
+//            case HUE:
+//                return new GPUImageHueFilter(90.0f);
+//            case BRIGHTNESS:
+//                return new GPUImageBrightnessFilter(1.5f);
+//            case GRAYSCALE:
+//                return new GPUImageGrayscaleFilter();
+//            case SEPIA:
+//                return new GPUImageSepiaFilter();
+//            case SHARPEN:
+//                GPUImageSharpenFilter sharpness = new GPUImageSharpenFilter();
+//                sharpness.setSharpness(2.0f);
+//                return sharpness;
+//            case SOBEL_EDGE_DETECTION:
+//                return new GPUImageSobelEdgeDetection();
+//            case THREE_X_THREE_CONVOLUTION:
+//                GPUImage3x3ConvolutionFilter convolution = new GPUImage3x3ConvolutionFilter();
+//                convolution.setConvolutionKernel(new float[] {
+//                        -1.0f, 0.0f, 1.0f,
+//                        -2.0f, 0.0f, 2.0f,
+//                        -1.0f, 0.0f, 1.0f
+//                });
+//                return convolution;
+//            case EMBOSS:
+//                return new GPUImageEmbossFilter();
+//            case POSTERIZE:
+//                return new GPUImagePosterizeFilter();
+//            case FILTER_GROUP:
+//                List<GPUImageFilter> filters = new LinkedList<GPUImageFilter>();
+//                filters.add(new GPUImageContrastFilter());
+//                filters.add(new GPUImageDirectionalSobelEdgeDetectionFilter());
+//                filters.add(new GPUImageGrayscaleFilter());
+//                return new GPUImageFilterGroup(filters);
+//            case SATURATION:
+//                return new GPUImageSaturationFilter(1.0f);
+//            case EXPOSURE:
+//                return new GPUImageExposureFilter(0.0f);
+//            case HIGHLIGHT_SHADOW:
+//                return new GPUImageHighlightShadowFilter(0.0f, 1.0f);
+//            case MONOCHROME:
+//                return new GPUImageMonochromeFilter(1.0f, new float[]{0.6f, 0.45f, 0.3f, 1.0f});
+//            case OPACITY:
+//                return new GPUImageOpacityFilter(1.0f);
+//            case RGB:
+//                return new GPUImageRGBFilter(1.0f, 1.0f, 1.0f);
+//            case WHITE_BALANCE:
+//                return new GPUImageWhiteBalanceFilter(5000.0f, 0.0f);
+//            case VIGNETTE:
+//                PointF centerPoint = new PointF();
+//                centerPoint.x = 0.5f;
+//                centerPoint.y = 0.5f;
+//                return new GPUImageVignetteFilter(centerPoint, new float[] {0.0f, 0.0f, 0.0f}, 0.3f, 0.75f);
+//            case TONE_CURVE:
+//                GPUImageToneCurveFilter toneCurveFilter = new GPUImageToneCurveFilter();
+//                toneCurveFilter.setFromCurveFileInputStream(
+//                        context.getResources().openRawResource(R.raw.tone_cuver_sample));
+//                return toneCurveFilter;
+//
+//            case LOOKUP_AMATORKA:
+//                GPUImageLookupFilter amatorka = new GPUImageLookupFilter();
+//                amatorka.setBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.lookup_amatorka));
+//                return amatorka;
+//
+//            case I_1977:
+//                return new IF1977Filter(context);
+//            case I_AMARO:
+//                return new IFAmaroFilter(context);
+//            case I_BRANNAN:
+//                return new IFBrannanFilter(context);
+//            case I_EARLYBIRD:
+//                return new IFEarlybirdFilter(context);
+//            case I_HEFE:
+//                return new IFHefeFilter(context);
+//            case I_HUDSON:
+//                return new IFHudsonFilter(context);
+//            case I_INKWELL:
+//                return new IFInkwellFilter(context);
+//            case I_LOMO:
+//                return new IFLomoFilter(context);
+//            case I_LORDKELVIN:
+//                return new IFLordKelvinFilter(context);
+//            case I_NASHVILLE:
+//                return new IFNashvilleFilter(context);
+//            case I_RISE:
+//                return new IFRiseFilter(context);
+//            case I_SIERRA:
+//                return new IFSierraFilter(context);
+//            case I_SUTRO:
+//                return new IFSutroFilter(context);
+//            case I_TOASTER:
+//                return new IFToasterFilter(context);
+//            case I_VALENCIA:
+//                return new IFValenciaFilter(context);
+//            case I_WALDEN:
+//                return new IFWaldenFilter(context);
+//            case I_XPROII:
+//                return new IFXprollFilter(context);
+//
+//            default:
+//                throw new IllegalStateException("No filter of that type!");
+//        }
+//
+//    }
+//
+//    private enum FilterType {
+//        CONTRAST, GRAYSCALE, SHARPEN, SEPIA, SOBEL_EDGE_DETECTION, THREE_X_THREE_CONVOLUTION, FILTER_GROUP, EMBOSS, POSTERIZE, GAMMA, BRIGHTNESS, INVERT, HUE, PIXELATION,
+//        SATURATION, EXPOSURE, HIGHLIGHT_SHADOW, MONOCHROME, OPACITY, RGB, WHITE_BALANCE, VIGNETTE, TONE_CURVE, LOOKUP_AMATORKA,
+//        I_1977, I_AMARO, I_BRANNAN, I_EARLYBIRD, I_HEFE, I_HUDSON, I_INKWELL, I_LOMO, I_LORDKELVIN, I_NASHVILLE, I_RISE, I_SIERRA, I_SUTRO,
+//        I_TOASTER, I_VALENCIA, I_WALDEN, I_XPROII
+//    }
+//
+//    private static class FilterList {
+//        public List<String> names = new LinkedList<String>();
+//        public List<FilterType> filters = new LinkedList<FilterType>();
+//
+//        public void addFilter(final String name, final FilterType filter) {
+//            names.add(name);
+//            filters.add(filter);
+//        }
+//    }
+
     private void initFragment() {
         FragmentManager fm = getSupportFragmentManager();
         Fragment fragment = fm.findFragmentById(R.id.fragmentContainer);
@@ -137,14 +340,12 @@ public class MainActivity extends AppCompatActivity {
                 .commit();
     }
 
-    /*
-        private void addDrawerItems() {
-            mDrawerList = (ListView) findViewById(R.id.ham_menu);
-            int[] arrays = {R.drawable.ham_btn_notify_off, R.drawable.ham_btn_battle}
-            mAdapter = new ArrayAdapter<> (this, android.R.layout.simple_gallery_item, arrays);
-            mDrawerList.setAdapter(mAdapter);
-        }
-    */
+//        private void addDrawerItems() {
+//            mDrawerList = (ListView) findViewById(R.id.ham_menu);
+//            int[] arrays = {R.drawable.ham_btn_notify_off, R.drawable.ham_btn_battle}
+//            mAdapter = new ArrayAdapter<> (this, android.R.layout.simple_gallery_item, arrays);
+//            mDrawerList.setAdapter(mAdapter);
+//        }
 
     @Override
     protected void onPause() {
@@ -189,6 +390,10 @@ public class MainActivity extends AppCompatActivity {
     long backPressedTime = 0;
     @Override
     public void onBackPressed() {
+        if (onFragmentBackPressedListener != null) {
+            onFragmentBackPressedListener.onBackPressed();
+            return;
+        }
         if (mDrawerLayout.isDrawerOpen(Gravity.START)) {
             mDrawerLayout.closeDrawers();
             return;
@@ -213,5 +418,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         super.onBackPressed();
+    }
+
+    public void setOnFragmentBackPressedListener(OnBackPressedListener listener) {
+        this.onFragmentBackPressedListener = listener;
     }
 }

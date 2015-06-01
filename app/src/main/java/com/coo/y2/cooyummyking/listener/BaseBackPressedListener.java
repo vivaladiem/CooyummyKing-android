@@ -5,7 +5,7 @@ package com.coo.y2.cooyummyking.listener;
  */
 public class BaseBackPressedListener implements OnBackPressedListener {
     @Override
-    public void onBack() {
+    public void onBackPressed() {
 
     }
 }

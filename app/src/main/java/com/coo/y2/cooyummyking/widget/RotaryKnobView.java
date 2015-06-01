@@ -123,7 +123,6 @@ public class RotaryKnobView extends ImageView {
 
     public RotaryKnobView(Context context) {
         super(context);
-        // TODO Auto-generated constructor stub
     }
 
     public RotaryKnobView(Context context, AttributeSet attrs)
@@ -167,7 +166,6 @@ public class RotaryKnobView extends ImageView {
         {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                // TODO Auto-generated method stub
                 int action = event.getAction();
                 int actionCode = action & MotionEvent.ACTION_MASK;
 //                if (actionCode == MotionEvent.ACTION_POINTER_DOWN) {

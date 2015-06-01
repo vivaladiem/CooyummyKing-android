@@ -59,7 +59,6 @@ public class MainFragment extends Fragment {
             .bitmapConfig(Bitmap.Config.RGB_565)
             .imageScaleType(ImageScaleType.EXACTLY)
             .cacheInMemory(true)
-            .cacheOnDisk(true)
             .displayer(new FadeInBitmapDisplayer(300))
             .build();
 
@@ -84,7 +83,7 @@ public class MainFragment extends Fragment {
         return v;
     }
 
-    // TODO 그런일은 없겠짐나 스크린이 변해서 화면이 이상해질 경우 이 설정만 지워서 다시 맞추게끔 하면 좋음
+    // TODO 그런일은 없겠지만 스크린이 변해서 화면이 이상해질 경우 이 설정만 지워서 다시 맞추게끔 하면 좋음
     // 아님 GridLayout으로 (GridView아님) 바꾸던가. 이게 더 효율적이긴하겠지.
     private void initResources(View view) {
         SharedPreferences prefs = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -257,7 +256,7 @@ public class MainFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         ImageLoader.getInstance().clearMemoryCache();
-        ImageLoader.getInstance().clearDiskCache();
+//        ImageLoader.getInstance().clearDiskCache();
     }
 
     @Override

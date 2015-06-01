@@ -1,10 +1,13 @@
 package com.coo.y2.cooyummyking.entity;
 
+import android.util.Log;
+
 import com.coo.y2.cooyummyking.network.URL;
 import com.coo.y2.cooyummyking.util.RecipeSerializer;
 
 import org.json.JSONObject;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -44,7 +47,7 @@ public class Recipe {
 
     // ------------------------- Related to tool -------------------------- //
     private static Recipe sRecipe;
-    public static ArrayList<String> imagePaths = new ArrayList<>();
+    public static ArrayList<String> localImagePaths = new ArrayList<>(); // 효과 적용된 이미지는 ||을 구분자로 뒤에 덧붙여짐.
     public static boolean isChanged = false; // 레시피 저장 여부를 알기 위한 전역변수 // 이것 빼먹으면 문제가 생기니 적어도 할당은 세터로 하는것이 좋을지도..
     public static boolean isMainImgManuallySet = false;
 
@@ -101,7 +104,7 @@ public class Recipe {
         // * split 에 -1을 인자로 넣어줘야만 끝의 빈 요소를 취급함. (빈 요소가 연속이면 연속되는 모두를)
         // ex) split(",") (1,2,,) -> [1, 2]  // split(",", -1) (1,2,,) -> [1, 2, , ]
         // 기본값은 0
-        Recipe.imagePaths = new ArrayList<>(Arrays.asList(json.optString(RECIPE_IMAGE_PATH).split(", ", -1)));
+        Recipe.localImagePaths = new ArrayList<>(Arrays.asList(json.optString(RECIPE_IMAGE_PATH).split(", ", -1)));
         return sRecipe;
     }
 
@@ -111,7 +114,32 @@ public class Recipe {
         // 뭔가 더 확실한 조치를 취해야 할 것 같기는 한데..
         // 근데 오류가 발생하는 경우가 있긴 할지 잘 모르겠다.
         // image Url에 맞춰 instructions 추가시키는 도중에 에러난다면 발생하려나
-        return Math.min(getScheme().instructions.size(), Recipe.imagePaths.size());
+        return Math.min(getScheme().instructions.size(), Recipe.localImagePaths.size());
+    }
+
+    public String getImagePath(int index) {
+        String path = localImagePaths.get(index);
+        if (path.contains("||")) {
+            return path.split("\\|\\|")[1];
+        } else {
+            return path;
+        }
+    }
+
+    public void setEditedPhotoPath(int index, String path) {
+        if (localImagePaths.get(index).contains("||")) {
+            String[] paths = localImagePaths.get(index).split("\\|\\|", -1);
+            String origin = paths[0];
+            String preDecoImage = paths[1];
+            boolean isDeleted = new File(preDecoImage).delete();
+            if (!isDeleted) {
+                // 기존 편집 이미지파일 삭제 실패
+                Log.i("CYMK", "Previous Deco Image File Delete Failed : " + preDecoImage);
+            }
+            localImagePaths.set(index, origin + "||" + path);
+        } else {
+            localImagePaths.set(index, localImagePaths.get(index) + "||" + path);
+        }
     }
     // ----------------------------------------------------------------------- //
 

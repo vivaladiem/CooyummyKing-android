@@ -3,7 +3,7 @@
     <string name="gallery">갤러리</string>
     <string name="close_toast">한번 더 뒤로가기를 누르시면 종료합니다.</string>
 
-    <!-- toolbar strings -->
+    <!-- Toolbar -->
     <string name="toolbar_ham">메뉴</string>
     <string name="toolbar_refresh">새로고침</string>
     <string name="toolbar_search">검색</string>
@@ -16,7 +16,7 @@
 
     <!-- Main -->
 
-    <!-- detail -->
+    <!-- Detail -->
     <string name="detail_recipe_toolbar_title">상세레시피</string>
     <string name="detail_recipe_title_caption">제목</string>
     <string name="detail_recipe_time_caption">시간</string>
@@ -24,7 +24,7 @@
     <string name="detail_recipe_ingredient_caption">재료</string>
     <string name="detail_recipe_source_caption">양념</string>
 
-    <!-- tool -->
+    <!-- Tool -->
     <string name="tool_toolbar_title">쿠요미 툴</string>
     <string name="tool_info_caption">기본정보</string>
     <string name="tool_info_title_caption">제목</string>
@@ -39,13 +39,14 @@
     <string name="tool_photo_album">앨범</string>
     <string name="tool_making_title_caption">요리과정</string>
 
+    <string name="tool_detail_edit_instruction_hint">과정을 입력하세요</string>
     <string name="tool_detail_bottombar_photoedit">사진편집</string>
     <string name="tool_detail_bottombar_filter">필터</string>
     <string name="tool_detail_bottombar_sticker">스티커</string>
     <string name="tool_detail_bottombar_subtitle">자막</string>
     <string name="tool_detail_bottombar_text">텍스트</string>
 
-    <!-- errors -->
+    <!-- Errors -->
     <string name="err_network_unavailable">네트워크에 연결할 수 없습니다.</string>
     <string name="err_no_recipe">레시피를 불러올 수 없습니다</string>
     <!--<string name="err_no_recipe">네트워크 오류로 인해 레시피 정보를 가져올 수 없습니다</string>-->

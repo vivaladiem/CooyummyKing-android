@@ -161,7 +161,6 @@ public class RoundDial extends RelativeLayout implements GestureDetector.OnGestu
     }
 
     public void onShowPress(MotionEvent e) {
-        // TODO Auto-generated method stub
 
     }
     public boolean onFling(MotionEvent arg0, MotionEvent arg1, float arg2, float arg3) { return false; }

@@ -1,5 +1,9 @@
 package com.coo.y2.cooyummyking.fragment;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -29,7 +33,6 @@ public class ToolDetailEditorPageFragment extends Fragment {
     private EditText mEdInstruction;
 
     private DisplayImageOptions mOptions;
-//    private View.OnKeyListener mKeyListener;
 
     public static ToolDetailEditorPageFragment newInstance(int position, DisplayImageOptions options) {
         ToolDetailEditorPageFragment fragment = new ToolDetailEditorPageFragment();
@@ -38,20 +41,17 @@ public class ToolDetailEditorPageFragment extends Fragment {
         fragment.setArguments(args);
 
         fragment.mOptions = options;
-//        fragment.mKeyListener = keyListener;
         return fragment;
     }
 
-    // 저장기능 구현
     // 하단바 메뉴들 구현
-    // 임시저장기능 구현
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mPosition = getArguments().getInt("position");
 
-        mImageUrl = Recipe.imagePaths.get(mPosition);
+        mImageUrl = mRecipe.getImagePath(mPosition);
         mInstruction = mRecipe.instructions.get(mPosition);
     }
 
@@ -68,6 +68,10 @@ public class ToolDetailEditorPageFragment extends Fragment {
         tvTagNum.setText(String.valueOf(mPosition + 1));
 
         if (mRecipe.mainImageIndex == mPosition) v.findViewById(R.id.tool_detail_editor_tag_main).setVisibility(View.VISIBLE);
+
+        // ToolDetailEditorFragment에서 page의 View에 접근하기 위해 Tag를 설정합니다.(findViewByTag사용)
+        mImageView.setTag("iv" + mPosition);
+        mEdInstruction.setTag("ed" + mPosition);
 
         return v;
     }
@@ -86,9 +90,23 @@ public class ToolDetailEditorPageFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (mImageView.getDrawable() != null) mImageView.getDrawable().setCallback(null);
-        mImageView.setImageDrawable(null);
+        returnBitmapMemory(mImageView);
         mImageView = null;
 
+    }
+
+    private void returnBitmapMemory(ImageView v) {
+        Drawable drawable;
+        if ((drawable = v.getDrawable()) != null) {
+            Bitmap bm = ((BitmapDrawable) drawable).getBitmap();
+            v.setImageBitmap(null);
+            drawable.setCallback(null); // callback이 남아있어서 비트맵이 반환되지 않는다는 말도 있는데 항상 그런진 모르겠다.
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB) {
+                // 허니콤부터는 비트맵 참조만 없어져도 메모리가 반환됐는데 그 이전에는 recycle 해줘야함.
+                try {
+                    bm.recycle();
+                } catch (Exception e) { }
+            }
+        }
     }
 }

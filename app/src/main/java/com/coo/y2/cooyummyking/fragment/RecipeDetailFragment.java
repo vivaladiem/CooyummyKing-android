@@ -76,7 +76,6 @@ public class RecipeDetailFragment extends Fragment {
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
 
-                // TODO ingredients, theme 등 채워야
                 // 가지고있는 레시피 정보를 할당합니다.
                 Bundle args = getArguments();
                 int id = args.getInt(EXTRA_RECIPEID);
@@ -110,7 +109,7 @@ public class RecipeDetailFragment extends Fragment {
                 ivProfileImage.setBorderColor(Color.TRANSPARENT);
                 ivProfileImage.setBorderWidth(0);
                 ImageLoader.getInstance().displayImage(mRecipe.getWriterProfileImageUrl(mRecipe.userId), ivProfileImage, mOptions);
-
+                ((ImageView) v.findViewById(R.id.detail_writer_level)).setImageLevel(4); // set user's level - 1
             }
 
             private void initAdapterAndDisplayRecipe(View v) {

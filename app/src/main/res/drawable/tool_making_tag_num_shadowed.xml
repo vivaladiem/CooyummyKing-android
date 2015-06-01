@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- TODO Gradient type="radial"의 Kitkat(Pre Lollipop)과 Lollipop 이후의 작동방식이 다름(버그인듯)
+<!-- Gradient type="radial"의 Kitkat(Pre Lollipop)과 Lollipop 이후의 작동방식이 다름(버그인듯)
            Kikat에선 gradientRadius를 단위없는 수치로 넣어줘야하고(dp px 다 안됨..)
            Lollipop에선 %p로 넣어줘야 작동함
             그리고 안드로이드 스튜디오 프리뷰와 기기의 보기가 일치하지 않음.-->

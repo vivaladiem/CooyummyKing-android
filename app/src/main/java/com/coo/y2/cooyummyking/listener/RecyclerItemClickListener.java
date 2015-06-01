@@ -1,4 +1,4 @@
-package com.coo.y2.cooyummyking;
+package com.coo.y2.cooyummyking.listener;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- TODO ImageLoader에 제대로 된 사이즈를 주면서 동시에 기기에 맞게 조절되어야..
-UIL이 Target이 Wrap_content일 땐 최소한 처음에는 무조건 Screen Size로 불러와서 메모리부족해짐 -->
+<!-- 코드상에서 크기를 정확히 넣어줘야 UIL이 리사이즈해서 디스플레이함.-->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              android:id="@+id/gallery_item"
              android:layout_width="wrap_content"
