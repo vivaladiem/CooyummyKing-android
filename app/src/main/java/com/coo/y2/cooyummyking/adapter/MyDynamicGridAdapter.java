@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
-import com.coo.y2.cooyummyking.entity.Recipe;
+import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -29,7 +29,7 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
             .considerExifParams(true)
             .cacheInMemory(true)
             .build();
-    private Recipe mRecipe = Recipe.getScheme();
+    private RecipeDesign mRecipe = RecipeDesign.getDesign();
 
     public MyDynamicGridAdapter(Context context, int columnCount) {
         super(context, columnCount);
@@ -103,7 +103,7 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
 
     public void addItem(String instruction, String imageUrl) {
         mRecipe.instructions.add(instruction);
-        Recipe.localImagePaths.add(imageUrl);
+        mRecipe.localImagePaths.add(imageUrl);
         notifyDataSetChanged();
     }
 
@@ -117,10 +117,10 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
             instructions = inst;
         }
         mRecipe.instructions.addAll(instructions);
-        Recipe.localImagePaths.addAll(imageUrls);
-        mRecipe.mainImageIndex = Recipe.localImagePaths.size();
+        mRecipe.localImagePaths.addAll(imageUrls);
+        mRecipe.mainImageIndex = mRecipe.localImagePaths.size();
         notifyDataSetChanged();
-        Recipe.isChanged = true;
+        mRecipe.isChanged = true;
     }
 
 }

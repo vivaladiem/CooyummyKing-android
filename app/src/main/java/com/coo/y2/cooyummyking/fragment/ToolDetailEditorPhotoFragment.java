@@ -18,7 +18,7 @@ import android.widget.LinearLayout;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.MainActivity;
-import com.coo.y2.cooyummyking.entity.Recipe;
+import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.listener.OnBackPressedListener;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageSize;
@@ -56,7 +56,7 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
 
         // Init initial image
         ImageSize size = new ImageSize(640, 640);
-        ImageLoader.getInstance().loadImage("file://" + Recipe.getScheme().getImagePath(mCurrentItemIndex), size, new SimpleImageLoadingListener() {
+        ImageLoader.getInstance().loadImage("file://" + RecipeDesign.getDesign().getImagePath(mCurrentItemIndex), size, new SimpleImageLoadingListener() {
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                 super.onLoadingComplete(imageUri, view, loadedImage);

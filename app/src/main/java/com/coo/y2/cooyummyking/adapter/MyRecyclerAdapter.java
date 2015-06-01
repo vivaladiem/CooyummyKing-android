@@ -13,7 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
-import com.coo.y2.cooyummyking.entity.Recipe;
+import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -24,7 +24,7 @@ import java.util.ArrayList;
  * Created by Y2 on 2015-05-05.
  */
 public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.ViewHolder> {
-    private Recipe mRecipe = Recipe.getScheme();
+    private RecipeDesign mRecipe = RecipeDesign.getDesign();
     private final DisplayImageOptions mOptions = new DisplayImageOptions.Builder()
             .imageScaleType(ImageScaleType.EXACTLY)
             .bitmapConfig(Bitmap.Config.RGB_565)
@@ -129,10 +129,10 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     public void addItem(int position, String instruction, String imageUrl) {
         if (position == -1) {
             mRecipe.instructions.add(instruction);
-            Recipe.localImagePaths.add(imageUrl);
+            mRecipe.localImagePaths.add(imageUrl);
         } else {
             mRecipe.instructions.add(position, instruction);
-            Recipe.localImagePaths.add(position, imageUrl);
+            mRecipe.localImagePaths.add(position, imageUrl);
         }
         notifyItemInserted(position);
     }
@@ -149,9 +149,9 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
             instructions = inst;
         }
         mRecipe.instructions.addAll(instructions);
-        Recipe.localImagePaths.addAll(imagePaths);
-        mRecipe.mainImageIndex = Recipe.localImagePaths.size();
-        Recipe.isChanged = true;
+        mRecipe.localImagePaths.addAll(imagePaths);
+        mRecipe.mainImageIndex = mRecipe.localImagePaths.size();
+        mRecipe.isChanged = true;
 
 
         notifyItemRangeInserted(startPosition, count);
@@ -159,13 +159,13 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
 
     public void removeItem(int position) {
         mRecipe.instructions.remove(position);
-        Recipe.localImagePaths.remove(position);
+        mRecipe.localImagePaths.remove(position);
         notifyItemRemoved(position);
     }
 
     public void changePosition(int before, int after) {
         mRecipe.instructions.add(after, mRecipe.instructions.remove(before));
-        Recipe.localImagePaths.add(after, Recipe.localImagePaths.remove(before));
+        mRecipe.localImagePaths.add(after, mRecipe.localImagePaths.remove(before));
         notifyItemMoved(before, after);
     }
 
@@ -175,7 +175,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     }
 
     public void setImage(int position, String imageUrl) {
-        Recipe.localImagePaths.set(position, imageUrl);
+        mRecipe.localImagePaths.set(position, imageUrl);
         notifyItemChanged(position);
     }
 

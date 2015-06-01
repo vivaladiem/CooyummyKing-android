@@ -1,13 +1,9 @@
 package com.coo.y2.cooyummyking.entity;
 
-import android.util.Log;
-
 import com.coo.y2.cooyummyking.network.URL;
-import com.coo.y2.cooyummyking.util.RecipeSerializer;
 
 import org.json.JSONObject;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -45,109 +41,10 @@ public class Recipe {
     public int scrapCount;
     public String createdAt;
 
-    // ------------------------- Related to tool -------------------------- //
-    private static Recipe sRecipe;
-    public static ArrayList<String> localImagePaths = new ArrayList<>(); // 효과 적용된 이미지는 ||을 구분자로 뒤에 덧붙여짐.
-    public static boolean isChanged = false; // 레시피 저장 여부를 알기 위한 전역변수 // 이것 빼먹으면 문제가 생기니 적어도 할당은 세터로 하는것이 좋을지도..
-    public static boolean isMainImgManuallySet = false;
-
-    public static Recipe getScheme() {
-        if (sRecipe == null) {
-            sRecipe = new Recipe();
-
-            // 초기화 필요한 변수들 초기화
-            sRecipe.title = "";
-            sRecipe.cookingTime = 0;
-            sRecipe.theme = "";
-            sRecipe.ingredients = "";
-            sRecipe.sources = "";
-            sRecipe.instructions = new ArrayList<>();
-        }
-
-        return sRecipe;
-    }
-
-    public static boolean isSchemeLoaded() {
-        return sRecipe != null;
-    }
-
-    /**
-     * Load saved recipe schema. needed for make one. if changed and not saved data exist, that will be lost. so be careful.
-     * @param serializer : RecipeSerializer to handle serializing recipe data. Exist for memory efficient as this method is only needed in specific occasion.
-     * @return : If temp data exist, returns loaded SingleTone recipe instance. If not, returns new empty recipe instance
-     */
-    public static Recipe loadTempScheme(RecipeSerializer serializer) {
-
-        // get saved file
-        JSONObject json = null;
-        try {
-            json = serializer.loadTempData();
-        } catch(Exception e) {
-            // 파일이 없는 등 로드에 실패했을 때
-            return null;
-        }
-
-        if (json == null) {
-//            return getScheme(); // 이렇게 하려면 throws를 안해야하는데 그러면 ToolFragment에서 새로 불러온건지 로딩된건지 알 수 없으므로 return null을 한다.
-            return null;
-        }
-
-        sRecipe = new Recipe();
-        sRecipe.title = json.optString(RECIPE_TITLE);
-        sRecipe.instructions = new ArrayList<>(Arrays.asList(json.optString(RECIPE_INST).split("\\|\\|", -1)));
-        sRecipe.mainImageIndex = json.optInt(RECIPE_MAINIMG);
-        sRecipe.cookingTime = json.optInt(RECIPE_COOKINGTIME);
-        sRecipe.theme = json.optString(RECIPE_THEME);
-        sRecipe.ingredients = json.optString(RECIPE_INGREDIENTS);
-        sRecipe.sources = json.optString(RECIPE_SOURCES);
-
-        // * split 에 -1을 인자로 넣어줘야만 끝의 빈 요소를 취급함. (빈 요소가 연속이면 연속되는 모두를)
-        // ex) split(",") (1,2,,) -> [1, 2]  // split(",", -1) (1,2,,) -> [1, 2, , ]
-        // 기본값은 0
-        Recipe.localImagePaths = new ArrayList<>(Arrays.asList(json.optString(RECIPE_IMAGE_PATH).split(", ", -1)));
-        return sRecipe;
-    }
-
-    // temp file delete도 해야.
-
-    public static int getStepSize() {
-        // 뭔가 더 확실한 조치를 취해야 할 것 같기는 한데..
-        // 근데 오류가 발생하는 경우가 있긴 할지 잘 모르겠다.
-        // image Url에 맞춰 instructions 추가시키는 도중에 에러난다면 발생하려나
-        return Math.min(getScheme().instructions.size(), Recipe.localImagePaths.size());
-    }
-
-    public String getImagePath(int index) {
-        String path = localImagePaths.get(index);
-        if (path.contains("||")) {
-            return path.split("\\|\\|")[1];
-        } else {
-            return path;
-        }
-    }
-
-    public void setEditedPhotoPath(int index, String path) {
-        if (localImagePaths.get(index).contains("||")) {
-            String[] paths = localImagePaths.get(index).split("\\|\\|", -1);
-            String origin = paths[0];
-            String preDecoImage = paths[1];
-            boolean isDeleted = new File(preDecoImage).delete();
-            if (!isDeleted) {
-                // 기존 편집 이미지파일 삭제 실패
-                Log.i("CYMK", "Previous Deco Image File Delete Failed : " + preDecoImage);
-            }
-            localImagePaths.set(index, origin + "||" + path);
-        } else {
-            localImagePaths.set(index, localImagePaths.get(index) + "||" + path);
-        }
-    }
-    // ----------------------------------------------------------------------- //
-
-
     /**
      * Load recipe from network or scraped data
-     * @param json : Downloaded JSONObject data
-     * @return : Recipe instance
+     * @param json Downloaded JSONObject data
+     * @return Recipe instance
      */
     public static Recipe loadRecipe(JSONObject json) {
         if (json == null) {
@@ -173,12 +70,11 @@ public class Recipe {
 
     /**
      * Get server url of image
-     * @param imageIndex : image index
-     * @param recipeId : image id
-     * @return : String url
+     * @param imageIndex image index
+     * @return String url
      */
-    public static String getImageUrl(int recipeId, int imageIndex) {
-        return String.format(URL.GET_IMAGE_URL, recipeId, imageIndex);
+    public String getImageUrl(int imageIndex) {
+        return String.format(URL.GET_IMAGE_URL, this.id, imageIndex);
     }
 //    public String getImageUrl(int imageNum) {
 //        return String.format(URL.GET_IMAGE_URL, this.id, imageNum);

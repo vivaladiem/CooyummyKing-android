@@ -4,6 +4,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.coo.y2.cooyummyking.entity.Recipe;
+import com.coo.y2.cooyummyking.entity.RecipeDesign;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -20,6 +21,7 @@ import java.io.Writer;
 
 /**
  * Created by Y2 on 2015-05-24.
+ * Recipe design temp data serializer class
  */
 public class RecipeSerializer {
     private final String mFileName = "temp_recipe.json";
@@ -29,7 +31,7 @@ public class RecipeSerializer {
         mContext = context;
     }
 
-    public void saveTempData(Recipe recipe) throws IOException, JSONException {
+    public void saveTempData(RecipeDesign recipe) throws IOException, JSONException {
         OutputStream out = mContext.openFileOutput(mFileName, Context.MODE_PRIVATE);
         Writer writer = new OutputStreamWriter(out);
         writer.write(recipeToJSON(recipe).toString());
@@ -37,7 +39,7 @@ public class RecipeSerializer {
         if (writer != null) writer.close();
     }
 
-    public JSONObject recipeToJSON(Recipe recipe) throws JSONException{
+    public JSONObject recipeToJSON(RecipeDesign recipe) throws JSONException{
         JSONObject json = new JSONObject();
         json.put(Recipe.RECIPE_TITLE, recipe.title);
         json.put(Recipe.RECIPE_INST, TextUtils.join("||", recipe.instructions));
@@ -45,7 +47,7 @@ public class RecipeSerializer {
         json.put(Recipe.RECIPE_THEME, recipe.theme);
         json.put(Recipe.RECIPE_INGREDIENTS, recipe.ingredients);
         json.put(Recipe.RECIPE_SOURCES, recipe.sources);
-        json.put(Recipe.RECIPE_IMAGE_PATH, TextUtils.join(", ", Recipe.localImagePaths));
+        json.put(Recipe.RECIPE_IMAGE_PATH, TextUtils.join(", ", recipe.localImagePaths));
         json.put(Recipe.RECIPE_MAINIMG, recipe.mainImageIndex);
         return json;
     }

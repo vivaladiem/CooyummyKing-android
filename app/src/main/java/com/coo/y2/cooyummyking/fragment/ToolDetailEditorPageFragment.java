@@ -15,7 +15,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
-import com.coo.y2.cooyummyking.entity.Recipe;
+import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -27,7 +27,7 @@ public class ToolDetailEditorPageFragment extends Fragment {
     int mPosition;
     private String mImageUrl;
     private String mInstruction;
-    private Recipe mRecipe = Recipe.getScheme();
+    private RecipeDesign mRecipe = RecipeDesign.getDesign();
 
     private ImageView mImageView;
     private EditText mEdInstruction;
@@ -84,7 +84,7 @@ public class ToolDetailEditorPageFragment extends Fragment {
         String inst;
         if ((inst = mEdInstruction.getText().toString()).equals(mRecipe.instructions.get(mPosition))) return;
         mRecipe.instructions.set(mPosition, inst);
-        Recipe.isChanged = true;
+        mRecipe.isChanged = true;
     }
 
     @Override

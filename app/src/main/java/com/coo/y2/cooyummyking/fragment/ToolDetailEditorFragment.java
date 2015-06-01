@@ -25,7 +25,7 @@ import android.widget.AdapterView;
 import android.widget.ImageView;
 
 import com.coo.y2.cooyummyking.R;
-import com.coo.y2.cooyummyking.entity.Recipe;
+import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.filterUtil.GPUImageFilterTools;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -118,7 +118,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
 
         @Override
         public int getCount() {
-            return Recipe.getStepSize();
+            return RecipeDesign.getDesign().getStepSize();
         }
     }
 
@@ -278,7 +278,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     @Override
     public void onFilterChosen(final GPUImageFilter filter) {
         if (mCurrentFilter == filter) return;
-        String imagePath = Recipe.getScheme().getImagePath(getCurrentItem());
+        String imagePath = RecipeDesign.getDesign().getImagePath(getCurrentItem());
 
         // On Reset Chosen
         if (filter == null) {
@@ -360,7 +360,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         }
 
         if (success) {
-            Recipe.getScheme().setEditedPhotoPath(getCurrentItem(), file.getAbsolutePath());
+            RecipeDesign.getDesign().setEditedPhotoPath(getCurrentItem(), file.getAbsolutePath());
         }
 
         getChildFragmentManager().beginTransaction().remove(mPhotoFragment).commit();

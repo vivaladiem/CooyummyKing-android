@@ -18,7 +18,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.coo.y2.cooyummyking.R;
-import com.coo.y2.cooyummyking.entity.Recipe;
+import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.fragment.MainFragment;
 import com.coo.y2.cooyummyking.fragment.ToolFragment;
 import com.coo.y2.cooyummyking.listener.OnBackPressedListener;
@@ -354,11 +354,12 @@ public class MainActivity extends AppCompatActivity {
         // Temp Recipe Save
         // ToolFragment가 이 Activity 위에 있으므로 생명주기상 여기에서 작성중인 레시피 저장을 한다.
 
-        if (!Recipe.isChanged) return; // if recipe has no change(include didn't start making one)
+        RecipeDesign recipe = RecipeDesign.getDesign();
+        if (!recipe.isChanged) return; // if recipe has no change(include didn't start making one)
         RecipeSerializer serializer = new RecipeSerializer(this);
         try {
-            serializer.saveTempData(Recipe.getScheme());
-            Recipe.isChanged = false; // code for onPause is called by starting other Activity
+            serializer.saveTempData(recipe);
+            recipe.isChanged = false; // code for onPause is called by starting other Activity
             Log.i("CYMK", "Temp recipe data saved");
         } catch(Exception e) {
             Log.i("CYMK", "Failed to save recipe temp data");

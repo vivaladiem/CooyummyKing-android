@@ -32,7 +32,7 @@ import android.widget.TextView;
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.GalleryActivity;
 import com.coo.y2.cooyummyking.activity.MainActivity;
-import com.coo.y2.cooyummyking.entity.Recipe;
+import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.util.RecipeSerializer;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -52,8 +52,7 @@ import java.util.ArrayList;
 public class ToolFragment extends Fragment {
 
     // ----- Variables for Recipe data ----------- //
-//    private Recipe mRecipe = Recipe.getScheme();
-    private Recipe mRecipe;
+    private RecipeDesign mRecipe;
 
     //------ Variables for view --------------//
     private int widthPx;
@@ -100,6 +99,7 @@ public class ToolFragment extends Fragment {
     //------- Variables for DetailEditor ----------//
     public static Bitmap screenImage; // Detail Editor에서 Background로 사용할 스크린캡쳐된 이미지
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -109,15 +109,15 @@ public class ToolFragment extends Fragment {
     }
 
     private void initRecipeScheme() {
-        if (Recipe.isSchemeLoaded()) {
-            mRecipe = Recipe.getScheme();
+        if (RecipeDesign.isInited()) {
+            mRecipe = RecipeDesign.getDesign();
             return;
         }
 
         RecipeSerializer serializer = new RecipeSerializer(getActivity());
-        mRecipe = Recipe.loadTempScheme(serializer);
+        mRecipe = RecipeDesign.loadTempDesign(serializer);
         if (mRecipe == null) {
-            mRecipe = Recipe.getScheme();
+            mRecipe = RecipeDesign.getDesign();
             Log.i("CYMK", "새로운 레시피 작성");
         } else {
             Log.i("CYMK", "임시저장된 레시피 로드됨");
@@ -519,18 +519,18 @@ public class ToolFragment extends Fragment {
                 int count = imageUrls.size();
                 for (int i = 0; i < count; i++) {
                     mRecipe.instructions.add("");
-                    Recipe.localImagePaths.add(imageUrls.get(i));
-                    addItem(Recipe.getStepSize() - 1);
+                    mRecipe.localImagePaths.add(imageUrls.get(i));
+                    addItem(mRecipe.getStepSize() - 1);
                 }
 
                 // 메인이미지 태그를 새로고침
-                if (!Recipe.isMainImgManuallySet) {
+                if (!mRecipe.isMainImgManuallySet) {
                     mGridLayout.getChildAt(mRecipe.mainImageIndex).findViewById(R.id.tool_making_tag_main).setVisibility(View.GONE);
-                    mRecipe.mainImageIndex = Recipe.getStepSize() - 1;
+                    mRecipe.mainImageIndex = mRecipe.getStepSize() - 1;
                     mGridLayout.getChildAt(mRecipe.mainImageIndex).findViewById(R.id.tool_making_tag_main).setVisibility(View.VISIBLE);
                 }
 
-                Recipe.isChanged = true;
+                mRecipe.isChanged = true;
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -545,24 +545,24 @@ public class ToolFragment extends Fragment {
         String txt;
         if (!(txt = mTxtTitle.getText().toString()).equals(mRecipe.title)) {
             mRecipe.title = txt;
-            Recipe.isChanged = true;
+            mRecipe.isChanged = true;
         }
 
         // TODO 언어따라 다르니 코드로 배정 - 적어도 테마, 주재료 등 값 정해져있는 건 자동번역이 가능하게 됨
         if (!(txt = mTxtTheme.getText().toString()).equals(mRecipe.theme)) {
             //getText()가 아니라 다이얼로그 닫길 때 선택한 것으로, 닫길 때 할당되어야.(요리시간처럼) 그러니 나중엔 이 코드는 필요 없게됨.
             mRecipe.theme = txt;
-            Recipe.isChanged = true;
+            mRecipe.isChanged = true;
         }
 
         if (!(txt = mTxtIngredient.getText().toString()).equals(mRecipe.ingredients)) {
             mRecipe.ingredients = txt;
-            Recipe.isChanged = true;
+            mRecipe.isChanged = true;
         }
 
         if (!(txt = mTxtSource.getText().toString()).equals(mRecipe.sources)) {
             mRecipe.sources = txt;
-            Recipe.isChanged = true;
+            mRecipe.isChanged = true;
         }
 
     }
