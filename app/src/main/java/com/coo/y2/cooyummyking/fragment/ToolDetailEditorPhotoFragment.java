@@ -29,14 +29,15 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
  */
 public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTouchListener, OnBackPressedListener{
     private ImageView mImageView;
-    private Bitmap mOriginalImage;
-    private Bitmap mFilteredImage;
+    private Bitmap mOriginalImage; // original, filteredimage 주고받는게 복잡하여 recycle 또는 메모리 유출에 관련된 문제가 발생할 수 있음.
+    private Bitmap mFilteredImage; // 문제가능성은 다 잡긴 한것같은데, 성능 손해 안보는 선에서 디자인패턴 적용해 구조 정리하는것도 좋음.
     private int mCurrentItemIndex;
 
     private Menu menu;
 
-    public static ToolDetailEditorPhotoFragment newInstance(int currentItemIndex) {
+    public static ToolDetailEditorPhotoFragment newInstance(int currentItemIndex, Bitmap image) {
         ToolDetailEditorPhotoFragment fragment = new ToolDetailEditorPhotoFragment();
+        fragment.mOriginalImage = image;
         fragment.mCurrentItemIndex = currentItemIndex;
         return fragment;
     }
@@ -53,17 +54,23 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
         mImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mImageView.setClickable(true);
         mImageView.setOnTouchListener(this);
+        mImageView.setImageBitmap(mOriginalImage); // Set previous image for smooth UI
 
-        // Init initial image
-        ImageSize size = new ImageSize(640, 640);
-        ImageLoader.getInstance().loadImage("file://" + RecipeDesign.getDesign().getImagePath(mCurrentItemIndex), size, new SimpleImageLoadingListener() {
-            @Override
-            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                super.onLoadingComplete(imageUri, view, loadedImage);
-                mOriginalImage = loadedImage;
-                mImageView.setImageBitmap(loadedImage);
-            }
-        });
+
+        // If save process hasn't finished - use last edited one without load new.
+        if (!((ToolDetailEditorFragment)getParentFragment()).isInSaveProcess) {
+
+            // Set bigger image - could be used for save
+            ImageSize size = new ImageSize(640, 640);
+            ImageLoader.getInstance().loadImage("file://" + RecipeDesign.getDesign().getImagePath(mCurrentItemIndex), size, new SimpleImageLoadingListener() {
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    super.onLoadingComplete(imageUri, view, loadedImage);
+                    mOriginalImage = loadedImage;
+                    mImageView.setImageBitmap(loadedImage);
+                }
+            });
+        }
 
         setHasOptionsMenu(true);
 
@@ -75,8 +82,8 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
         return mImageView;
     }
 
-    public Bitmap getImage() {
-        return mFilteredImage == null ? mOriginalImage : mFilteredImage;
+    public Bitmap getFilterImage() {
+        return mFilteredImage;
     }
 
     public void setFilterImage(Bitmap image) {
@@ -85,6 +92,17 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
         } else {
             mImageView.setImageBitmap(image);
         }
+    }
+
+    /**
+     * Should use when save process has finish.
+     * For fluent UI, at here use previous image until save process got done. so if use that after save - at there, previous one got recycled -
+     * it will be hit by trying to use recycled bitmap error.
+     * So this method should be used after save process done and only that case.
+     * @param image Image file that last edited and got saved. it's okay to be a small image as it would never be saved.
+     */
+    public void setOriginalImage(Bitmap image) {
+        this.mOriginalImage = image;
     }
 
     @Override
@@ -113,7 +131,7 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.toolbar_tool_detail_editor_photo_complete) {
-            ((ToolDetailEditorFragment)getParentFragment()).onPhotoEditFinish(true);
+            ((ToolDetailEditorFragment)getParentFragment()).onFinishPhotoEdit(true);
         }
 
         return super.onOptionsItemSelected(item);
@@ -126,6 +144,7 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
             drawable.setCallback(null);
             mImageView.setImageBitmap(null);
         }
+        mImageView.setOnTouchListener(null);
         mImageView = null;
         mOriginalImage = null;
         mFilteredImage = null;
@@ -137,6 +156,6 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
 
     @Override
     public void onBackPressed() {
-        ((ToolDetailEditorFragment)getParentFragment()).onPhotoEditFinish(false);
+        ((ToolDetailEditorFragment)getParentFragment()).onFinishPhotoEdit(false);
     }
 }

@@ -129,10 +129,10 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     public void addItem(int position, String instruction, String imageUrl) {
         if (position == -1) {
             mRecipe.instructions.add(instruction);
-            mRecipe.localImagePaths.add(imageUrl);
+            mRecipe.imagePaths.add(imageUrl);
         } else {
             mRecipe.instructions.add(position, instruction);
-            mRecipe.localImagePaths.add(position, imageUrl);
+            mRecipe.imagePaths.add(position, imageUrl);
         }
         notifyItemInserted(position);
     }
@@ -149,8 +149,8 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
             instructions = inst;
         }
         mRecipe.instructions.addAll(instructions);
-        mRecipe.localImagePaths.addAll(imagePaths);
-        mRecipe.mainImageIndex = mRecipe.localImagePaths.size();
+        mRecipe.imagePaths.addAll(imagePaths);
+        mRecipe.mainImageIndex = mRecipe.imagePaths.size();
         mRecipe.isChanged = true;
 
 
@@ -159,13 +159,13 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
 
     public void removeItem(int position) {
         mRecipe.instructions.remove(position);
-        mRecipe.localImagePaths.remove(position);
+        mRecipe.imagePaths.remove(position);
         notifyItemRemoved(position);
     }
 
     public void changePosition(int before, int after) {
         mRecipe.instructions.add(after, mRecipe.instructions.remove(before));
-        mRecipe.localImagePaths.add(after, mRecipe.localImagePaths.remove(before));
+        mRecipe.imagePaths.add(after, mRecipe.imagePaths.remove(before));
         notifyItemMoved(before, after);
     }
 
@@ -175,7 +175,7 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     }
 
     public void setImage(int position, String imageUrl) {
-        mRecipe.localImagePaths.set(position, imageUrl);
+        mRecipe.imagePaths.set(position, imageUrl);
         notifyItemChanged(position);
     }
 

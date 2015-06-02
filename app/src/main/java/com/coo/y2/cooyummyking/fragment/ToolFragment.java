@@ -266,7 +266,7 @@ public class ToolFragment extends Fragment {
 //            mTagMain = view.findViewById(R.id.tool_making_tag_main);
 //
 //            mTvTagNum.setText(String.valueOf(i + 1));
-//            ImageLoader.getInstance().displayImage("file://" + Recipe.localImagePaths.get(i), mIvRecipeImage, mOptions);
+//            ImageLoader.getInstance().displayImage("file://" + Recipe.imagePaths.get(i), mIvRecipeImage, mOptions);
 //            mTvRecipeText.setText(mRecipe.instructions.get(i));
 //
 //            if (mRecipe.mainImageIndex == i + 1) {
@@ -519,7 +519,7 @@ public class ToolFragment extends Fragment {
                 int count = imageUrls.size();
                 for (int i = 0; i < count; i++) {
                     mRecipe.instructions.add("");
-                    mRecipe.localImagePaths.add(imageUrls.get(i));
+                    mRecipe.imagePaths.add(imageUrls.get(i));
                     addItem(mRecipe.getStepSize() - 1);
                 }
 

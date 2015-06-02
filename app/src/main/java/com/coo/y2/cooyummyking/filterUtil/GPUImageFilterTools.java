@@ -19,9 +19,11 @@ package com.coo.y2.cooyummyking.filterUtil;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.filter.IF1977Filter;
@@ -36,12 +38,12 @@ import com.coo.y2.cooyummyking.filter.IFLordKelvinFilter;
 import com.coo.y2.cooyummyking.filter.IFNashvilleFilter;
 import com.coo.y2.cooyummyking.filter.IFRiseFilter;
 import com.coo.y2.cooyummyking.filter.IFSierraFilter;
-import com.coo.y2.cooyummyking.filter.IFSutroFilter;
 import com.coo.y2.cooyummyking.filter.IFToasterFilter;
 import com.coo.y2.cooyummyking.filter.IFValenciaFilter;
 import com.coo.y2.cooyummyking.filter.IFWaldenFilter;
 import com.coo.y2.cooyummyking.filter.IFXprollFilter;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -98,22 +100,36 @@ import jp.co.cyberagent.android.gpuimage.GPUImageTwoInputFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageVignetteFilter;
 import jp.co.cyberagent.android.gpuimage.GPUImageWhiteBalanceFilter;
 
+/**
+ * Created by Y2 on 2015-06-01. using "Instagram Filters for Android"
+ * Initiate Filter Layout and Activate Filter Selected Listener.
+ * handle things related with sample view and filter.
+ * Others - apply filter to image display, save - are needed to handle at the place using it.
+ */
 public class GPUImageFilterTools implements View.OnClickListener {
     public final FilterList mFilters = new FilterList();
 
     private Context mContext;
-    private OnGpuImageFilterChosenListener filterListener;
+    private OnGpuImageFilterSelectListener filterListener;
+    private ViewGroup mSampleContainer;
+    private ArrayList<View> mSampleViews = new ArrayList<>();
+    private int preFilter = -1; // selected filter index == tag. default is -1 -> means no filter is selected
 
     public GPUImageFilterTools (Context context) {
         this.mContext = context;
     }
 
-    public View makeFilterLayout(OnGpuImageFilterChosenListener onFilterChosenListener, ViewGroup container) {
-        this.filterListener = onFilterChosenListener;
+    /**
+     * Make Filter Layout
+     * @param onSelectedFilterListener Called when filter is selected. User should implement this.
+     * @param container Container of this layout
+     * @return Made filter layout
+     */
+    public View makeFilterLayout(OnGpuImageFilterSelectListener onSelectedFilterListener, ViewGroup container) {
+        this.filterListener = onSelectedFilterListener;
 
-        mFilters.addFilter("1977", FilterType.I_1977);
+        // This order is applied to filter sample view order.
         mFilters.addFilter("amaro", FilterType.I_AMARO);
-        mFilters.addFilter("amatorka", FilterType.LOOKUP_AMATORKA);
         mFilters.addFilter("brannan", FilterType.I_BRANNAN);
         mFilters.addFilter("contrast", FilterType.CONTRAST);
         mFilters.addFilter("earlybird", FilterType.I_EARLYBIRD);
@@ -123,29 +139,47 @@ public class GPUImageFilterTools implements View.OnClickListener {
         mFilters.addFilter("lomo", FilterType.I_LOMO);
         mFilters.addFilter("lord_kelvin", FilterType.I_LORDKELVIN);
         mFilters.addFilter("nashville", FilterType.I_NASHVILLE);
-        mFilters.addFilter("rise", FilterType.I_NASHVILLE);
+        mFilters.addFilter("rise", FilterType.I_RISE);
         mFilters.addFilter("sepia", FilterType.SEPIA);
         mFilters.addFilter("sierra", FilterType.I_SIERRA);
-        mFilters.addFilter("sutro", FilterType.I_SUTRO);
         mFilters.addFilter("toaster", FilterType.I_TOASTER);
         mFilters.addFilter("tone_curve", FilterType.TONE_CURVE);
         mFilters.addFilter("valencia", FilterType.I_VALENCIA);
         mFilters.addFilter("vignette", FilterType.VIGNETTE);
         mFilters.addFilter("walden", FilterType.I_WALDEN);
         mFilters.addFilter("xproll", FilterType.I_XPROII);
+        mFilters.addFilter("1977", FilterType.I_1977);
+        mFilters.addFilter("amatorka", FilterType.LOOKUP_AMATORKA);
 
-        ViewGroup view = (ViewGroup) LayoutInflater.from(mContext).inflate(R.layout.tool_detail_editor_util_filter, container, false);
-        ViewGroup parent = (ViewGroup) view.findViewById(R.id.tool_detail_editor_util_filter_container);
-        int count = parent.getChildCount();
-        View v;
+        View view = LayoutInflater.from(mContext).inflate(R.layout.tool_detail_editor_util_filter, container, false);
+        mSampleContainer = (ViewGroup) view.findViewById(R.id.tool_detail_editor_util_filter_container);
+        int count = mFilters.filters.size();
         for (int i = 0; i < count; i++) {
-            v = parent.findViewWithTag("filter_" + i);
-            v.setOnClickListener(this);
-            v.setTag(i);
+            addSampleView(i);
         }
 //        new LoadSampleViewTask().execute();
 
         return view;
+    }
+
+    private void addSampleView(int index) {
+        TextView v = (TextView) LayoutInflater.from(mContext).inflate(R.layout.tool_detail_editor_util_filter_sample_tv, mSampleContainer, false);
+        v.setTag(index);
+        String filterName = mFilters.names.get(index);
+        v.setCompoundDrawablesWithIntrinsicBounds(0, getResourceId("filter_" + filterName), 0, 0); // setCompoundDrawables는 왜인지 안된다?
+        v.setText(filterName);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
+//            v.setOnTouchListener(this); // 애니메이션효과가 있는데 끊김이 좀 있어서 안쓰련다..
+//        } else {
+//            v.setOnClickListener(this);
+//        }
+        v.setOnClickListener(this);
+        mSampleViews.add(v);
+        mSampleContainer.addView(v);
+    }
+
+    private int getResourceId(String id) {
+        return mContext.getResources().getIdentifier(id, "drawable", mContext.getPackageName());
     }
 
 //    private class LoadSampleViewTask extends AsyncTask<Void, Integer, Void> {
@@ -159,10 +193,10 @@ public class GPUImageFilterTools implements View.OnClickListener {
 //        protected Void doInBackground(Void... voids) {
 //            BitmapFactory.Options options = new BitmapFactory.Options();
 //            options.inJustDecodeBounds = true;
-//            BitmapFactory.decodeFile(Recipe.localImagePaths.get(itemIndex), options);
+//            BitmapFactory.decodeFile(Recipe.imagePaths.get(itemIndex), options);
 //            options.inSampleSize = caculateSampleSize(options, viewWidth, viewHeight);
 //            options.inJustDecodeBounds = false;
-//            bmp = BitmapFactory.decodeFile(Recipe.localImagePaths.get(itemIndex), options);
+//            bmp = BitmapFactory.decodeFile(Recipe.imagePaths.get(itemIndex), options);
 //            for (int i = 0; i < size; i++) {
 //                gpu.setFilteredImage(bmp);
 //                publishProgress(i);
@@ -207,32 +241,62 @@ public class GPUImageFilterTools implements View.OnClickListener {
 //        return inSampleSize;
 //    }
 
+
     @Override
     public void onClick(View view) {
-        int i = (int) view.getTag();
-        // TODO 선택된 모양 반영해야
+        updateFilter(view);
+    }
 
-        if (i == 0) {
-            this.filterListener.onFilterChosen(null);
+    // Show Animation Effect, but have little hiccup
+//    @Override
+//    public boolean onTouch(View view, MotionEvent motionEvent) {
+//        switch (motionEvent.getAction()) {
+//            case MotionEvent.ACTION_DOWN:
+//                view.animate().scaleX(1.3f).scaleY(1.3f).start();
+//                break;
+//            case MotionEvent.ACTION_UP:
+//                updateFilter(view);
+//            case MotionEvent.ACTION_CANCEL:
+//                view.animate().scaleX(1f).scaleY(1f).start();
+//                break;
+//        }
+//        return true;
+//    }
+
+    /**
+     * Update Filter and Sample View
+     * @param view selected sample view
+     */
+    private void updateFilter(View view) {
+        int i = (int) view.getTag();
+        Log.i("CYMK", "updateFilter / i : " + i);
+        view.setSelected(!view.isSelected()); // Change state of selected view.
+
+        // If same view is selected -> detach filter
+        if (i == preFilter) {
+            filterListener.onSelectFilter(null);
+            preFilter = -1;
             return;
         }
-        this.filterListener.onFilterChosen(createFilterForType(mContext, mFilters.filters.get(i - 1)));
+
+        if (preFilter != -1) // If pre filter is not null,
+            mSampleViews.get(preFilter).setSelected(false); // Change state of previously selected view
+
+        filterListener.onSelectFilter(createFilterForType(mContext, mFilters.filters.get(i)));
+        preFilter = i;
     }
+
 
     private GPUImageFilter createFilterForType(final Context context, final FilterType type) {
         switch (type) {
             case CONTRAST:
                 return new GPUImageContrastFilter(2.0f);
-            case GAMMA:
-                return new GPUImageGammaFilter(2.0f);
             case INVERT:
                 return new GPUImageColorInvertFilter();
             case PIXELATION:
                 return new GPUImagePixelationFilter();
             case HUE:
                 return new GPUImageHueFilter(90.0f);
-            case BRIGHTNESS:
-                return new GPUImageBrightnessFilter(1.5f);
             case GRAYSCALE:
                 return new GPUImageGrayscaleFilter();
             case SEPIA:
@@ -251,10 +315,6 @@ public class GPUImageFilterTools implements View.OnClickListener {
                         -1.0f, 0.0f, 1.0f
                 });
                 return convolution;
-            case EMBOSS:
-                return new GPUImageEmbossFilter();
-            case POSTERIZE:
-                return new GPUImagePosterizeFilter();
             case FILTER_GROUP:
                 List<GPUImageFilter> filters = new LinkedList<GPUImageFilter>();
                 filters.add(new GPUImageContrastFilter());
@@ -365,8 +425,6 @@ public class GPUImageFilterTools implements View.OnClickListener {
                 return new IFRiseFilter(context);
             case I_SIERRA:
                 return new IFSierraFilter(context);
-            case I_SUTRO:
-                return new IFSutroFilter(context);
             case I_TOASTER:
                 return new IFToasterFilter(context);
             case I_VALENCIA:
@@ -393,22 +451,22 @@ public class GPUImageFilterTools implements View.OnClickListener {
         }
     }
 
-    public interface OnGpuImageFilterChosenListener {
-        void onFilterChosen(final GPUImageFilter filter);
+    public interface OnGpuImageFilterSelectListener {
+        void onSelectFilter(final GPUImageFilter filter);
     }
 
     private enum FilterType {
-        CONTRAST, GRAYSCALE, SHARPEN, SEPIA, SOBEL_EDGE_DETECTION, THREE_X_THREE_CONVOLUTION, FILTER_GROUP, EMBOSS, POSTERIZE, GAMMA, BRIGHTNESS, INVERT, HUE, PIXELATION,
+        CONTRAST, GRAYSCALE, SHARPEN, SEPIA, SOBEL_EDGE_DETECTION, THREE_X_THREE_CONVOLUTION, FILTER_GROUP, INVERT, HUE, PIXELATION,
         SATURATION, EXPOSURE, HIGHLIGHT_SHADOW, MONOCHROME, OPACITY, RGB, WHITE_BALANCE, VIGNETTE, TONE_CURVE, BLEND_COLOR_BURN, BLEND_COLOR_DODGE, BLEND_DARKEN, BLEND_DIFFERENCE,
         BLEND_DISSOLVE, BLEND_EXCLUSION, BLEND_SOURCE_OVER, BLEND_HARD_LIGHT, BLEND_LIGHTEN, BLEND_ADD, BLEND_DIVIDE, BLEND_MULTIPLY, BLEND_OVERLAY, BLEND_SCREEN, BLEND_ALPHA,
         BLEND_COLOR, BLEND_HUE, BLEND_SATURATION, BLEND_LUMINOSITY, BLEND_LINEAR_BURN, BLEND_SOFT_LIGHT, BLEND_SUBTRACT, BLEND_CHROMA_KEY, BLEND_NORMAL, LOOKUP_AMATORKA,
-        I_1977, I_AMARO, I_BRANNAN, I_EARLYBIRD, I_HEFE, I_HUDSON, I_INKWELL, I_LOMO, I_LORDKELVIN, I_NASHVILLE, I_RISE, I_SIERRA, I_SUTRO,
+        I_1977, I_AMARO, I_BRANNAN, I_EARLYBIRD, I_HEFE, I_HUDSON, I_INKWELL, I_LOMO, I_LORDKELVIN, I_NASHVILLE, I_RISE, I_SIERRA,
         I_TOASTER, I_VALENCIA, I_WALDEN, I_XPROII
     }
 
     private class FilterList {
-        public List<String> names = new LinkedList<String>();
-        public List<FilterType> filters = new LinkedList<FilterType>();
+        public List<String> names = new LinkedList<>();
+        public List<FilterType> filters = new LinkedList<>();
 
         public void addFilter(final String name, final FilterType filter) {
             names.add(name);

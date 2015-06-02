@@ -169,7 +169,7 @@ public class RecipeDetailFragment extends Fragment {
                         convertView = getActivity().getLayoutInflater()
                                 .inflate(R.layout.listview_recipe_instruction_first, parent, false);
 
-                        String url = Recipe.getImageUrl(mRecipe.id, mRecipe.mainImageIndex);
+                        String url = mRecipe.getImageUrl(mRecipe.mainImageIndex);
                         ImageView ivMainImage = (ImageView) convertView.findViewById(R.id.detail_recipe_main_image);
                         ImageLoader.getInstance().displayImage(url, ivMainImage, mOptions);
 
@@ -198,7 +198,7 @@ public class RecipeDetailFragment extends Fragment {
             }
 
             String instruction = getItem(position);
-            String imageUrl = Recipe.getImageUrl(mRecipe.id, position);
+            String imageUrl = mRecipe.getImageUrl(position);
 
             ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, mOptions, new SimpleImageLoadingListener() {
                 @Override

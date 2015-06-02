@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/filter_brannan_sm"/>
+    <item android:drawable="@drawable/tool_detail_editor_util_filter_sample_background_stroke"/>
+</layer-list>

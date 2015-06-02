@@ -8,7 +8,6 @@ import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -44,7 +43,7 @@ import java.util.ArrayList;
 /**
  * Created by Y2 on 2015-04-21.
  */
-public class MainFragment extends Fragment {
+public class MainFragment extends Fragment implements View.OnClickListener{
     private static final String TAG = "MainFragment";
     private static final String HIT_RECIPE_LENGTH = "hrl";
     private static final String NORMAL_RECIPE_LENGTH = "nrl";
@@ -53,7 +52,9 @@ public class MainFragment extends Fragment {
     private final int RECIPE_COUNT = 12;
     private ImageView[] mIvRecipeImages = new ImageView[RECIPE_COUNT];
     private ArrayList<Recipe> mRecipes = new ArrayList<>();
+    private boolean isFromBackStack = false; // BackStack에서 돌아왔을 때인지 나타내는 변수. 새로고침여부를 판단
     private Toast mErrToast;
+    private AttachImageTask mAttachImageTask;
 
     private DisplayImageOptions mImageLoaderOptions = new DisplayImageOptions.Builder()
             .bitmapConfig(Bitmap.Config.RGB_565)
@@ -62,7 +63,6 @@ public class MainFragment extends Fragment {
             .displayer(new FadeInBitmapDisplayer(300))
             .build();
 
-    private boolean isNew = true; // BackStack에서 돌아왔을 때인지 나타내는 변수. 새로고침여부를 판단
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -78,7 +78,7 @@ public class MainFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_main_recipe_list, container, false);
         initResources(v);
         initEvents();
-        executeGetRecipes(isNew); // is New => will reload | BackStack에서 돌아왔을 땐 새로고침 안함.
+        executeGetRecipes();
         setHasOptionsMenu(true);
         return v;
     }
@@ -99,7 +99,7 @@ public class MainFragment extends Fragment {
             int screenWidthDp = Math.round((screenWidthPx - 0.5f) / dens);
             editor.putInt(SCREEN_WIDTH_DP, screenWidthDp);
 
-            int recipeWidthDp = (screenWidthDp - (20 + 8 + 8 + 20)) / 3; // sceenWidthDp - (layout padding left +
+            int recipeWidthDp = (screenWidthDp - (20 + 8 + 8 + 20)) / 3; // (sceenWidthDp - (layout padding left + right + recipe margin * 2)) / 3
             int hitRecipeWidthDp = recipeWidthDp * 2 + 8;
 
             recipeSideLength = (int) (recipeWidthDp * dens + 0.5f);
@@ -111,68 +111,40 @@ public class MainFragment extends Fragment {
 
         for (int i = 0; i < RECIPE_COUNT; i++) {
             mIvRecipeImages[i] = (ImageView) view.findViewById(getResourceId("iv_recipe_" + i));
+            ViewGroup.LayoutParams params = mIvRecipeImages[i].getLayoutParams();
             if (i == 0 || i == 1) {
-                mIvRecipeImages[i].getLayoutParams().height = hitRecipeSideLength;
-                mIvRecipeImages[i].getLayoutParams().width = hitRecipeSideLength;
+                params.width = params.height = hitRecipeSideLength;
             } else {
-                mIvRecipeImages[i].getLayoutParams().height = recipeSideLength;
-                mIvRecipeImages[i].getLayoutParams().width = recipeSideLength;
+                params.height = params.width = recipeSideLength;
             }
         }
     }
 
     private void initEvents() {
-        // Set err msg / 나중엔 서버닫김 확인 후 닫겼거나 네트워크 연결 끊겼을때만 하는것도 괜찮
-        final String errMsg = getResources().getString(R.string.err_no_recipe);
-        mErrToast = Toast.makeText(getActivity(), errMsg, Toast.LENGTH_SHORT);
-
-
         for (int i = 0; i < RECIPE_COUNT; i++) {
             mIvRecipeImages[i].setTag(i);
-            mIvRecipeImages[i].setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Recipe recipe;
-                    // TODO 나중엔 오프라인에선 저장(스크랩)해놓은 레시피를 볼 수 있게 하자
-                    try {
-                        recipe = mRecipes.get((int) v.getTag());
-                    } catch (IndexOutOfBoundsException e) {
-                        // 레시피 정보가 없을 때
-//                        Toast.makeText(getActivity(), errMsg, Toast.LENGTH_SHORT).show();
-                        mErrToast.show();
-                        return;
-                    }
-                    Fragment fragment = RecipeDetailFragment.newInstance(mImageLoaderOptions);
-                    Bundle data = new Bundle();
-                    data.putInt(RecipeDetailFragment.EXTRA_RECIPEID, recipe.id);
-                    data.putInt(RecipeDetailFragment.EXTRA_MAIN_IMAGE_INDEX, recipe.mainImageIndex);
-                    data.putString(RecipeDetailFragment.EXTRA_TITLE, recipe.title);
-                    fragment.setArguments(data);
-
-                    FragmentManager fm = getActivity().getSupportFragmentManager();
-                    fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // 기존 백스택을 비운다
-                    fm.beginTransaction()
-                            .replace(R.id.fragmentContainer, fragment)
-                            .addToBackStack(null)
-                            .commit();
-                }
-            });
+            mIvRecipeImages[i].setOnClickListener(this);
         }
     }
 
-    private void executeGetRecipes(boolean willReload) {
+    private void executeGetRecipes() {
         if (!isInternetAvailable(getActivity())) {
             Toast.makeText(getActivity(), getResources().getString(R.string.err_network_unavailable), Toast.LENGTH_SHORT).show();
-            return; // Toast나 Dialog 등 처리
+            return;
         }
-        if (!willReload) { loadRecipeImages(); return; }
+        // 백스택에서 돌아왔을 땐 새로 불러오지 하지 않는다.
+        if (isFromBackStack) {
+            loadAndDisplayImages();
+            isFromBackStack = false;
+            return;
+        }
 
         HttpUtil.get(URL.GET_RECIPES, null, null, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 super.onSuccess(statusCode, headers, response);
                 clearAndBuildRecipes(response.optJSONArray("recipes"));
-                loadRecipeImages();
+                loadAndDisplayImages();
             }
 
             @Override
@@ -192,11 +164,41 @@ public class MainFragment extends Fragment {
         });
     }
 
-    AttachImageTask attachImageTask;
-    private void loadRecipeImages() {
-//        new AttachImageTask().execute();
-        attachImageTask = new AttachImageTask();
-        attachImageTask.execute();
+    // Recipe on click listener
+    @Override
+    public void onClick(View view) {
+        Recipe recipe;
+        // TODO 나중엔 오프라인에선 저장(스크랩)해놓은 레시피를 볼 수 있게 하자
+        try {
+            recipe = mRecipes.get((int) view.getTag());
+        } catch (IndexOutOfBoundsException e) {
+            // 레시피 정보가 없을 때
+            // Set err msg / 나중엔 서버닫김 확인 후 닫겼거나 네트워크 연결 끊겼을때만 하는것도 괜찮
+            final String errMsg = getResources().getString(R.string.err_no_recipe);
+            mErrToast = Toast.makeText(getActivity(), errMsg, Toast.LENGTH_SHORT);
+            mErrToast.show();
+            return;
+        }
+
+        // RecipeDetailFragment 를 실행합니다.
+        Fragment fragment = RecipeDetailFragment.newInstance(mImageLoaderOptions);
+        Bundle data = new Bundle();
+        data.putInt(RecipeDetailFragment.EXTRA_RECIPEID, recipe.id);
+        data.putInt(RecipeDetailFragment.EXTRA_MAIN_IMAGE_INDEX, recipe.mainImageIndex);
+        data.putString(RecipeDetailFragment.EXTRA_TITLE, recipe.title);
+        fragment.setArguments(data);
+
+        FragmentManager fm = getActivity().getSupportFragmentManager();
+        fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE); // 기존 백스택을 비운다
+        fm.beginTransaction()
+                .replace(R.id.fragmentContainer, fragment)
+                .addToBackStack(null)
+                .commit();
+    }
+
+    private void loadAndDisplayImages() {
+        mAttachImageTask = new AttachImageTask();
+        mAttachImageTask.execute();
     }
 
     private class AttachImageTask extends AsyncTask<Void, Integer, Void> {
@@ -223,9 +225,9 @@ public class MainFragment extends Fragment {
             if (i < size) {
                 Recipe recipe = mRecipes.get(i);
                 if (recipe.mainImageIndex != 0) {
-                    ImageLoader.getInstance().displayImage(Recipe.getImageUrl(recipe.id, recipe.mainImageIndex), mIvRecipeImages[i], mImageLoaderOptions);
+                    ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageIndex), mIvRecipeImages[i], mImageLoaderOptions);
                 } else {
-                    // 혹시라도 사진이 하나도 없을 때.
+                    // 혹시라도 레시피에 사진이 하나도 없을 때.
                 }
             }
         }
@@ -234,7 +236,7 @@ public class MainFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
-        if (attachImageTask != null) attachImageTask.cancel(false);
+        if (mAttachImageTask != null) mAttachImageTask.cancel(false);
         ImageLoader.getInstance().stop();
         HttpUtil.cancle();
     }
@@ -245,18 +247,16 @@ public class MainFragment extends Fragment {
         int count = mIvRecipeImages.length;
         for (int i = 0; i < count; i++) {
             returnBitmapMemory(mIvRecipeImages[i]);
-            mIvRecipeImages[i].setOnClickListener(null);
-//            mIvRecipeImages[i] = null; // 아니면 어차피 자주 오는곳이니까 initResources에서 null인지 확인해 집어넣는 식으로 해도 괜찮.
+            mIvRecipeImages[i] = null;
         }
         mErrToast = null;
-        isNew = false;
+        isFromBackStack = true;
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         ImageLoader.getInstance().clearMemoryCache();
-//        ImageLoader.getInstance().clearDiskCache();
     }
 
     @Override
@@ -271,7 +271,7 @@ public class MainFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_refresh:
-                executeGetRecipes(true);
+                executeGetRecipes();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -288,14 +288,14 @@ public class MainFragment extends Fragment {
         if ((drawable = v.getDrawable()) != null) {
             Bitmap bm = ((BitmapDrawable) drawable).getBitmap();
             v.setImageBitmap(null);
-            drawable.setCallback(null); // callback이 남아있어서 비트맵이 반환되지 않는다는 말도 있는데 항상 그런진 모르겠다.
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB) {
-                // 허니콤부터는 비트맵 참조만 없어져도 메모리가 반환됐는데 그 이전에는 recycle 해줘야함.
-                try {
-                    bm.recycle();
-                } catch (Exception e) { }
-            }
+            drawable.setCallback(null); // callback이 남아있어 반환 안되는 경우도 있으므로 직접 끊어줌.
+//            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.HONEYCOMB) {
+//                // 허니콤부터는 비트맵 참조만 없어져도 메모리가 반환됐는데 그 이전에는 recycle 해줘야함.
+//                bm.recycle();
+//            }
+            bm.recycle();
         }
+        v.setOnClickListener(null);
     }
 
     public static boolean isInternetAvailable(Context context) {

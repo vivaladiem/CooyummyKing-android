@@ -46,7 +46,7 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
 //            holder = (ViewHolder) convertView.getTag(R.string.toolbar_ham);
 //        }
 //        holder.mTvTagNum.setText(String.valueOf(position + 1));
-//        ImageLoader.getInstance().displayImage("file://" + Recipe.localImagePaths.get(position), holder.mIvRecipeImage, mOptions);
+//        ImageLoader.getInstance().displayImage("file://" + Recipe.imagePaths.get(position), holder.mIvRecipeImage, mOptions);
 //        holder.mTvRecipeText.setText(mRecipe.instructions.get(position));
 //
 //        if (mRecipe.mainImageNum == position + 1) {
@@ -103,7 +103,7 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
 
     public void addItem(String instruction, String imageUrl) {
         mRecipe.instructions.add(instruction);
-        mRecipe.localImagePaths.add(imageUrl);
+        mRecipe.imagePaths.add(imageUrl);
         notifyDataSetChanged();
     }
 
@@ -117,8 +117,8 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
             instructions = inst;
         }
         mRecipe.instructions.addAll(instructions);
-        mRecipe.localImagePaths.addAll(imageUrls);
-        mRecipe.mainImageIndex = mRecipe.localImagePaths.size();
+        mRecipe.imagePaths.addAll(imageUrls);
+        mRecipe.mainImageIndex = mRecipe.imagePaths.size();
         notifyDataSetChanged();
         mRecipe.isChanged = true;
     }

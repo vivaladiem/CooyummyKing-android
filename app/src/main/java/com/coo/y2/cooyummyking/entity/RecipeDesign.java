@@ -16,7 +16,7 @@ import java.util.Arrays;
  */
 public class RecipeDesign {
     public String title;
-    public ArrayList<String> localImagePaths;
+    public ArrayList<String> imagePaths;
     public ArrayList<String> instructions;
     public int mainImageIndex;
     public int cookingTime;
@@ -38,7 +38,7 @@ public class RecipeDesign {
             sRecipe.theme = "";
             sRecipe.ingredients = "";
             sRecipe.sources = "";
-            sRecipe.localImagePaths = new ArrayList<>();
+            sRecipe.imagePaths = new ArrayList<>();
             sRecipe.instructions = new ArrayList<>();
         }
 
@@ -81,7 +81,7 @@ public class RecipeDesign {
         // * split 에 -1을 인자로 넣어줘야만 끝의 빈 요소를 취급함. (빈 요소가 연속이면 연속되는 모두를)
         // ex) split(",") (1,2,,) -> [1, 2]  // split(",", -1) (1,2,,) -> [1, 2, , ]
         // 기본값은 0
-        sRecipe.localImagePaths = new ArrayList<>(Arrays.asList(json.optString(Recipe.RECIPE_IMAGE_PATH).split(", ", -1)));
+        sRecipe.imagePaths = new ArrayList<>(Arrays.asList(json.optString(Recipe.RECIPE_IMAGE_PATH).split(", ", -1)));
         return sRecipe;
     }
 
@@ -93,14 +93,14 @@ public class RecipeDesign {
         // 뭔가 더 확실한 조치를 취해야 할 것 같기는 한데..
         // 근데 오류가 발생하는 경우가 있긴 할지 잘 모르겠다.
         // image Url에 맞춰 instructions 추가시키는 도중에 에러난다면 발생하려나
-        return Math.min(instructions.size(), localImagePaths.size());
+        return Math.min(instructions.size(), imagePaths.size());
     }
 
     /**
      * Get image path. if edited photo exist, return that.
      */
     public String getImagePath(int index) {
-        String path = localImagePaths.get(index);
+        String path = imagePaths.get(index);
         if (path.contains("||")) {
             return path.split("\\|\\|")[1];
         } else {
@@ -109,19 +109,18 @@ public class RecipeDesign {
     }
 
     public String getImagePath(int index, boolean original) {
-        return original ? localImagePaths.get(index).split("\\|\\|")[0] : getImagePath(index);
+        return original ? imagePaths.get(index).split("\\|\\|")[0] : getImagePath(index);
     }
 
     /**
-     * Set edited photo path. Append edited photo path with || separator.
+     * Add edited photo path. Append edited photo path with || separator.
      * @param index step index
      * @param path edited photo path
      */
-    // TODO 원본으로 되돌릴 때의 처리도 필요. 다른 메서드를 쓰던가..
-    public void setEditedPhotoPath(int index, String path) {
+    public void addEditedImage(int index, String path) {
         // ||을 구분자로 뒷부분에 수정된 이미지 경로를 덧붙입니다
-        if (localImagePaths.get(index).contains("||")) {
-            String[] paths = localImagePaths.get(index).split("\\|\\|", -1);
+        if (imagePaths.get(index).contains("||")) {
+            String[] paths = imagePaths.get(index).split("\\|\\|", -1);
             String origin = paths[0];
             String preEdImage = paths[1];
 
@@ -132,9 +131,24 @@ public class RecipeDesign {
                 Log.i("CYMK", "Previous Deco Image File Delete Failed : " + preEdImage);
             }
 
-            localImagePaths.set(index, origin + "||" + path);
+            imagePaths.set(index, origin + "||" + path);
         } else {
-            localImagePaths.set(index, localImagePaths.get(index) + "||" + path);
+            imagePaths.set(index, imagePaths.get(index) + "||" + path);
         }
+    }
+
+    public void resetImage(int index) {
+        String[] paths = imagePaths.get(index).split("\\|\\|");
+
+        String preEdImage = paths[1];
+        boolean isDeleted = new File(preEdImage).delete();
+        if (!isDeleted) {
+            // 기존 편집 이미지파일 삭제 실패
+            // TODO 시스템이 나중에 다시 삭제하는 등 조치 취할 수 있도록 처리해야.
+            // TODO 좀비파일이 남아있게 하면 안됨.
+            Log.i("CYMK", "Previous deco image file delete failed : " + preEdImage);
+        }
+
+        imagePaths.set(index, paths[0]);
     }
 }
