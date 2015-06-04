@@ -5,8 +5,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -25,6 +23,7 @@ import android.widget.Toast;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.MainActivity;
+import com.coo.y2.cooyummyking.core.App;
 import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.network.HttpUtil;
 import com.coo.y2.cooyummyking.network.URL;
@@ -128,7 +127,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     }
 
     private void executeGetRecipes() {
-        if (!isInternetAvailable(getActivity())) {
+        if (!App.isInternetAvailable(getActivity())) {
             Toast.makeText(getActivity(), getResources().getString(R.string.err_network_unavailable), Toast.LENGTH_SHORT).show();
             return;
         }
@@ -298,21 +297,4 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         v.setOnClickListener(null);
     }
 
-    public static boolean isInternetAvailable(Context context) {
-        boolean isInternetAvailable = false;
-
-        try {
-            ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-
-            if(networkInfo != null && (networkInfo.isConnected())) {
-                isInternetAvailable  = true;
-            }
-        }
-        catch(Exception exception) {
-            exception.printStackTrace();
-        }
-
-        return isInternetAvailable;
-    }
 }

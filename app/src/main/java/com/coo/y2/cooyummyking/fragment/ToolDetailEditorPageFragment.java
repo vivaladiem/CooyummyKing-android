@@ -16,6 +16,7 @@ import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.entity.RecipeDesign;
+import com.coo.y2.cooyummyking.util.ExhibitManager;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -63,7 +64,12 @@ public class ToolDetailEditorPageFragment extends Fragment {
         mEdInstruction = (EditText) v.findViewById(R.id.tool_detail_editor_text);
         TextView tvTagNum = (TextView)  v.findViewById(R.id.tool_detail_editor_tag_num);
 
-        ImageLoader.getInstance().displayImage("file://" + mImageUrl, mImageView, mOptions);
+        Bitmap tempImage = ExhibitManager.getReplica(mPosition);
+        if (tempImage == null) {
+            ImageLoader.getInstance().displayImage("file://" + mImageUrl, mImageView, mOptions);
+        } else { // 저장중일 경우 임시이미지를 사용한다.
+            mImageView.setImageBitmap(tempImage);
+        }
         mEdInstruction.setText(mInstruction);
         tvTagNum.setText(String.valueOf(mPosition + 1));
 

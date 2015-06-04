@@ -9,15 +9,11 @@ public class URL {
     public static final String BASE_URL = "http://ec2-54-64-71-195.ap-northeast-1.compute.amazonaws.com:3000/";
     public static final String BASE_URL_DEVELOPMENT = "http://192.168.10.101:3000/";
     public static final String getBaseUrl() {
-        if (App.SERVER_TARGET == App.SERVER_TEST) {
-            return BASE_URL_DEVELOPMENT;
-        } else {
-            return BASE_URL;
-        }
+        return App.SERVER_TARGET == App.SERVER_TEST ? BASE_URL_DEVELOPMENT : BASE_URL;
     }
 
-    public static final String GET_RECIPES = "recipes/list";
-    public static final String CREATE_RECIPES = "recipes";
+    public static final String GET_RECIPES = getBaseUrl() + "recipes/list";
+    public static final String CREATE_RECIPES = getBaseUrl() + "recipes";
     public static final String GET_IMAGE_URL = getBaseUrl() + "recipes/%s/images/%s";
-    public static final String GET_RECIPE = "recipes/%s/user/%s";
+    public static final String GET_RECIPE = getBaseUrl() + "recipes/%s/user/%s";
 }

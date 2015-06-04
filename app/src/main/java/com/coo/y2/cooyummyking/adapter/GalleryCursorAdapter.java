@@ -16,7 +16,6 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
-import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import java.util.ArrayList;
 
@@ -103,12 +102,11 @@ public class GalleryCursorAdapter extends CursorRecyclerViewAdapter<GalleryCurso
             // 그러다보니 여기에선 UIL은 안쓰일 것.
             // 일단은 그냥 쓰고 나중에.. 지금은 매번 새로 resize하는거니까 비효율적이긴 한데 다른기능 개발이 시급함..
             // TODO UIL쓰지말고, 1. (Thread로) ThumbnailUtils로 썸네일로 만들어서 2. 디스크캐시에 저장 3. Thread로 ImageView에 나타내기. + Thread Pool 사용.
-            ImageLoader.getInstance().displayImage("file://" + mUrl, holder.mImageView, mOptions, new SimpleImageLoadingListener() {
-                @Override
-                public void onLoadingComplete(String imageUri, View view, final Bitmap loadedImage) {
-                    super.onLoadingComplete(imageUri, view, loadedImage);
-                }
-            });
+            //
+            // * 불러온 이미지를 직접 디스크캐시에 넣으려고 했더니
+            // 어디가 문제인지 모르겠지만 recycle 된 이미지를 사용한다는 에러가 난다.. 이미 뷰에 들어가서 상관이 없을텐데도..
+            // 나중에 분석해봐서 해결되면 디스크캐시에 넣어 쓰면 됨.
+            ImageLoader.getInstance().displayImage("file://" + mUrl, holder.mImageView, mOptions);
 
             holder.mViewGroup.setTag(mPosition);
         }

@@ -129,10 +129,10 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
     public void addItem(int position, String instruction, String imageUrl) {
         if (position == -1) {
             mRecipe.instructions.add(instruction);
-            mRecipe.imagePaths.add(imageUrl);
+            mRecipe.addImage(imageUrl);
         } else {
             mRecipe.instructions.add(position, instruction);
-            mRecipe.imagePaths.add(position, imageUrl);
+            mRecipe.addImage(position, imageUrl);
         }
         notifyItemInserted(position);
     }
@@ -149,8 +149,8 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
             instructions = inst;
         }
         mRecipe.instructions.addAll(instructions);
-        mRecipe.imagePaths.addAll(imagePaths);
-        mRecipe.mainImageIndex = mRecipe.imagePaths.size();
+        mRecipe.addBulkImage(imagePaths);
+        mRecipe.mainImageIndex = mRecipe.getStepSize();
         mRecipe.isChanged = true;
 
 
@@ -159,24 +159,14 @@ public class MyRecyclerAdapter extends RecyclerView.Adapter<MyRecyclerAdapter.Vi
 
     public void removeItem(int position) {
         mRecipe.instructions.remove(position);
-        mRecipe.imagePaths.remove(position);
+        mRecipe.removeImage(position);
         notifyItemRemoved(position);
     }
 
     public void changePosition(int before, int after) {
         mRecipe.instructions.add(after, mRecipe.instructions.remove(before));
-        mRecipe.imagePaths.add(after, mRecipe.imagePaths.remove(before));
+        mRecipe.addImage(after, mRecipe.removeImage(before));
         notifyItemMoved(before, after);
-    }
-
-    public void setInstruction(int position, String instruction) {
-        mRecipe.instructions.set(position, instruction);
-        notifyItemChanged(position);
-    }
-
-    public void setImage(int position, String imageUrl) {
-        mRecipe.imagePaths.set(position, imageUrl);
-        notifyItemChanged(position);
     }
 
 }

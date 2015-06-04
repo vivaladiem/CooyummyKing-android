@@ -1,6 +1,7 @@
 package com.coo.y2.cooyummyking.fragment;
 
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -21,7 +22,6 @@ import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.listener.OnBackPressedListener;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 /**
@@ -51,18 +51,32 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
         mImageView.setLayoutParams(params);
+        mImageView.setBackgroundColor(Color.WHITE);
+        mImageView.setPadding(32, 16, 32, 16);
         mImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mImageView.setClickable(true);
         mImageView.setOnTouchListener(this);
-        mImageView.setImageBitmap(mOriginalImage); // Set previous image for smooth UI
 
 
-        // If save process hasn't finished - use last edited one without load new.
-        if (!((ToolDetailEditorFragment)getParentFragment()).isInSaveProcess) {
-
-            // Set bigger image - could be used for save
-            ImageSize size = new ImageSize(640, 640);
-            ImageLoader.getInstance().loadImage("file://" + RecipeDesign.getDesign().getImagePath(mCurrentItemIndex), size, new SimpleImageLoadingListener() {
+//        if (ExhibitManager.getReplica(mCurrentItemIndex) == null) { // If save process is done.
+//            // Set bigger image - could be used for save
+////            ImageSize size = new ImageSize(640, 640);
+//            ImageLoader.getInstance().loadImage("file://" + RecipeDesign.getDesign().getImagePath(mCurrentItemIndex), new SimpleImageLoadingListener() {
+//                @Override
+//                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                    super.onLoadingComplete(imageUri, view, loadedImage);
+//                    mOriginalImage = loadedImage;
+//                    mImageView.setImageBitmap(loadedImage);
+//                }
+//            });
+//        } else {
+//            mImageView.setImageBitmap(mOriginalImage); // Set last edited image for smooth UI
+//        }
+        // 저장중이 아니어도 쓸 수 있느냐 없느냐가 갈리므로 isRecycle을 사용해 처리한다.
+        //      (처음부터 저장중인게 없어서 저장중이 아닌경우 or 저장이 끝나서 아닌경우)
+        //      괜히 다른데선 쓸 일도 없는 '시작을 안했는지 체크하기' 기능보다 이렇게 하면 간단함.
+        if (mOriginalImage.isRecycled()) {
+            ImageLoader.getInstance().loadImage("file://" + RecipeDesign.getDesign().getImagePath(mCurrentItemIndex), new SimpleImageLoadingListener() {
                 @Override
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                     super.onLoadingComplete(imageUri, view, loadedImage);
@@ -70,6 +84,8 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
                     mImageView.setImageBitmap(loadedImage);
                 }
             });
+        } else {
+            mImageView.setImageBitmap(mOriginalImage);
         }
 
         setHasOptionsMenu(true);
@@ -86,7 +102,8 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
         return mFilteredImage;
     }
 
-    public void setFilterImage(Bitmap image) {
+    public synchronized void setFilterImage(Bitmap image) {
+        if (mImageView == null) return;
         if ((mFilteredImage = image) == null) {
             mImageView.setImageBitmap(mOriginalImage);
         } else {
@@ -105,17 +122,26 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
         this.mOriginalImage = image;
     }
 
+//    Matrix matrix = new Matrix();
+//    Point point = new Point();
+//    Point currentPoint = new Point();
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         switch(motionEvent.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 mImageView.setImageBitmap(mOriginalImage);
+//                point.set((int) motionEvent.getX(), (int) motionEvent.getY());
                 break;
             case MotionEvent.ACTION_UP:
                 if (mFilteredImage == null)
                     break;
                 mImageView.setImageBitmap(mFilteredImage);
                 break;
+            case MotionEvent.ACTION_MOVE:
+//                currentPoint.set((int) motionEvent.getX(), (int) motionEvent.getY());
+//                matrix.postTranslate(currentPoint.x - point.x, currentPoint.y - point.y);
+//                mImageView.setImageMatrix(matrix);
+//                point.set(currentPoint.x, currentPoint.y);
         }
         return false;
     }

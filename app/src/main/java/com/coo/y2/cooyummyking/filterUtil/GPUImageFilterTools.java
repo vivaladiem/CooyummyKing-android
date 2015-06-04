@@ -19,7 +19,6 @@ package com.coo.y2.cooyummyking.filterUtil;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.graphics.PointF;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -269,12 +268,11 @@ public class GPUImageFilterTools implements View.OnClickListener {
      */
     private void updateFilter(View view) {
         int i = (int) view.getTag();
-        Log.i("CYMK", "updateFilter / i : " + i);
         view.setSelected(!view.isSelected()); // Change state of selected view.
 
         // If same view is selected -> detach filter
         if (i == preFilter) {
-            filterListener.onSelectFilter(null);
+            filterListener.onFilterSelected(null);
             preFilter = -1;
             return;
         }
@@ -282,7 +280,7 @@ public class GPUImageFilterTools implements View.OnClickListener {
         if (preFilter != -1) // If pre filter is not null,
             mSampleViews.get(preFilter).setSelected(false); // Change state of previously selected view
 
-        filterListener.onSelectFilter(createFilterForType(mContext, mFilters.filters.get(i)));
+        filterListener.onFilterSelected(createFilterForType(mContext, mFilters.filters.get(i)));
         preFilter = i;
     }
 
@@ -452,7 +450,7 @@ public class GPUImageFilterTools implements View.OnClickListener {
     }
 
     public interface OnGpuImageFilterSelectListener {
-        void onSelectFilter(final GPUImageFilter filter);
+        void onFilterSelected(final GPUImageFilter filter);
     }
 
     private enum FilterType {

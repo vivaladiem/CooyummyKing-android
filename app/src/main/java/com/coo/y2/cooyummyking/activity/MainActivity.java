@@ -22,7 +22,10 @@ import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.fragment.MainFragment;
 import com.coo.y2.cooyummyking.fragment.ToolFragment;
 import com.coo.y2.cooyummyking.listener.OnBackPressedListener;
+import com.coo.y2.cooyummyking.util.ExhibitManager;
 import com.coo.y2.cooyummyking.util.RecipeSerializer;
+
+import java.util.ArrayList;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -350,18 +353,38 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
 
-        // Temp Recipe Save
+        // Save temp recipe
         // ToolFragment가 이 Activity 위에 있으므로 생명주기상 여기에서 작성중인 레시피 저장을 한다.
+        // TODO 이미지를 편집해 파일이 저장되었는데 오류로 튕길 경우 좀비파일이 되어버림. 정보 날라감과 함께 해결할 사항
+        // 1. 시작 후 백그라운드에서 Recipe Design imagePath와 파일 비교해서 path에 없는 파일이 있으면 지운다거나..
+        // 그러려면 파일을 특정 폴더에 넣어야겠지.
+        // 그리고 백그라운드라고 해도 여유로울 때 실행해야 좋겠고.
+        // 튕김 알고 처리하는 방법이 있나? catch같이 각각의 지점에서 하는 것 말고.. 아님 모든 catch마다 처리코드를 넣어야하나. 아.. catch가 되면 문제가 없지. 예상치 못한 error가 문제지
+        // 2. 필터 바꿀 경우 편집사진을 2개까지 저장. 만약 하나의 파일이 없으면 다른걸 찾음
 
         RecipeDesign recipe = RecipeDesign.getDesign();
-        if (!recipe.isChanged) return; // if recipe has no change(include didn't start making one)
+        if (!recipe.isChanged) return; // if recipe hasn't changed(include didn't start making one)
         RecipeSerializer serializer = new RecipeSerializer(this);
+        checkExhibit();
         try {
             serializer.saveTempData(recipe);
-            recipe.isChanged = false; // code for onPause is called by starting other Activity
-            Log.i("CYMK", "Temp recipe data saved");
+            recipe.isChanged = false; // code needed when starting other Activity
+            Log.i("CYMK", "Temp recipe data is saved");
         } catch(Exception e) {
             Log.i("CYMK", "Failed to save recipe temp data");
+        }
+    }
+
+    // 이미지 편집 중 저장이 끝나지 않은 것이 있는지 체크하고 존재한다면 완료시까지 기다립니다.
+    // 제대로 쓴게 아니지 않을까 이거.. wait and notify 다시 보자. 그리고 평행하게 확인하려면?
+    private void checkExhibit() {
+        ArrayList<ExhibitManager.Exhibit> exhibits = ExhibitManager.getAllExhibit();
+        if (exhibits == null) return;
+        for (ExhibitManager.Exhibit exhibit : exhibits) {
+//            if (exhibit.isInSaveProcess()) {
+//                try {exhibit.wait();} catch(InterruptedException e) {e.printStackTrace();}
+//            }
+            exhibit.waitIfSaveProcess();
         }
     }
 
@@ -386,8 +409,9 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+
     private static int backPressedCount = 0;
-    long backPressedTime = 0;
+    private long backPressedTime = 0;
     @Override
     public void onBackPressed() {
         if (onFragmentBackPressedListener != null) {

@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -28,6 +29,7 @@ import android.widget.Toast;
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.filterUtil.GPUImageFilterTools;
+import com.coo.y2.cooyummyking.util.ExhibitManager;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
@@ -39,7 +41,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.UUID;
 
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
@@ -48,7 +49,6 @@ import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
  * Created by Y2 on 2015-05-18.
  */
 public class ToolDetailEditorFragment extends Fragment implements View.OnClickListener, GPUImageFilterTools.OnGpuImageFilterSelectListener {
-    public static final int INTENT_REQUESTCODE = 0;
 
     private View view;
     private ViewPager mViewPager;
@@ -85,6 +85,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
             .imageScaleType(ImageScaleType.EXACTLY)
             .considerExifParams(true)
             .displayer(new FadeInBitmapDisplayer(200))
+            .cacheInMemory(true)
             .build();
 
     @Nullable
@@ -204,7 +205,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     public void onClick(View view) {
         if (currentBtnId == view.getId() && currentBtnId != R.id.tool_detail_bottombar_text) return;
 
-        removeLowerView();
+        clearUtilView();
 
         currentBtnId = view.getId();
 
@@ -213,28 +214,6 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
                 break;
 
             case R.id.tool_detail_bottombar_filter:
-//                Fragment fragment = fm.findFragmentById(containerResId);
-//                android.support.v4.app.FragmentTransaction ft = fm.beginTransaction();
-//                if (fragment == null) {
-////                    ft.add(containerResId, );
-//                } else {
-////                    ft.replace(containerResId, );
-//                }
-//                // remove에 null을 넣어도 되나? 그러면은 remove(fragment).add()를 하는게 더 깔끔할텐데.
-////                ft.commit();
-
-//                final GPUImage gpuImage = new GPUImage(getActivity());
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Drawable d = ((ImageView) getPageChildView(VIEW_IMAGE)).getDrawable();
-//                        Bitmap bmp = ((BitmapDrawable)d).getBitmap();
-//                        gpuImage.setFilteredImage(bmp);
-//                        gpuImage.setFilter(new IFLomoFilter(getActivity()));
-//                        ((ImageView) getPageChildView(VIEW_IMAGE)).setImageBitmap(gpuImage.getBitmapWithFilterApplied());
-//                        bmp.recycle();
-//                    }
-//                }).run();
                 mBtnFilter.setSelected(true);
 
                 showPhotoEditFragment();
@@ -262,7 +241,8 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         }
     }
 
-    private void removeLowerView() {
+    // Clear lower view and button selected state
+    private void clearUtilView() {
         recursiveRecycle(mLowerView);
         int count = mBottomBar.getChildCount();
         for (int i = 0; i < count; i++) {
@@ -273,31 +253,38 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     private void showPhotoEditFragment() {
         if (fm.findFragmentById(R.id.tool_detail_editor_photo_container) != null) return;
 
-        Bitmap image = ((BitmapDrawable)((ImageView) getPageChildView(VIEW_IMAGE)).getDrawable()).getBitmap();
-        mPhotoFragment = ToolDetailEditorPhotoFragment.newInstance(getCurrentItem(), image);
-        fm.beginTransaction()
-                .add(R.id.tool_detail_editor_photo_container, mPhotoFragment)
-                .commit();
+        int i = getCurrentItem();
+        // TODO 아직 뷰가 완성이 안되서 image가 없을 때 해결해야.
+        // 여기에서 이미지헬퍼 쓰면 Fragment 생성과정에서 저장이 완료되면 문제가 발생하므로 ToolDetailEditorPhotoFragment에서 한다.
+        try {
+            Bitmap image = ((BitmapDrawable)((ImageView) getPageChildView(VIEW_IMAGE)).getDrawable()).getBitmap(); // 문제가능지점 1. view 미완성 2. temp 이미지 사용중 // from : 1.load new, 2.temp image
+            mPhotoFragment = ToolDetailEditorPhotoFragment.newInstance(i, image);
+            fm.beginTransaction()
+                    .add(R.id.tool_detail_editor_photo_container, mPhotoFragment)
+                    .commit();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
     @Override
-    public void onSelectFilter(final GPUImageFilter filter) {
-//        if (mCurrentFilter == filter) return; // GPUImageFilterTools에서 걸러지므로 사실 이제 필요는 없음.
+    public void onFilterSelected(final GPUImageFilter filter) {
 
-//        mCurrentFilter = filter;// 얘도 마찬가지.
-
-        // On no selected
+        // on no filter is selected
         if (filter == null) {
             mPhotoFragment.setFilterImage(null);
             return;
         }
 
-        // On filter selected
-        ImageSize size = new ImageSize(640, 640);
+        // on filter is selected
+//        ImageSize size = new ImageSize(640, 640);
         String imagePath = RecipeDesign.getDesign().getImagePath(getCurrentItem());
 
-        ImageLoader.getInstance().loadImage("file://" + imagePath, size, new SimpleImageLoadingListener() {
+        // 여기에서 매번 불필요하게 새로 로딩하니 느려진다.. 캐시에 저장하면 메모리가 조금 아깝고, 확인을 하자니 애매한데.
+        // 확인법? Tool~PhotoFragment에서 이미지 가져와서 size w, h 다 640 넘는지 확인하는 임시변통
+        //
+        ImageLoader.getInstance().loadImage("file://" + imagePath, imageOptions, new SimpleImageLoadingListener() {
             @Override
             public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                 super.onLoadingComplete(imageUri, view, loadedImage);
@@ -326,14 +313,16 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            mPhotoFragment.setFilterImage(gpu.getBitmapWithFilterApplied());
+            mPhotoFragment.setFilterImage(gpu.getBitmapWithFilterApplied());//에러발생구역. 필터를 빨리 바꿀땐 괜찮은데 저장중에 변경을 어찌어찌 하다가 발생. gpu getBitmap~가 없어서 생긴듯?
         }
     }
 
 
+    // TODO 동기화 보장해야. 파일 저장이 오래걸리니 꼬일 가능성.
+    // 실제로 연속해서 필터 등록하면 파일 유실됨. 근데 어디를 동기화해야하는지 잘 모르겠다. 파일 저장을 순서대로 해야하는데..
     // TODO 필터 뿐 아니라 다른 변경에도 대응해야. ToolDetailEditorPhotoFragment에도 해당.
     public void onFinishPhotoEdit(boolean isApply) {
-        removeLowerView();
+        clearUtilView();
         currentBtnId = 0;
 
         /* Finished by back button*/
@@ -350,11 +339,16 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
             return;
         }
 
+        // TODO 아무래도 resultImage가 recycle 되어 생기는 오류같은데, 왜 그렇게 되지.. 순서상 불가능하지않나 / 일단 resultImage(==아래의 image)에서 에러나는건 맞음.
+        if( resultImage.isRecycled()) {
+            Log.i("CYMK", "resultImage is recycled!");
+        }
         // If complete with filtered image - save file, add path to recipe design
-        ((ImageView)getPageChildView(VIEW_IMAGE)).setImageBitmap(resultImage); //resultImage == mFilteredImage;
+        ((ImageView)getPageChildView(VIEW_IMAGE)).setImageBitmap(resultImage); //resultImage == mFilteredImage; // do for UI
         finishPhotoFragment();
 
         new SaveEditedImageTask(resultImage, getCurrentItem()).execute();
+//        new SaveEditedImageTask(resultImage, getCurrentItem()).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR).execute();
     }
 
 
@@ -363,13 +357,12 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     }
 
 
-    private class SaveEditedImageTask extends AsyncTask<Void, Void, Void> {
-        private Bitmap image;
+    private final class SaveEditedImageTask extends AsyncTask<Void, Void, Boolean> {
         private int index;
+        private Bitmap image; // == mFilteredImage. should recycle
         private String fileName;
         private String dir;
         private File file;
-        private boolean success;
 
         public SaveEditedImageTask(Bitmap image, int index) {
             this.image = image;
@@ -379,19 +372,27 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            isInSaveProcess = true;
-            fileName = UUID.randomUUID().toString() + ".png"; // If complete with filtered image - save to internal file, add path to array
-            dir = getActivity().getFilesDir().toString();
+            ExhibitManager.scriber(index).startSaveProcess(image);
+//            isInSaveProcess = true;
+//            fileName = UUID.randomUUID().toString() + ".png"; // If complete with filtered image - save to internal file, add path to array
+            fileName = index + ".png";
+            dir = getActivity().getFilesDir().toString() + "/edited_image";
             file = new File(dir, fileName);
-            success = false;
+            if (!file.exists()) {
+                if (file.mkdirs()) {
+                    file = new File(getActivity().getFilesDir().toString(), fileName);
+                }
+            }
         }
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Boolean doInBackground(Void... voids) {
             OutputStream out = null;
+            boolean success = false;
             try {
                 out = new FileOutputStream(file);
-                success = image.compress(Bitmap.CompressFormat.PNG, 100, out);
+                success = image.compress(Bitmap.CompressFormat.PNG, 100, out); // TODO recycle 에러 발생
+                if (success) RecipeDesign.getDesign().addEditedImage(index, file.getAbsolutePath());
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -403,14 +404,15 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
                     e.printStackTrace();
                 }
             }
-            return null;
+            return success;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
             if (success) {
-                RecipeDesign.getDesign().addEditedImage(index, file.getAbsolutePath());
+//                RecipeDesign.getDesign().addEditedImage(index, file.getAbsolutePath());
+                Log.i("CYMK", "Edited Image of " + index + " Save Success : " + file.getAbsolutePath());
             } else {
                 String msg = getResources().getString(R.string.err_fail_edit_image);
                 Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
@@ -432,15 +434,15 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
                             if (pageView != null) pageView.setImageBitmap(loadedImage);
 
                             // 임시로 지정해 두었던 mPhotoFragment의 Original 이미지를 저장한 이미지로 할당하고 기존 이미지는 반환합니다.
-                            // 만약 페이지가 바뀌었다면 실행하지 않습니다.
-                            if (index == getCurrentItem()) mPhotoFragment.setOriginalImage(loadedImage);
-                            image.recycle();
+                            if (index == getCurrentItem()) mPhotoFragment.setOriginalImage(loadedImage); // 만약 페이지가 바뀌었다면 실행하지 않습니다.
+                            ExhibitManager.scriber(index).finishSaveProcess();
+//                            image.recycle(); // to be done by ExhitbitManager.
                         }
                     });
                 }
             }).run();
 
-            isInSaveProcess = false;
+//            isInSaveProcess = false;
         }
     }
 

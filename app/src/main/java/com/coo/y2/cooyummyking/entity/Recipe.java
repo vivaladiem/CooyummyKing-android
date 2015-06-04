@@ -24,6 +24,8 @@ public class Recipe {
     public static final String CREATED_AT = "created_at";
 
     public static final String RECIPE_IMAGE_PATH = "image_path";
+    public static final String RECIPE_ORIGINAL_IMG = "original_";
+    public static final String RECIPE_SEPARATOR = "||";
 
 
     // [Tuning] 안드로이드에선 게터 세터가 성능면에서 좋지 않기때문에 필터링이 필요없을땐 직접접근으로 한다.

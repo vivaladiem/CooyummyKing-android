@@ -103,7 +103,7 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
 
     public void addItem(String instruction, String imageUrl) {
         mRecipe.instructions.add(instruction);
-        mRecipe.imagePaths.add(imageUrl);
+        mRecipe.addImage(imageUrl);
         notifyDataSetChanged();
     }
 
@@ -117,8 +117,8 @@ public class MyDynamicGridAdapter extends BaseDynamicGridAdapter {
             instructions = inst;
         }
         mRecipe.instructions.addAll(instructions);
-        mRecipe.imagePaths.addAll(imageUrls);
-        mRecipe.mainImageIndex = mRecipe.imagePaths.size();
+        mRecipe.addBulkImage(imageUrls);
+        mRecipe.mainImageIndex = mRecipe.getStepSize();
         notifyDataSetChanged();
         mRecipe.isChanged = true;
     }

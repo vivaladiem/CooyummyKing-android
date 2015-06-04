@@ -2,6 +2,7 @@ package com.coo.y2.cooyummyking.fragment;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -12,11 +13,16 @@ import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayout;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,15 +34,30 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.GalleryActivity;
 import com.coo.y2.cooyummyking.activity.MainActivity;
+import com.coo.y2.cooyummyking.core.App;
+import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.entity.RecipeDesign;
+import com.coo.y2.cooyummyking.entity.User;
+import com.coo.y2.cooyummyking.network.HttpUtil;
+import com.coo.y2.cooyummyking.network.URL;
+import com.coo.y2.cooyummyking.util.ExhibitManager;
 import com.coo.y2.cooyummyking.util.RecipeSerializer;
+import com.loopj.android.http.JsonHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
+
+import org.apache.http.Header;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 
@@ -52,7 +73,7 @@ import java.util.ArrayList;
 public class ToolFragment extends Fragment {
 
     // ----- Variables for Recipe data ----------- //
-    private RecipeDesign mRecipe;
+    private RecipeDesign sRecipe;
 
     //------ Variables for view --------------//
     private int widthPx;
@@ -110,14 +131,14 @@ public class ToolFragment extends Fragment {
 
     private void initRecipeScheme() {
         if (RecipeDesign.isInited()) {
-            mRecipe = RecipeDesign.getDesign();
+            sRecipe = RecipeDesign.getDesign();
             return;
         }
 
         RecipeSerializer serializer = new RecipeSerializer(getActivity());
-        mRecipe = RecipeDesign.loadTempDesign(serializer);
-        if (mRecipe == null) {
-            mRecipe = RecipeDesign.getDesign();
+        sRecipe = RecipeDesign.loadTempDesign(serializer);
+        if (sRecipe == null) {
+            sRecipe = RecipeDesign.getDesign();
             Log.i("CYMK", "새로운 레시피 작성");
         } else {
             Log.i("CYMK", "임시저장된 레시피 로드됨");
@@ -140,6 +161,7 @@ public class ToolFragment extends Fragment {
         initBottomTabAnimation();
         initScrollViewFlicker();
         initEvents();
+        setHasOptionsMenu(true);
         return mScrollView;
     }
 
@@ -171,6 +193,7 @@ public class ToolFragment extends Fragment {
 
         mTxtTitle = (EditText) v.findViewById(R.id.tool_info_title);
         mTxtTime = (EditText) v.findViewById(R.id.tool_info_time);
+        mTimeEditArea = v.findViewById(R.id.tool_info_time_area);
         mTxtTheme = (EditText) v.findViewById(R.id.tool_info_theme);
         mTxtIngredient = (EditText) v.findViewById(R.id.tool_info_ingredient);
         mTxtSource = (EditText) v.findViewById(R.id.tool_info_source);
@@ -180,23 +203,18 @@ public class ToolFragment extends Fragment {
         // (to make multiple lines show, set maxLines)
 
         mTxtTitle.setOnFocusChangeListener(focusChangeListener);
-
         mTxtTime.setOnFocusChangeListener(focusChangeListener);
-        mTxtTime.setTag("time");
-
         mTxtTheme.setOnFocusChangeListener(focusChangeListener);
-
         mTxtIngredient.setOnFocusChangeListener(focusChangeListener);
-
         mTxtSource.setOnFocusChangeListener(focusChangeListener);
 
-        mTimeEditArea = v.findViewById(R.id.tool_info_time_area);
+        mTxtTitle.setText(sRecipe.title);
+        mTxtTime.setText(timeToText(sRecipe.cookingTime));
+        mTxtTheme.setText(sRecipe.theme);
+        mTxtIngredient.setText(sRecipe.ingredients);
+        mTxtSource.setText(sRecipe.sources);
 
-        mTxtTitle.setText(mRecipe.title);
-        mTxtTime.setText(timeToText(mRecipe.cookingTime));
-        mTxtTheme.setText(mRecipe.theme);
-        mTxtIngredient.setText(mRecipe.ingredients);
-        mTxtSource.setText(mRecipe.sources);
+        mTxtTime.setTag("time");
 
     }
 
@@ -229,7 +247,7 @@ public class ToolFragment extends Fragment {
         }
     };
 
-
+    // ------------------------ Init Grid Layout -------------------------------- //
     private void initGridLayout(View v) {
         final int columnCount = 3;
 
@@ -243,44 +261,15 @@ public class ToolFragment extends Fragment {
         mGridLayout = (android.support.v7.widget.GridLayout) v.findViewById(R.id.tool_making_sector);
         mGridLayout.setColumnCount(columnCount);
 
-        int count = mRecipe.instructions.size();
+        int count = sRecipe.instructions.size();
         int rowCount = count / columnCount + 1;
         mGridLayout.setRowCount(rowCount);
         for (int i = 0; i < count; i++) {
-//            int column = i % columnCount;
-//            int row = i / columnCount;
-//            columnSpec = android.support.v7.widget.GridLayout.spec(column, 1);
-//            rowSpec = android.support.v7.widget.GridLayout.spec(row, 1);
-//            lp = new android.support.v7.widget.GridLayout.LayoutParams(rowSpec, columnSpec);
-//            lp.columnSpec = android.support.v7.widget.GridLayout.spec(column, 1);
-//            lp.rowSpec = android.support.v7.widget.GridLayout.spec(row, 1);
-
-
-//            View view = getLayoutInflater(null).inflate(R.layout.tool_lowerpage_overview_content, mGridLayout, false);
-////            view.setLayoutParams(lp);
-//            view.getLayoutParams().width = itemWidth;
-//
-//            mTvTagNum = (TextView) view.findViewById(R.id.tool_making_tag_num);
-//            mIvRecipeImage = (ImageView) view.findViewById(R.id.tool_making_image);
-//            mTvRecipeText = (TextView) view.findViewById(R.id.tool_making_text);
-//            mTagMain = view.findViewById(R.id.tool_making_tag_main);
-//
-//            mTvTagNum.setText(String.valueOf(i + 1));
-//            ImageLoader.getInstance().displayImage("file://" + Recipe.imagePaths.get(i), mIvRecipeImage, mOptions);
-//            mTvRecipeText.setText(mRecipe.instructions.get(i));
-//
-//            if (mRecipe.mainImageIndex == i + 1) {
-//                mTagMain.setVisibility(View.VISIBLE);
-//            } else {
-//                mTagMain.setVisibility(View.GONE);
-//            }
-//
-//            mGridLayout.addView(view);
-            addItem(i);
+            addGridItem(i);
         }
     }
 
-    private void addItem(int i) {
+    private void addGridItem(final int i) {
         View view = getLayoutInflater(null).inflate(R.layout.tool_lowerpage_overview_content, mGridLayout, false);
         view.getLayoutParams().width = itemWidth;
 
@@ -290,40 +279,36 @@ public class ToolFragment extends Fragment {
         View mTagMain = view.findViewById(R.id.tool_making_tag_main);
 
         mTvTagNum.setText(String.valueOf(i + 1));
-        ImageLoader.getInstance().displayImage("file://" + mRecipe.getImagePath(i), mIvRecipeImage, mOptions);
-        mTvRecipeText.setText(mRecipe.instructions.get(i));
+        mIvRecipeImage.setTag(i);
 
-        if (mRecipe.mainImageIndex == i)
+        Bitmap tempImage = ExhibitManager.getReplica(i);
+        if (tempImage == null) {
+            ImageLoader.getInstance().displayImage("file://" + sRecipe.getImagePath(i), mIvRecipeImage, mOptions, imageLoadingListener);
+        } else {
+            mIvRecipeImage.setImageBitmap(tempImage);
+        }
+        mTvRecipeText.setText(sRecipe.instructions.get(i));
+
+        if (sRecipe.mainImageIndex == i)
             mTagMain.setVisibility(View.VISIBLE);
 
         view.setOnClickListener(gridItemClickListener);
         mGridLayout.addView(view);
     }
 
-
-    private void initEvents() {
-        mBtnAlbum = mScrollView.findViewById(R.id.tool_photo_album);
-//        mBtnCamera = mScrollView.findViewById(R.id.tool_photo_camera);
-        mBtnAlbum.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getActivity(), GalleryActivity.class);
-                startActivityForResult(intent, INTENT_FOR_ALBUM);
-            }
-        });
-
-
-        mTimeEditArea.setOnClickListener(timerClickListener);
-
-
-        // GridLayout Item의 리스너는 addItem()에서 등록한다
-    }
-
-    View.OnClickListener timerClickListener = new View.OnClickListener() {
+    private SimpleImageLoadingListener imageLoadingListener = new SimpleImageLoadingListener() {
         @Override
-        public void onClick(View view) {
-            openTimerDialog();
-            isDialogFromTouch = true;
+        public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+            super.onLoadingFailed(imageUri, view, failReason);
+            // 간혹 필터 적용된 이미지가 사라지는데 도대체 왜인지 모르겠다..
+            if (failReason.getType().toString().equals("IO_ERROR")) {
+                int i = (int) view.getTag();
+                sRecipe.resetImage(i);
+                Toast.makeText(getActivity(), getResources().getString(R.string.err_fail_load_edited_image), Toast.LENGTH_SHORT).show();
+                // 토스트 클릭해도 없어지지 않게 못하나? 안된다면 다이얼로그로 해야할듯
+                // 뷰에 표시하기.
+                ImageLoader.getInstance().displayImage("file://" + sRecipe.getImagePath(i), (ImageView) view, mOptions);
+            }
         }
     };
 
@@ -358,18 +343,45 @@ public class ToolFragment extends Fragment {
                     .commit();
         }
     };
+    // ------------------------------------------------------------------ //
+
+
+    private void initEvents() {
+        mBtnAlbum = mScrollView.findViewById(R.id.tool_photo_album);
+//        mBtnCamera = mScrollView.findViewById(R.id.tool_photo_camera);
+        mBtnAlbum.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getActivity(), GalleryActivity.class);
+                startActivityForResult(intent, INTENT_FOR_ALBUM);
+            }
+        });
+
+
+        mTimeEditArea.setOnClickListener(timerClickListener);
+
+        // GridLayout Item의 리스너는 addGridItem()에서 등록한다
+    }
+
+    View.OnClickListener timerClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            openTimerDialog();
+            isDialogFromTouch = true;
+        }
+    };
 
     private void openTimerDialog() {
         if (isFinish) return;
         FragmentManager fm = getChildFragmentManager();
-        JogDialogFragment jogFragment = JogDialogFragment.newInstance(mRecipe.cookingTime);
+        JogDialogFragment jogFragment = JogDialogFragment.newInstance(sRecipe.cookingTime);
         jogFragment.show(fm, "dial_timer");
     }
 
     public void onTimerDialogClose(int time) {
 
         mTxtTime.setText(timeToText(time));
-        mRecipe.cookingTime = time;
+        sRecipe.cookingTime = time;
 
         if (isDialogFromTouch) {
             // 다이얼로그가 터치로 실행되었을 땐 연속작성을 하지 않는다.
@@ -426,6 +438,7 @@ public class ToolFragment extends Fragment {
         });
     }
 
+    // ------------------- Init Scroll action --------------------- //
     // 어째서인지 스크롤 할 때마다 10kb정도씩 소모된다? 메인화면의 일반 스크롤뷰에서도 역시..
     private void initScrollViewFlicker() {
         mGstListener = new GstListener();
@@ -439,8 +452,6 @@ public class ToolFragment extends Fragment {
             }
         });
 
-        // TODO [Tuning] 이렇게 하면 여러 아이템이 추가될 땐 같은게 계속 불러지는 문제점.
-        // 수동으로 setTotalHeightAndPage 콜 해야 효율적일 듯. 대신 코드는 지저분해지겠다.. 나중에.
         mGridLayout.addOnLayoutChangeListener(layoutChangeListener);
     }
 
@@ -505,6 +516,7 @@ public class ToolFragment extends Fragment {
         }
 
     }
+    // ---------------------------------------------------------------- //
 
 
     @SuppressWarnings("unchecked")
@@ -518,19 +530,19 @@ public class ToolFragment extends Fragment {
 //                Recipe.localImagePaths.addAll(imageUrls);
                 int count = imageUrls.size();
                 for (int i = 0; i < count; i++) {
-                    mRecipe.instructions.add("");
-                    mRecipe.imagePaths.add(imageUrls.get(i));
-                    addItem(mRecipe.getStepSize() - 1);
+                    sRecipe.instructions.add("");
+                    sRecipe.addImage(imageUrls.get(i));
+                    addGridItem(sRecipe.getStepSize() - 1);
                 }
 
                 // 메인이미지 태그를 새로고침
-                if (!mRecipe.isMainImgManuallySet) {
-                    mGridLayout.getChildAt(mRecipe.mainImageIndex).findViewById(R.id.tool_making_tag_main).setVisibility(View.GONE);
-                    mRecipe.mainImageIndex = mRecipe.getStepSize() - 1;
-                    mGridLayout.getChildAt(mRecipe.mainImageIndex).findViewById(R.id.tool_making_tag_main).setVisibility(View.VISIBLE);
+                if (!sRecipe.isMainImgManuallySet) {
+                    mGridLayout.getChildAt(sRecipe.mainImageIndex).findViewById(R.id.tool_making_tag_main).setVisibility(View.GONE);
+                    sRecipe.mainImageIndex = sRecipe.getStepSize() - 1;
+                    mGridLayout.getChildAt(sRecipe.mainImageIndex).findViewById(R.id.tool_making_tag_main).setVisibility(View.VISIBLE);
                 }
 
-                mRecipe.isChanged = true;
+                sRecipe.isChanged = true;
                 break;
         }
         super.onActivityResult(requestCode, resultCode, data);
@@ -543,52 +555,153 @@ public class ToolFragment extends Fragment {
         // Recipe Data는 정보를 입력하는 각 프래그먼트의 onPause에서 Recipe 싱글톤에 할당하고,
         // MainActivity의 OnPause에서 파일에 저장한다.
         String txt;
-        if (!(txt = mTxtTitle.getText().toString()).equals(mRecipe.title)) {
-            mRecipe.title = txt;
-            mRecipe.isChanged = true;
+        if (!(txt = mTxtTitle.getText().toString()).equals(sRecipe.title)) {
+            sRecipe.title = txt;
+            sRecipe.isChanged = true;
         }
+
+        // 시간은 onTimerDialogClose에서 저장됨
 
         // TODO 언어따라 다르니 코드로 배정 - 적어도 테마, 주재료 등 값 정해져있는 건 자동번역이 가능하게 됨
-        if (!(txt = mTxtTheme.getText().toString()).equals(mRecipe.theme)) {
+        if (!(txt = mTxtTheme.getText().toString()).equals(sRecipe.theme)) {
             //getText()가 아니라 다이얼로그 닫길 때 선택한 것으로, 닫길 때 할당되어야.(요리시간처럼) 그러니 나중엔 이 코드는 필요 없게됨.
-            mRecipe.theme = txt;
-            mRecipe.isChanged = true;
+            sRecipe.theme = txt;
+            sRecipe.isChanged = true;
         }
 
-        if (!(txt = mTxtIngredient.getText().toString()).equals(mRecipe.ingredients)) {
-            mRecipe.ingredients = txt;
-            mRecipe.isChanged = true;
+        if (!(txt = mTxtIngredient.getText().toString()).equals(sRecipe.ingredients)) {
+            sRecipe.ingredients = txt;
+            sRecipe.isChanged = true;
         }
 
-        if (!(txt = mTxtSource.getText().toString()).equals(mRecipe.sources)) {
-            mRecipe.sources = txt;
-            mRecipe.isChanged = true;
+        if (!(txt = mTxtSource.getText().toString()).equals(sRecipe.sources)) {
+            sRecipe.sources = txt;
+            sRecipe.isChanged = true;
         }
 
     }
 
+    // ------------------- Handle menu and complete recipe ----------------------- //
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_tool_complete, menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.toolbar_tool_complete) {
+            if (!App.isInternetAvailable(getActivity())) {
+                Toast.makeText(getActivity(), getResources().getString(R.string.err_network_unavailable), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+
+            new AlertDialog.Builder(getActivity())
+                    .setMessage("레시피 작성을 완료하시겠습니까?")
+                    .setNegativeButton("예", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            completeRecipe();
+                        }
+                    })
+                    .setPositiveButton("아니오", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            dialogInterface.dismiss();
+                        }
+                    })
+                    .show();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+    // 서비스? 로 넣고서 안드 뉴스피드에 구글 앱 다운받을 때 처럼 프로그래스 바 띄움.
+    // 다되면 다이얼로그 뜨고 안드로이드 뉴스피드에 완성표시.
+    private void completeRecipe() {
+        RequestParams params = new RequestParams();
+        params.put(User.USER_ID, String.valueOf(1));//
+        params.put(User.USER_TOKEN, String.valueOf("change_later"));
+        params.put(Recipe.RECIPE_TITLE, sRecipe.title);
+        params.put(Recipe.RECIPE_INST, TextUtils.join(Recipe.RECIPE_SEPARATOR, sRecipe.instructions));
+        params.put(Recipe.RECIPE_MAINIMG, sRecipe.mainImageIndex);
+        params.put(Recipe.RECIPE_COOKINGTIME, sRecipe.cookingTime);
+        params.put(Recipe.RECIPE_THEME, sRecipe.theme);
+        params.put(Recipe.RECIPE_INGREDIENTS, sRecipe.ingredients);
+        params.put(Recipe.RECIPE_SOURCES, sRecipe.sources);
+
+        ArrayList<String> imagePaths = sRecipe.getAllImagePath();
+        int count = sRecipe.getStepSize();
+        for (int i = 0; i < count; i++) {
+            String path = imagePaths.get(i);
+
+            if (path.contains("||")) { // If edited image exist - send both file
+                String[] paths = path.split("\\|\\|", -1);
+                // path가 아니라 file을 넣어야..
+//                params.put(String.valueOf(i), paths[1]);
+//                params.put(Recipe.RECIPE_ORIGINAL_IMG + i, paths[0]);
+                // 핸들러로 파일 불러올 때마다 params에 파일 넣는식으로 진행
+                // 다 넣으면 post요청.
+
+                // 또는 AsyncTask사용, doInBackground에서 이미지 로드한 후 publish, 각 publish에서 params에 파일 넣고
+                // onPostExecute에서 post요청. 이게 낫겠다.
+                // 또한 이 과정을 시작부터 모두 서비스? 로 진행.
+
+            } else { // If only original image exist
+                params.put(String.valueOf(i), path);
+            }
+        }
+
+        HttpUtil.post(URL.CREATE_RECIPES, null, params, new JsonHttpResponseHandler() {
+
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                int result = 0;
+                String msg = "";
+                try { result = response.getInt("result"); msg = response.getString("msg");} catch (JSONException e) { e.printStackTrace();
+                }
+                if (statusCode == 200) {
+                    if (result == 1) {
+                        Toast.makeText(getActivity(), "레시피를 성공적으로 완성하였습니다", Toast.LENGTH_SHORT).show();
+                    } else if (result == 0) {
+                        new AlertDialog.Builder(getActivity())
+                                .setMessage("레시피 완성에 문제가 발생하였습니다\r레시피를 보관합니다\r" + msg)
+                                .show();
+                    }
+                }
+
+            }
+        });
+    }
+
+//    private class CompleteRecipeTask extends AsyncTask<Void, Void, Void> {
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//            // 서비스에 넣음
+//            // RequestParams 생성 및 채워넣기
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... voids) {
+//
+//            return null;
+//        }
+//    }
+
+    // ----------------------- Return Memory -------------------- //
     @Override
     public void onDestroyView () {
         mGstDetector = null;
         mGstListener = null;
         mVibrator = null;
-//        mScrollView.setOnTouchListener(null); //mScrollView = null만 하면 안해도 되겠지?
+        imm = null;
         mOutAnim.setAnimationListener(null);
         mOutAnim = null;
         mInAnim.setAnimationListener(null);
         mInAnim = null;
         isFinish = true;
-
-        // Recipe Info - EditTexts
-//        mTxtTitle.setOnKeyListener(null);
-//        mTxtTitle.setOnFocusChangeListener(null);
-//        mTxtTime.setOnFocusChangeListener(null);
-//        mTxtTheme.setOnFocusChangeListener(null);
-//        mTxtIngredient.setOnFocusChangeListener(null);
-//        mTxtSource.setOnFocusChangeListener(null);
-//        mTimeEditArea.setOnClickListener(null);
-
-//        mBtnAlbum.setOnClickListener(null);
 
         mGridLayout.removeOnLayoutChangeListener(layoutChangeListener);
 
@@ -636,6 +749,7 @@ public class ToolFragment extends Fragment {
 //            }
 //        }
 
+    @SuppressWarnings("unchecked")
     private void recursiveRecycle(View root) {
         if (root == null)
             return;
@@ -652,7 +766,7 @@ public class ToolFragment extends Fragment {
             if (!(group instanceof AdapterView)) {
                 group.removeAllViews();
             } else {
-                ((AdapterView)group).setAdapter(null); // AdapterView doesn't exist here.
+                ((AdapterView)group).setAdapter(null);
             }
         }
         if (root instanceof ImageView) {
@@ -675,4 +789,5 @@ public class ToolFragment extends Fragment {
 //            recursiveRecycle(ref.get());
 //        }
 //    }
+
 }

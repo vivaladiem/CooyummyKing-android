@@ -1,6 +1,5 @@
 package com.coo.y2.cooyummyking.fragment;
 
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -24,6 +23,7 @@ import com.coo.y2.cooyummyking.widget.CircleImageView;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import org.apache.http.Header;
@@ -200,18 +200,19 @@ public class RecipeDetailFragment extends Fragment {
             String instruction = getItem(position);
             String imageUrl = mRecipe.getImageUrl(position);
 
-            ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, mOptions, new SimpleImageLoadingListener() {
-                @Override
-                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                    super.onLoadingComplete(imageUri, view, loadedImage);
-                    view.setVisibility(View.VISIBLE);
-                }
-            });
-
+            ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, mOptions, imageLoadingListener);
 
             holder.instTextView.setText(instruction);
             return convertView;
         }
+
+        private SimpleImageLoadingListener imageLoadingListener = new SimpleImageLoadingListener() {
+            @Override
+            public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+                super.onLoadingFailed(imageUri, view, failReason);
+                view.setVisibility(View.VISIBLE);
+            }
+        };
     }
 
     @Override
