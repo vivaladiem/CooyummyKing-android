@@ -8,14 +8,15 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.internal.view.ContextThemeWrapper;
 import android.support.v7.widget.GridLayout;
-import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -40,26 +41,25 @@ import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.GalleryActivity;
 import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.core.App;
-import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.entity.RecipeDesign;
-import com.coo.y2.cooyummyking.entity.User;
-import com.coo.y2.cooyummyking.network.HttpUtil;
-import com.coo.y2.cooyummyking.network.URL;
+import com.coo.y2.cooyummyking.listener.ArgumentImageLoadingListener;
 import com.coo.y2.cooyummyking.util.ExhibitManager;
+import com.coo.y2.cooyummyking.util.RecipeCompleteWorker;
 import com.coo.y2.cooyummyking.util.RecipeSerializer;
-import com.loopj.android.http.JsonHttpResponseHandler;
-import com.loopj.android.http.RequestParams;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
+import com.nostra13.universalimageloader.core.assist.ImageSize;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
-import org.apache.http.Header;
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Created by Y2 on 2015-05-04.
@@ -129,6 +129,7 @@ public class ToolFragment extends Fragment {
         initRecipeScheme();
     }
 
+    // TODO 간혹 저장된게 아무런 메시지도 없이 안불러짐.. 이미 실행중일 때 adb로 새로 받을 때만 그런 것 같긴 함.
     private void initRecipeScheme() {
         if (RecipeDesign.isInited()) {
             sRecipe = RecipeDesign.getDesign();
@@ -214,7 +215,11 @@ public class ToolFragment extends Fragment {
         mTxtIngredient.setText(sRecipe.ingredients);
         mTxtSource.setText(sRecipe.sources);
 
+        mTxtTitle.setTag("title");
         mTxtTime.setTag("time");
+        mTxtTheme.setTag("theme");
+        mTxtIngredient.setTag("ingredient");
+        mTxtSource.setTag("source");
 
     }
 
@@ -236,13 +241,27 @@ public class ToolFragment extends Fragment {
                     case "time":
                         openTimerDialog();
                         break;
-                    // TBD
-                    default:
                 }
             } else {
                 v.setHorizontallyScrolling(true);
                 v.setSelection(0); // 첫 줄이 보이도록 스크롤을 맨 위로 // 여러줄일 때 약간 내려간 듯 보이는 문제점.. - setHorizontallyScrolling 동적으로 조절해서 해결 -> 키보드 한번에 안뜨는 문제점.... -> post로 해결!
                 v.setMaxLines(1);
+
+                switch(String.valueOf(view.getTag())) {
+                    case "title":
+                        sRecipe.title = v.getText().toString();
+                        break;
+                    case "theme":
+                        sRecipe.theme = v.getText().toString();
+                        break;
+                    case "ingredient":
+                        sRecipe.ingredients = v.getText().toString();
+                        break;
+                    case "source":
+                        sRecipe.sources = v.getText().toString();
+                        break;
+                }
+                sRecipe.isChanged = true; // 이러면 변화 없어도 change 된걸로 판단되는게 문제이긴 함..
             }
         }
     };
@@ -269,6 +288,7 @@ public class ToolFragment extends Fragment {
         }
     }
 
+
     private void addGridItem(final int i) {
         View view = getLayoutInflater(null).inflate(R.layout.tool_lowerpage_overview_content, mGridLayout, false);
         view.getLayoutParams().width = itemWidth;
@@ -278,8 +298,10 @@ public class ToolFragment extends Fragment {
         TextView mTvRecipeText = (TextView) view.findViewById(R.id.tool_making_text);
         View mTagMain = view.findViewById(R.id.tool_making_tag_main);
 
+
         mTvTagNum.setText(String.valueOf(i + 1));
         mIvRecipeImage.setTag(i);
+
 
         Bitmap tempImage = ExhibitManager.getReplica(i);
         if (tempImage == null) {
@@ -289,18 +311,23 @@ public class ToolFragment extends Fragment {
         }
         mTvRecipeText.setText(sRecipe.instructions.get(i));
 
+
         if (sRecipe.mainImageIndex == i)
             mTagMain.setVisibility(View.VISIBLE);
+
 
         view.setOnClickListener(gridItemClickListener);
         mGridLayout.addView(view);
     }
+
 
     private SimpleImageLoadingListener imageLoadingListener = new SimpleImageLoadingListener() {
         @Override
         public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
             super.onLoadingFailed(imageUri, view, failReason);
             // 간혹 필터 적용된 이미지가 사라지는데 도대체 왜인지 모르겠다..
+            // A) 파일명 다르게 하니까 순서뒤섞여서 그랬음. 이젠 항상 같은 파일명으로 저장하니 그런 일 없음.
+            // 사실상 필요없어진 코드.
             if (failReason.getType().toString().equals("IO_ERROR")) {
                 int i = (int) view.getTag();
                 sRecipe.resetImage(i);
@@ -312,7 +339,8 @@ public class ToolFragment extends Fragment {
         }
     };
 
-    View.OnClickListener gridItemClickListener = new View.OnClickListener() {
+
+    private View.OnClickListener gridItemClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
             // Take ScreenShot for DetailEditorFragment's background
@@ -326,7 +354,7 @@ public class ToolFragment extends Fragment {
 
 
             mScrollView.setDrawingCacheEnabled(true);
-            canvas.drawBitmap(mScrollView.getDrawingCache(), 0, 0, null);
+            canvas.drawBitmap(mScrollView.getDrawingCache(), 0, 0, null); // TODO 필터 관련 recycle 에러 여기에서 발생..?
             mScrollView.setDrawingCacheEnabled(false);
             canvas.scale(scaleFactor, scaleFactor);
 
@@ -525,17 +553,22 @@ public class ToolFragment extends Fragment {
         switch(requestCode) {
             case INTENT_FOR_ALBUM:
                 if (resultCode != Activity.RESULT_OK) return;
-                // [Tuning] 반드시 Clone을 해야 참조가 끊겨 GalleryActivity가 종료됨.
+                // [Tuning] 반드시 Clone을 해야 참조가 끊겨 GalleryActivity가 종료됨. 근데 사실 이것도 참 값복사가 아니라서...
                 ArrayList<String> imageUrls = (ArrayList<String>) data.getStringArrayListExtra(GalleryActivity.EXTRA_SELECTED_ITEMS).clone();
-//                Recipe.localImagePaths.addAll(imageUrls);
+
+                // 데이터와 이미지를 저장하고 레이아웃에 더해진 스탭을 나타냅니다.
+                ImageSize imageSize = new ImageSize(640, 640);
+                int preSize = sRecipe.getStepSize();
                 int count = imageUrls.size();
                 for (int i = 0; i < count; i++) {
                     sRecipe.instructions.add("");
                     sRecipe.addImage(imageUrls.get(i));
                     addGridItem(sRecipe.getStepSize() - 1);
+
+                    saveImage(preSize + i, imageUrls.get(i), imageSize);
                 }
 
-                // 메인이미지 태그를 새로고침
+                // 메인이미지 태그를 새로고칩니다.
                 if (!sRecipe.isMainImgManuallySet) {
                     mGridLayout.getChildAt(sRecipe.mainImageIndex).findViewById(R.id.tool_making_tag_main).setVisibility(View.GONE);
                     sRecipe.mainImageIndex = sRecipe.getStepSize() - 1;
@@ -547,6 +580,129 @@ public class ToolFragment extends Fragment {
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
+    private void saveImage(final int i, String path, ImageSize size) {
+        String uri = "file://" + path;
+        ImageLoader.getInstance().loadImage(uri, size, addImageLoadingListener.getListener(uri, i));
+    }
+
+    ArgumentImageLoadingListener addImageLoadingListener = new ArgumentImageLoadingListener() {
+        String dir;
+
+        @Override
+        public ArgumentImageLoadingListener getListener(String uriKey, Object... args) {
+            setProperty(uriKey, "index", args[0]);
+            if (dir == null) dir = getActivity().getDir("edited_images", Context.MODE_PRIVATE).toString();
+
+            return this;
+        }
+
+        @Override
+        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+            super.onLoadingComplete(imageUri, view, loadedImage);
+            int index = (int) removeProperty("index");
+
+//            // 세이브 전에 앱이 꺼짐을 방지하기 위해 세이브의 시작과 끝을 알립니다. 원래는 ToolDetailEditorFragment에서 사용
+//            ExhibitManager.getExhibit(index).startExhibit(loadedImage);
+//
+//            // 파일을 저장합니다
+//            String fileName = UUID.randomUUID().toString();
+//            File file = new File(dir, fileName);
+//            OutputStream out = null;
+//            boolean success = false;
+//            try {
+//                out = new FileOutputStream(file);
+//                success = loadedImage.compress(Bitmap.CompressFormat.JPEG, 100, out);
+//                if (success) {
+//                    sRecipe.addImage(file.getAbsolutePath());
+//                    sRecipe.instructions.add("");
+//                    addGridItem(index);
+//                    Log.i("CYMK", "new image save success : " + index);
+//                } else {
+//                    // 토스트 등 에러 알림 처리
+//                    // 반복문 안이라 문제.. 만일 전부 에러뜨면...
+//                    Toast.makeText(getActivity(), "이미지 저장을 실패하였습니다", Toast.LENGTH_LONG).show();
+//                }
+//
+//                ExhibitManager.getExhibit(index).finishExhibit();
+//            } catch(IOException e) {
+//                e.printStackTrace();
+//            } finally {
+//                if (out != null) try {
+//                    out.close();
+//                } catch(IOException e) {
+//                    Log.i("CYMK", "OutputStream close error : " + e.getMessage());
+//                }
+//            }
+
+            new SaveImageTask(loadedImage, index, dir).execute();
+
+        }
+    };
+
+    private class SaveImageTask extends AsyncTask<Void, Void, Boolean> {
+        private Bitmap image;
+        private int index;
+        private String dir;
+
+
+        public SaveImageTask(Bitmap image, int index, String dir) {
+            this.image = image;
+            this.index = index;
+            this.dir = dir;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            // 세이브 전에 앱이 꺼짐을 방지하기 위해 세이브의 시작과 끝을 알립니다. 원래는 ToolDetailEditorFragment에서 사용
+            ExhibitManager.getExhibit(index).startExhibit(null);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+
+            // 파일을 저장합니다
+            String fileName = UUID.randomUUID() + ".jpg";
+            File file = new File(dir, fileName);
+            OutputStream out = null;
+            boolean success = false;
+
+            try {
+                out = new FileOutputStream(file);
+                success = image.compress(Bitmap.CompressFormat.JPEG, 100, out);
+
+                // 성공시 imagePath를 업데이트합니다.
+                if (success) {
+                    sRecipe.updateImage(index, file.getAbsolutePath());
+                    Log.i("CYMK", "recipe " + index + " image path : " + sRecipe.getImagePath(index));
+
+                    Log.i("CYMK", "new image save success : " + index);
+                }
+
+            } catch(IOException e) {
+                e.printStackTrace();
+            } finally {
+                if (out != null) try {
+                    out.close();
+                } catch(IOException e) {
+                    Log.i("CYMK", "OutputStream close error : " + e.getMessage());
+                }
+            }
+            return success;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            super.onPostExecute(success);
+            ExhibitManager.getExhibit(index).finishExhibit();
+
+            if (!success) // TODO 에러처리가 부족하다. 나중에 다시 저장할 수 있게 하든가 사용자에게 더 확실히 알리는 등 조치가 필요.
+                Toast.makeText(new WeakReference<Context>(getActivity()).get(), "이미지 저장을 실패하였습니다", Toast.LENGTH_LONG).show();
+        }
+
+    }
+
 
     @Override
     public void onPause() {
@@ -596,12 +752,12 @@ public class ToolFragment extends Fragment {
                 return true;
             }
 
-            new AlertDialog.Builder(getActivity())
-                    .setMessage("레시피 작성을 완료하시겠습니까?")
+            new AlertDialog.Builder(new ContextThemeWrapper(getActivity(), android.R.style.Theme_DeviceDefault_Light_Dialog_Alert))
+                    .setMessage(getResources().getString(R.string.tool_complete))
                     .setNegativeButton("예", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
-                            completeRecipe();
+                            new RecipeCompleteWorker(getActivity()).execute();
                         }
                     })
                     .setPositiveButton("아니오", new DialogInterface.OnClickListener() {
@@ -618,75 +774,169 @@ public class ToolFragment extends Fragment {
 
     // 서비스? 로 넣고서 안드 뉴스피드에 구글 앱 다운받을 때 처럼 프로그래스 바 띄움.
     // 다되면 다이얼로그 뜨고 안드로이드 뉴스피드에 완성표시.
-    private void completeRecipe() {
-        RequestParams params = new RequestParams();
-        params.put(User.USER_ID, String.valueOf(1));//
-        params.put(User.USER_TOKEN, String.valueOf("change_later"));
-        params.put(Recipe.RECIPE_TITLE, sRecipe.title);
-        params.put(Recipe.RECIPE_INST, TextUtils.join(Recipe.RECIPE_SEPARATOR, sRecipe.instructions));
-        params.put(Recipe.RECIPE_MAINIMG, sRecipe.mainImageIndex);
-        params.put(Recipe.RECIPE_COOKINGTIME, sRecipe.cookingTime);
-        params.put(Recipe.RECIPE_THEME, sRecipe.theme);
-        params.put(Recipe.RECIPE_INGREDIENTS, sRecipe.ingredients);
-        params.put(Recipe.RECIPE_SOURCES, sRecipe.sources);
+//    private void completeRecipe() {
+//        RequestParams params = new RequestParams();
+//        params.put(User.USER_ID, String.valueOf(1));//
+//        params.put(User.USER_TOKEN, String.valueOf("change_later"));
+//        params.put(Recipe.RECIPE_TITLE, sRecipe.title);
+//        params.put(Recipe.RECIPE_INST, TextUtils.join(Recipe.RECIPE_SEPARATOR, sRecipe.instructions));
+//        params.put(Recipe.RECIPE_MAINIMG, sRecipe.mainImageIndex);
+//        params.put(Recipe.RECIPE_COOKINGTIME, sRecipe.cookingTime);
+//        params.put(Recipe.RECIPE_THEME, sRecipe.theme);
+//        params.put(Recipe.RECIPE_INGREDIENTS, sRecipe.ingredients);
+//        params.put(Recipe.RECIPE_SOURCES, sRecipe.sources);
+//
+//        ArrayList<String> imagePaths = sRecipe.getAllImagePath();
+//        int stepCount = imagePaths.size();
+//        int imageCount = sRecipe.getTotalImageCount();
+//        int progress = 0;
+//        for (int i = 0; i < stepCount; i++) {
+//            String path = imagePaths.get(i);
+//
+//            if (path.contains("||")) { // If edited image exist - send both file
+//                // path가 아니라 file을 넣어야..
+////                params.put(String.valueOf(i), paths[1]);
+////                params.put(Recipe.RECIPE_ORIGINAL_IMG + i, paths[0]);
+//                // 핸들러로 파일 불러올 때마다 params에 파일 넣는식으로 진행
+//                // 다 넣으면 post요청.
+//
+//                // 또는 AsyncTask사용, doInBackground에서 이미지 로드한 후 publish, 각 publish에서 params에 파일 넣고
+//                // onPostExecute에서 post요청. 이게 낫겠다.
+//
+//                String[] paths = path.split("\\|\\|", -1);
+//                ImageLoader.getInstance().loadImage("file://" + paths[1], new ImageSize(640, 640), new SimpleImageLoadingListener() {
+//                    @Override
+//                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                        super.onLoadingComplete(imageUri, view, loadedImage);
+////                        params.put(String.valueOf(i), loadedImage);
+//                        if (++progress == imageCount)
+//                    }
+//                });
+//                ImageLoader.getInstance().loadImage("file://" + paths[0], new ImageSize(640, 640), new SimpleImageLoadingListener() {
+//                    @Override
+//                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                        super.onLoadingComplete(imageUri, view, loadedImage);
+////                        params.put(Recipe.RECIPE_ORIGINAL_IMG + index, loadedImage);
+//                    }
+//                });
+//
+//
+//            } else { // If only original image exist
+//                params.put(String.valueOf(i), path);
+//            }
+//        }
+//
+//        HttpUtil.post(URL.CREATE_RECIPES, null, params, new JsonHttpResponseHandler() {
+//
+//            @Override
+//            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+//                super.onSuccess(statusCode, headers, response);
+//                int result = 0;
+//                String msg = "";
+//                try {
+//                    result = response.getInt("result");
+//                    msg = response.getString("msg");
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//                if (statusCode == 200) {
+//                    if (result == 1) {
+//                        Toast.makeText(getActivity(), "레시피를 성공적으로 완성하였습니다", Toast.LENGTH_SHORT).show();
+//                    } else if (result == 0) {
+//                        new AlertDialog.Builder(getActivity())
+//                                .setMessage("레시피 완성에 문제가 발생하였습니다\r레시피를 보관합니다\r" + msg)
+//                                .show();
+//                    }
+//                }
+//
+//            }
+//        });
+//    }
 
-        ArrayList<String> imagePaths = sRecipe.getAllImagePath();
-        int count = sRecipe.getStepSize();
-        for (int i = 0; i < count; i++) {
-            String path = imagePaths.get(i);
+//    private void onImageLoaded(int i, RequestParams params, Bitmap image) {
+//        params.put(String.valueOf(i), image);
+//    }
+//
+//    private void onOriginalImageLoaded(int i, RequestParams params, Bitmap image) {
+//        params.put(Recipe.RECIPE_ORIGINAL_IMG + i, image);
+//    }
+//
+//    SimpleImageLoadingListener loadingListener = new SimpleImageLoadingListener() {
+//        @Override
+//        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//            super.onLoadingComplete(imageUri, view, loadedImage);
+//
+//        }
+//    }
 
-            if (path.contains("||")) { // If edited image exist - send both file
-                String[] paths = path.split("\\|\\|", -1);
-                // path가 아니라 file을 넣어야..
-//                params.put(String.valueOf(i), paths[1]);
-//                params.put(Recipe.RECIPE_ORIGINAL_IMG + i, paths[0]);
-                // 핸들러로 파일 불러올 때마다 params에 파일 넣는식으로 진행
-                // 다 넣으면 post요청.
-
-                // 또는 AsyncTask사용, doInBackground에서 이미지 로드한 후 publish, 각 publish에서 params에 파일 넣고
-                // onPostExecute에서 post요청. 이게 낫겠다.
-                // 또한 이 과정을 시작부터 모두 서비스? 로 진행.
-
-            } else { // If only original image exist
-                params.put(String.valueOf(i), path);
-            }
-        }
-
-        HttpUtil.post(URL.CREATE_RECIPES, null, params, new JsonHttpResponseHandler() {
-
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
-                int result = 0;
-                String msg = "";
-                try { result = response.getInt("result"); msg = response.getString("msg");} catch (JSONException e) { e.printStackTrace();
-                }
-                if (statusCode == 200) {
-                    if (result == 1) {
-                        Toast.makeText(getActivity(), "레시피를 성공적으로 완성하였습니다", Toast.LENGTH_SHORT).show();
-                    } else if (result == 0) {
-                        new AlertDialog.Builder(getActivity())
-                                .setMessage("레시피 완성에 문제가 발생하였습니다\r레시피를 보관합니다\r" + msg)
-                                .show();
-                    }
-                }
-
-            }
-        });
-    }
-
-//    private class CompleteRecipeTask extends AsyncTask<Void, Void, Void> {
+//    private class CompleteRecipeTask extends AsyncTask<Void, Integer, Void> {
+//        private RequestParams params;
+//        private int count;
 //        @Override
 //        protected void onPreExecute() {
 //            super.onPreExecute();
 //            // 서비스에 넣음
 //            // RequestParams 생성 및 채워넣기
+//            params = new RequestParams();
+//            params.put(User.USER_ID, String.valueOf(1));//
+//            params.put(User.USER_TOKEN, String.valueOf("change_later"));
+//            params.put(Recipe.RECIPE_TITLE, sRecipe.title);
+//            params.put(Recipe.RECIPE_INST, TextUtils.join(Recipe.RECIPE_SEPARATOR, sRecipe.instructions));
+//            params.put(Recipe.RECIPE_MAINIMG, sRecipe.mainImageIndex);
+//            params.put(Recipe.RECIPE_COOKINGTIME, sRecipe.cookingTime);
+//            params.put(Recipe.RECIPE_THEME, sRecipe.theme);
+//            params.put(Recipe.RECIPE_INGREDIENTS, sRecipe.ingredients);
+//            params.put(Recipe.RECIPE_SOURCES, sRecipe.sources);
 //        }
 //
 //        @Override
 //        protected Void doInBackground(Void... voids) {
+//            ArrayList<String> imagePaths = sRecipe.getAllImagePath();
+//            count = sRecipe.getStepSize();
+//            for (int i = 0; i < count; i++) {
+//                String path = imagePaths.get(i);
+//                final int index = i;
 //
+//                if (path.contains("||")) { // If edited image exist - send both file
+//                    String[] paths = path.split("\\|\\|", -1);
+//                    ImageLoader.getInstance().loadImage("file://" + paths[1], new ImageSize(640, 640), new SimpleImageLoadingListener() {
+//                        @Override
+//                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                            super.onLoadingComplete(imageUri, view, loadedImage);
+//                            params.put(String.valueOf(index), loadedImage);
+//                            publishProgress(index);
+//                        }
+//                    });
+//                    ImageLoader.getInstance().loadImage("file://" + paths[0], new ImageSize(640, 640), new SimpleImageLoadingListener() {
+//                        @Override
+//                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                            super.onLoadingComplete(imageUri, view, loadedImage);
+//                            params.put(Recipe.RECIPE_ORIGINAL_IMG + index, loadedImage);
+//                        }
+//                    });
+//
+//
+//                } else { // If only original image exist
+//                    ImageLoader.getInstance().loadImage("file://" + path, new ImageSize(640, 640), new SimpleImageLoadingListener() {
+//                        @Override
+//                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+//                            super.onLoadingComplete(imageUri, view, loadedImage);
+//                            params.put(String.valueOf(index), loadedImage);
+//                        }
+//                    });
+//                }
+//            }
 //            return null;
+//        }
+//
+//        @Override
+//        protected void onProgressUpdate(Integer... values) {
+//            super.onProgressUpdate(values);
+//            int i = values[0];
+//            Log.i("CYMK", "onProgress : " + i);
+//            if (i < count) {
+//                // Update Progress Bar or just block until all progress finish
+//            }
 //        }
 //    }
 
@@ -775,6 +1025,8 @@ public class ToolFragment extends Fragment {
             if ((drawable = iv.getDrawable()) == null) return;
             drawable.setCallback(null);
             iv.setImageDrawable(null);
+//            Bitmap bmp = ((BitmapDrawable)drawable).getBitmap();
+//            if (!bmp.isRecycled()) bmp.recycle(); // 리사이클된 것 사용한다는 에러가 난다... 도대체 어디때문이냐..ㅠ 어차피 허니콤 이상이라 사실상 필요가 없긴 하다. 보류
             iv = null;
             drawable = null;
         }

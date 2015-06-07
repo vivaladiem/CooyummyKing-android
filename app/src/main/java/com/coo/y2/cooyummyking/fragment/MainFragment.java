@@ -5,12 +5,12 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -30,8 +30,10 @@ import com.coo.y2.cooyummyking.network.URL;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import org.apache.http.Header;
 import org.json.JSONArray;
@@ -53,12 +55,13 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private ArrayList<Recipe> mRecipes = new ArrayList<>();
     private boolean isFromBackStack = false; // BackStack에서 돌아왔을 때인지 나타내는 변수. 새로고침여부를 판단
     private Toast mErrToast;
-    private AttachImageTask mAttachImageTask;
+//    private AttachImageTask mAttachImageTask;
 
     private DisplayImageOptions mImageLoaderOptions = new DisplayImageOptions.Builder()
             .bitmapConfig(Bitmap.Config.RGB_565)
             .imageScaleType(ImageScaleType.EXACTLY)
             .cacheInMemory(true)
+            .showImageOnLoading(null)
             .displayer(new FadeInBitmapDisplayer(300))
             .build();
 
@@ -77,7 +80,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         View v = inflater.inflate(R.layout.fragment_main_recipe_list, container, false);
         initResources(v);
         initEvents();
-        executeGetRecipes();
+//        executeGetRecipes();
         setHasOptionsMenu(true);
         return v;
     }
@@ -126,43 +129,6 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         }
     }
 
-    private void executeGetRecipes() {
-        if (!App.isInternetAvailable(getActivity())) {
-            Toast.makeText(getActivity(), getResources().getString(R.string.err_network_unavailable), Toast.LENGTH_SHORT).show();
-            return;
-        }
-        // 백스택에서 돌아왔을 땐 새로 불러오지 하지 않는다.
-        if (isFromBackStack) {
-            loadAndDisplayImages();
-            isFromBackStack = false;
-            return;
-        }
-
-        HttpUtil.get(URL.GET_RECIPES, null, null, new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                super.onSuccess(statusCode, headers, response);
-                clearAndBuildRecipes(response.optJSONArray("recipes"));
-                loadAndDisplayImages();
-            }
-
-            @Override
-            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                super.onFailure(statusCode, headers, responseString, throwable);
-                HttpUtil.cancle();
-            }
-
-            private void clearAndBuildRecipes(JSONArray recipes) {
-                mRecipes.clear();
-                int count = recipes.length(); // [Tuning] 반복문에선 이런식으로 값을 상수에 넣어놓고 사용해야 빠름.
-                for (int i = 0; i < count; i++) {
-                    mRecipes.add(Recipe.loadRecipe(recipes.optJSONObject(i)));
-                }
-                ImageLoader.getInstance().clearMemoryCache(); // 캐시는 popBackStack에서 쓰기 위해 쓰는것이니 Refresh에선 바로 비워줌
-            }
-        });
-    }
-
     // Recipe on click listener
     @Override
     public void onClick(View view) {
@@ -195,47 +161,118 @@ public class MainFragment extends Fragment implements View.OnClickListener{
                 .commit();
     }
 
-    private void loadAndDisplayImages() {
-        mAttachImageTask = new AttachImageTask();
-        mAttachImageTask.execute();
+    @Override
+    public void onResume() {
+        super.onResume();
+        executeGetRecipes();
     }
 
-    private class AttachImageTask extends AsyncTask<Void, Integer, Void> {
-        private int size = mRecipes.size();
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            for (ImageView iv : mIvRecipeImages) {
-                returnBitmapMemory(iv);
-            }
+    private void executeGetRecipes() {
+        if (!App.isInternetAvailable(getActivity())) {
+            Toast.makeText(getActivity(), getResources().getString(R.string.err_network_unavailable), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // 백스택에서 돌아왔을 땐 새로 불러오기 하지 않는다.
+        if (isFromBackStack) {
+            loadAndDisplayImages();
+            isFromBackStack = false;
+            return;
         }
 
-        @Override
-        protected Void doInBackground(Void... params) {
-            for (int i = 0; i < size; i++) {
-                publishProgress(i);
+        HttpUtil.get(URL.GET_RECIPES, null, null, new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                clearAndBuildRecipes(response.optJSONArray("recipes"));
+                loadAndDisplayImages();
             }
-            return null;
-        }
 
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            int i = values[0];
-            if (i < size) {
-                Recipe recipe = mRecipes.get(i);
-                if (recipe.mainImageIndex != 0) {
-                    ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageIndex), mIvRecipeImages[i], mImageLoaderOptions);
-                } else {
-                    // 혹시라도 레시피에 사진이 하나도 없을 때.
+            @Override
+            public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
+                super.onFailure(statusCode, headers, responseString, throwable);
+                HttpUtil.cancle();
+            }
+
+            private void clearAndBuildRecipes(JSONArray recipes) {
+                mRecipes.clear();
+                int count = recipes.length(); // [Tuning] 반복문에선 이런식으로 값을 상수에 넣어놓고 사용해야 빠름.
+                for (int i = 0; i < count; i++) {
+                    mRecipes.add(Recipe.loadRecipe(recipes.optJSONObject(i)));
                 }
+                ImageLoader.getInstance().clearMemoryCache(); // 캐시는 popBackStack에서 쓰기 위해 쓰는것이니 Refresh에선 바로 비워줌
             }
+        });
+    }
+
+    private void loadAndDisplayImages() {
+//        mAttachImageTask = new AttachImageTask();
+//        mAttachImageTask.execute();
+        for (ImageView iv : mIvRecipeImages) {
+            returnBitmapMemory(iv);
         }
+        int count = mRecipes.size();
+        Recipe recipe;
+        for (int i = 0; i < count; i++) {
+            recipe = mRecipes.get(i);
+            ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageIndex, "sm"), mIvRecipeImages[i], mImageLoaderOptions, imageLoadingListener);
+        }
+
+    }
+
+//    private class AttachImageTask extends AsyncTask<Void, Integer, Void> {
+//        private int size = mRecipes.size();
+//        @Override
+//        protected void onPreExecute() {
+//            super.onPreExecute();
+//            for (ImageView iv : mIvRecipeImages) {
+//                returnBitmapMemory(iv);
+//            }
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... params) {
+//            for (int i = 0; i < size; i++) {
+//                publishProgress(i);
+//            }
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onProgressUpdate(Integer... values) {
+//            int i = values[0];
+//            if (i < size) {
+//                Recipe recipe = mRecipes.get(i);
+//                if (recipe.mainImageIndex != 0) {
+//                    ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageIndex, "sm"), mIvRecipeImages[i], mImageLoaderOptions, imageLoadingListener);
+//                } else {
+//                    // 혹시라도 레시피에 사진이 하나도 없을 때.
+//                }
+//            }
+//        }
+//    }
+
+    SimpleImageLoadingListener imageLoadingListener = new SimpleImageLoadingListener() {
+
+        @Override
+        public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+            super.onLoadingFailed(imageUri, view, failReason);
+            // 만일 작은 사이즈의 이미지가 존재하지 않는다면 원 사이즈의 이미지를 가져옵니다.
+            ImageLoader.getInstance().displayImage(imageUri.replaceAll("_.{2,3}$", ""), (ImageView) view, mImageLoaderOptions);
+        }
+    };
+
+    @Override
+    public void onPause() {
+        super.onPause();
+//        if (mAttachImageTask != null) mAttachImageTask.cancel(false);
+//        ImageLoader.getInstance().stop();
+//        HttpUtil.cancle();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        if (mAttachImageTask != null) mAttachImageTask.cancel(false);
+//        if (mAttachImageTask != null) mAttachImageTask.cancel(false);
         ImageLoader.getInstance().stop();
         HttpUtil.cancle();
     }
@@ -243,10 +280,13 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onDestroyView() {
         super.onDestroy();
-        int count = mIvRecipeImages.length;
-        for (int i = 0; i < count; i++) {
-            returnBitmapMemory(mIvRecipeImages[i]);
-            mIvRecipeImages[i] = null;
+        for (ImageView iv : mIvRecipeImages) {
+//        for (int i = 0; i < count; i++) {
+            returnBitmapMemory(iv);
+            iv.setOnClickListener(null);
+//            returnBitmapMemory(mIvRecipeImages[i]);
+//            mIvRecipeImages[i].setOnClickListener(null);
+//            mIvRecipeImages[i] = null; 이걸 하면 자꾸 어떻게든 에러가 남. 안하는게 낫겠다. 메모리ㅠㅠ
         }
         mErrToast = null;
         isFromBackStack = true;
@@ -292,9 +332,12 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 //                // 허니콤부터는 비트맵 참조만 없어져도 메모리가 반환됐는데 그 이전에는 recycle 해줘야함.
 //                bm.recycle();
 //            }
-            bm.recycle();
+            try {
+                bm.recycle();
+            } catch(NullPointerException e) {
+                Log.i("CYMK", "Bitmap doesn't exist");
+            }
         }
-        v.setOnClickListener(null);
     }
 
 }

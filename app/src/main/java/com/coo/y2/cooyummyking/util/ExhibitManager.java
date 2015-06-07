@@ -9,15 +9,14 @@ import java.util.HashMap;
 /**
  * Created by Y2 on 2015-06-04.
  * ToolDetailEditorFragment, ~PageFragment, ~PhotoFragment에서 편집 이미지 저장중일 때 보여줄 이미지를 관리하기 위한 클래스
- * scriber 불러서 start, finish save process 하고
- * getImitation으로 이미지 있음 쓰고 없음 새로 부르는게 전부.
+ * getExhibit으로 Exhibit 불러서 start, finish save process 하고
+ * "getReplica"로 이미지 있으면 사용하고 없으면 새로 부르는게 전부.
  *
- * +@ 지금 생각해보니 recycle 해도 계속 보여진다는것은 bitmap을 따로 만들어둔다는 것 같은데, 그렇다면 큰 이미지를 사용하면 메모리 누출 엄청날지도..
- * 한 파일이기에 여러곳에 써도 하나 쓰는 꼴인게 아닐지도.. 확인해야.(메모리 소모량으로 봐도 되고, 천천히 생각)
  */
 public class ExhibitManager {
     private static ExhibitManager sManager;
     private HashMap<Integer, Exhibit> exhibits = new HashMap<>();
+
 
     // 동기화가 필요한가..? 저장되는 과정이 백그라운드인게 관건인데, 어차피 저장 끝과 시작 때 메인스레드에서 state 변경하니 상관없지않을까.
     // state가 바뀌는 그 자체의 과정이 길어서 사실 이미 state 바뀐건데 안바뀐줄알고 image를 가져다쓴다거나 하는 처리를 하는게 문제인데.
@@ -28,22 +27,21 @@ public class ExhibitManager {
         private Bitmap image;
         private boolean isInSaveProcess = false;
         private boolean wait = false;
+        private Thread thread;
 
         public Exhibit(int index) {
             this.index = index;
         }
 
-        public void startSaveProcess(Bitmap image) {
+        public void startExhibit(Bitmap image) {
             isInSaveProcess = true;
             this.image = image;
         }
 
-        public void finishSaveProcess() {
+        public void finishExhibit() {
             isInSaveProcess = false;
             if (image != null) image.recycle();
             exhibits.remove(index);
-
-            if (wait) Thread.interrupted();
         }
 
         public Bitmap getImage() {
@@ -54,18 +52,37 @@ public class ExhibitManager {
             return isInSaveProcess;
         }
 
-        public void waitIfSaveProcess() {
+
+        // 파일저장이 완료되기 전에는 RecipeDesign 데이터 저장이 미루어지도록 합니다.
+        /**
+         * Wait until all exhibits are closed.
+         */
+        public void waitUntilClose() {
             if (isInSaveProcess) {
                 try {
-                    Log.i("CYMK", "wait for " + index + " save process");
-                    Thread.sleep(7000);
+                    wait = true;
+                    Log.i("CYMK", "wait for save process " + index);
+                    this.thread = Thread.currentThread();
+                    Thread.sleep(15000);
                 } catch(InterruptedException e) {
                     Log.i("CYMK", index + " save process got finish");
                 }
-                wait = true;
+            }
+        }
+
+        /**
+         * Notify all exhibits are time to close.
+         * That means executions that called waitUntilClose can go on.
+         * [Caution] it's not real end of save process. Save process is finished on finishExhibit()
+         */
+        public void notifyCloseTime() {
+            if (wait && exhibits.size() == 1) {
+                this.thread.interrupt();
             }
         }
     }
+
+
 
     /**
      * Get Exhibit instance for change state of save process.
@@ -74,9 +91,8 @@ public class ExhibitManager {
      * @param index index of item
      * @return Exhibit instance
      */
-    public static Exhibit scriber(int index) {
+    public static Exhibit getExhibit(int index) {
         if (sManager == null) sManager = new ExhibitManager();
-
 
         Exhibit exhibit;
         if ((exhibit = sManager.exhibits.get(index)) == null) {

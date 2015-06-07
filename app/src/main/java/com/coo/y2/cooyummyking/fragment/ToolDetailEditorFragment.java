@@ -29,6 +29,7 @@ import android.widget.Toast;
 import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.filterUtil.GPUImageFilterTools;
+import com.coo.y2.cooyummyking.listener.ArgumentImageLoadingListener;
 import com.coo.y2.cooyummyking.util.ExhibitManager;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -41,6 +42,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.UUID;
 
 import jp.co.cyberagent.android.gpuimage.GPUImage;
 import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
@@ -58,6 +60,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     private ViewGroup mBottomBar;
     private Animation mAnimSlideIn;
     private Animation mAnimFadeIn;
+    private RecipeDesign sRecipe = RecipeDesign.getDesign();
 
     // ------------ Bottom bar ------------ //
     private View mBtnEditPhoto;
@@ -69,11 +72,6 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
 
     /// -------------- Util --------------- //
     private ToolDetailEditorPhotoFragment mPhotoFragment;
-//    private GPUImageFilter mCurrentFilter = null; // 현재 선택된 필터
-    public boolean isInSaveProcess = false;
-//    private ImageView mPhotoEditView;
-//    private Bitmap mOriginalImage;
-//    private Bitmap mFilteredImage;
 
     private final String VIEW_IMAGE = "iv";
     private final String VIEW_TEXT = "ed";
@@ -125,7 +123,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
 
         @Override
         public int getCount() {
-            return RecipeDesign.getDesign().getStepSize();
+            return sRecipe.getStepSize();
         }
     }
 
@@ -256,15 +254,11 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         int i = getCurrentItem();
         // TODO 아직 뷰가 완성이 안되서 image가 없을 때 해결해야.
         // 여기에서 이미지헬퍼 쓰면 Fragment 생성과정에서 저장이 완료되면 문제가 발생하므로 ToolDetailEditorPhotoFragment에서 한다.
-        try {
-            Bitmap image = ((BitmapDrawable)((ImageView) getPageChildView(VIEW_IMAGE)).getDrawable()).getBitmap(); // 문제가능지점 1. view 미완성 2. temp 이미지 사용중 // from : 1.load new, 2.temp image
-            mPhotoFragment = ToolDetailEditorPhotoFragment.newInstance(i, image);
-            fm.beginTransaction()
-                    .add(R.id.tool_detail_editor_photo_container, mPhotoFragment)
-                    .commit();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
+        Bitmap image = ((BitmapDrawable)((ImageView) getPageChildView(VIEW_IMAGE)).getDrawable()).getBitmap(); // 문제가능지점 1. view 미완성 3. 사진로드 아직 안됨// from : 1.load new,
+        mPhotoFragment = ToolDetailEditorPhotoFragment.newInstance(i, image);
+        fm.beginTransaction()
+                .add(R.id.tool_detail_editor_photo_container, mPhotoFragment)
+                .commit();
     }
 
 
@@ -278,20 +272,28 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         }
 
         // on filter is selected
-//        ImageSize size = new ImageSize(640, 640);
-        String imagePath = RecipeDesign.getDesign().getImagePath(getCurrentItem());
+        String imagePath = "file://" + sRecipe.getImagePath(getCurrentItem());
+        Log.i("CYMK", "onFilterSelected : " + imagePath);
 
         // 여기에서 매번 불필요하게 새로 로딩하니 느려진다.. 캐시에 저장하면 메모리가 조금 아깝고, 확인을 하자니 애매한데.
-        // 확인법? Tool~PhotoFragment에서 이미지 가져와서 size w, h 다 640 넘는지 확인하는 임시변통
-        //
-        ImageLoader.getInstance().loadImage("file://" + imagePath, imageOptions, new SimpleImageLoadingListener() {
-            @Override
-            public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                super.onLoadingComplete(imageUri, view, loadedImage);
-                new SetFilterTask(filter).execute(loadedImage);
-            }
-        });
+        // 확인법? Tool~PhotoFragment에서 이미지 가져와서 size w, h 다 640 넘는지 확인하는 임시변통 - 이미지가 원래 작으면 안됨...
+        ImageLoader.getInstance().loadImage(imagePath, imageOptions, listener.getListener(imagePath, filter));
     }
+
+    ArgumentImageLoadingListener listener = new ArgumentImageLoadingListener() {
+
+        @Override
+        public ArgumentImageLoadingListener getListener(String uriKey, Object... args) {
+            setProperty(uriKey, "filter", args[0]);
+            return this;
+        }
+
+        @Override
+        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+            super.onLoadingComplete(imageUri, view, loadedImage);
+            new SetFilterTask((GPUImageFilter) removeProperty("filter")).execute(loadedImage);
+        }
+    };
 
 
     private class SetFilterTask extends AsyncTask<Bitmap, Void, Void> {
@@ -318,8 +320,6 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     }
 
 
-    // TODO 동기화 보장해야. 파일 저장이 오래걸리니 꼬일 가능성.
-    // 실제로 연속해서 필터 등록하면 파일 유실됨. 근데 어디를 동기화해야하는지 잘 모르겠다. 파일 저장을 순서대로 해야하는데..
     // TODO 필터 뿐 아니라 다른 변경에도 대응해야. ToolDetailEditorPhotoFragment에도 해당.
     public void onFinishPhotoEdit(boolean isApply) {
         clearUtilView();
@@ -340,7 +340,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         }
 
         // TODO 아무래도 resultImage가 recycle 되어 생기는 오류같은데, 왜 그렇게 되지.. 순서상 불가능하지않나 / 일단 resultImage(==아래의 image)에서 에러나는건 맞음.
-        if( resultImage.isRecycled()) {
+        if(resultImage.isRecycled()) {
             Log.i("CYMK", "resultImage is recycled!");
         }
         // If complete with filtered image - save file, add path to recipe design
@@ -348,7 +348,6 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         finishPhotoFragment();
 
         new SaveEditedImageTask(resultImage, getCurrentItem()).execute();
-//        new SaveEditedImageTask(resultImage, getCurrentItem()).executeOnExecutor(AsyncTask.SERIAL_EXECUTOR).execute();
     }
 
 
@@ -372,17 +371,13 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            ExhibitManager.scriber(index).startSaveProcess(image);
-//            isInSaveProcess = true;
-//            fileName = UUID.randomUUID().toString() + ".png"; // If complete with filtered image - save to internal file, add path to array
-            fileName = index + ".png";
-            dir = getActivity().getFilesDir().toString() + "/edited_image";
+            ExhibitManager.getExhibit(index).startExhibit(image);
+            sRecipe.isChanged = true; // TODO notify에 이어 또 남은 문제는 사진편집만 했을 때 isChanged 바꾸는 타이밍 문제인데.. 먼저 하자니 실패되면 저장할게 없는데..
+            // 그래도 작동 자체를 따지자면 앞에서 해두는게 맞긴 하다. 똑같은걸 저장해도 문제가 되진 않으니.
+            fileName = sRecipe.getImagePath(index, RecipeDesign.IMAGE_EDITED);
+            if (fileName == null) fileName = UUID.randomUUID() + ".jpg";
+            dir = getActivity().getDir("edited_images", Context.MODE_PRIVATE).toString();
             file = new File(dir, fileName);
-            if (!file.exists()) {
-                if (file.mkdirs()) {
-                    file = new File(getActivity().getFilesDir().toString(), fileName);
-                }
-            }
         }
 
         @Override
@@ -390,9 +385,14 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
             OutputStream out = null;
             boolean success = false;
             try {
+//                Log.i("CYMK", "create new file : " + file.createNewFile()); // 없어도 됨. dir만 존재하면.
                 out = new FileOutputStream(file);
-                success = image.compress(Bitmap.CompressFormat.PNG, 100, out); // TODO recycle 에러 발생
-                if (success) RecipeDesign.getDesign().addEditedImage(index, file.getAbsolutePath());
+                success = image.compress(Bitmap.CompressFormat.JPEG, 100, out); // TODO recycle 에러 발생
+                if (success) {
+                    sRecipe.addEditedImage(index, file.getAbsolutePath()); // 임시 데이터에 포함되야하므로 여기에서 처리한다.
+                    Log.i("CYMK", "Edited image of " + index + " save success : " + file.getAbsolutePath());
+                }
+                ExhibitManager.getExhibit(index).notifyCloseTime();
             } catch (IOException e) {
                 e.printStackTrace();
             } finally {
@@ -410,39 +410,27 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         @Override
         protected void onPostExecute(Boolean success) {
             super.onPostExecute(success);
-            if (success) {
-//                RecipeDesign.getDesign().addEditedImage(index, file.getAbsolutePath());
-                Log.i("CYMK", "Edited Image of " + index + " Save Success : " + file.getAbsolutePath());
-            } else {
+            if (!success) {
                 String msg = getResources().getString(R.string.err_fail_edit_image);
                 Toast.makeText(getActivity(), msg, Toast.LENGTH_SHORT).show();
             }
-            new Thread(new Runnable() {
+
+            // 기존에 작업한 이미지를 반환하고 새로 가져와 할당합니다. - only for display. not for save
+            String path = sRecipe.getImagePath(index);
+            ImageSize size = new ImageSize(480, 480); // 저장용 이미지가 아니므로 작은걸 불러온다.
+            ImageLoader.getInstance().loadImage("file://" + path, size, new SimpleImageLoadingListener() {
                 @Override
-                public void run() {
-                    // 기존에 작업한 이미지를 반환하고 새로 가져와 할당합니다. - only for display. not for save
-                    String path = RecipeDesign.getDesign().getImagePath(index);
-                    ImageSize size = new ImageSize(480, 480); // 저장용 이미지가 아니므로 작은걸 불러온다.
-                    ImageLoader.getInstance().loadImage("file://" + path, size, new SimpleImageLoadingListener() {
-                        @Override
-                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-                            super.onLoadingComplete(imageUri, view, loadedImage);
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    super.onLoadingComplete(imageUri, view, loadedImage);
 
-                            // 저장한 이미지를 불러와 뷰페이저의 해당 이미지뷰에 지정합니다.
-                            // As only needed to show before newly load view, no need to do when view isn't exist.
-                            ImageView pageView = (ImageView) getPageChildView(VIEW_IMAGE, index);
-                            if (pageView != null) pageView.setImageBitmap(loadedImage);
+                    ImageView pageView = (ImageView) getPageChildView(VIEW_IMAGE, index);
+                    if (pageView != null) pageView.setImageBitmap(loadedImage);
 
-                            // 임시로 지정해 두었던 mPhotoFragment의 Original 이미지를 저장한 이미지로 할당하고 기존 이미지는 반환합니다.
-                            if (index == getCurrentItem()) mPhotoFragment.setOriginalImage(loadedImage); // 만약 페이지가 바뀌었다면 실행하지 않습니다.
-                            ExhibitManager.scriber(index).finishSaveProcess();
-//                            image.recycle(); // to be done by ExhitbitManager.
-                        }
-                    });
+                    if (index == getCurrentItem()) mPhotoFragment.setOriginalImage(loadedImage); // 이걸 실행하기 전에는 recycle하면안됨.
+                    ExhibitManager.getExhibit(index).finishExhibit();
                 }
-            }).run();
+            });
 
-//            isInSaveProcess = false;
         }
     }
 
@@ -473,7 +461,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
 //
 //
 //    }
-    
+
     private int getCurrentItem() {
         return mViewPager.getCurrentItem();
     }

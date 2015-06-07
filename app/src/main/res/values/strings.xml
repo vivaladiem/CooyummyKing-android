@@ -38,6 +38,7 @@
     <string name="tool_photo_camera">촬영</string>
     <string name="tool_photo_album">앨범</string>
     <string name="tool_making_title_caption">요리과정</string>
+    <string name="tool_complete">레시피 작성을 완료하시겠습니까?</string>
 
     <string name="tool_detail_edit_instruction_hint">과정을 입력하세요</string>
     <string name="tool_detail_bottombar_photoedit">사진편집</string>
@@ -45,6 +46,7 @@
     <string name="tool_detail_bottombar_sticker">스티커</string>
     <string name="tool_detail_bottombar_subtitle">자막</string>
     <string name="tool_detail_bottombar_text">텍스트</string>
+
 
     <!-- Errors -->
     <string name="err_network_unavailable">네트워크에 연결할 수 없습니다</string>

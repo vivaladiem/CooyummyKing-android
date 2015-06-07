@@ -14,18 +14,21 @@ public class HttpUtil {
     private static AsyncHttpClient getClient() {
         if (client == null) {
             client = new AsyncHttpClient();
+            client.setTimeout(20000);
         }
         return client;
     }
 
     public static void get(String url, Map<String, String> headers, RequestParams params, AsyncHttpResponseHandler handler) {
         setHeaders(headers);
-        getClient().get(getAbsoluteUrl(url), params, handler);
+//        getClient().get(getAbsoluteUrl(url), params, handler);
+        getClient().get(url, params, handler);
     }
 
     public static void post(String url, Map<String, String> headers, RequestParams params, AsyncHttpResponseHandler handler) {
         setHeaders(headers);
-        getClient().post(getAbsoluteUrl(url), params, handler);
+//        getClient().post(getAbsoluteUrl(url), params, handler);
+        getClient().post(url, params, handler);
     }
 
     public static void cancle() {
@@ -41,7 +44,7 @@ public class HttpUtil {
             getClient().addHeader(entry.getKey(), entry.getValue());
         }
     }
-    private static String getAbsoluteUrl(String relativeUrl) {
-        return URL.getBaseUrl() + relativeUrl;
-    }
+//    private static String getAbsoluteUrl(String relativeUrl) {
+//        return URL.getBaseUrl() + relativeUrl;
+//    }
 }

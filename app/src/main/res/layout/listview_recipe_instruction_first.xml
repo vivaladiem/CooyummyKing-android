@@ -35,7 +35,6 @@
             android:layout_alignBaseline="@id/detail_recipe_title_name"
             android:layout_marginLeft="40dp"
             android:singleLine="true"
-            android:text="사과식빵"
             android:textAppearance="@style/TextLargeDarkGrey"
             android:textStyle="bold"/>
 
@@ -56,7 +55,6 @@
             android:drawableLeft="@drawable/recipe_info_icon_cookingtime"
             android:drawablePadding="4dp"
             android:singleLine="true"
-            android:text="10분"
             android:textAppearance="@style/TextDarkGrey"/>
 
         <TextView
@@ -76,7 +74,6 @@
             android:drawableLeft="@drawable/recipe_info_icon_cookingtime"
             android:drawablePadding="4dp"
             android:singleLine="true"
-            android:text="야식"
             android:textAppearance="@style/TextDarkGrey"/>
 
         <TextView
@@ -105,7 +102,6 @@
             android:layout_alignTop="@id/detail_recipe_ingredient_name"
             android:maxLines="4"
             android:singleLine="false"
-            android:text="사과, 식빵, 맛있는 재료는 무엇이든 넣어도 좋답니다 그러니까 팍팍 넣으세요 무한히"
             android:textAppearance="@style/TextDarkGrey"/>
 
         <!-- alignBase로 정렬된 오브젝트를 layout_below 등의 대상으로 정할 수가 없구나..! -->
@@ -126,7 +122,6 @@
             android:layout_alignBaseline="@id/detail_recipe_source_name"
             android:layout_marginLeft="40dp"
             android:singleLine="true"
-            android:text="꿀"
             android:textAppearance="@style/TextDarkGrey"
             android:layout_marginBottom="16dp"/>
 

@@ -24,7 +24,7 @@ public class Recipe {
     public static final String CREATED_AT = "created_at";
 
     public static final String RECIPE_IMAGE_PATH = "image_path";
-    public static final String RECIPE_ORIGINAL_IMG = "original_";
+//    public static final String RECIPE_ORIGINAL_IMG = "_org";
     public static final String RECIPE_SEPARATOR = "||";
 
 
@@ -44,7 +44,7 @@ public class Recipe {
     public String createdAt;
 
     /**
-     * Load recipe from network or scraped data
+     * Load recipe from network or scrapped data
      * @param json Downloaded JSONObject data
      * @return Recipe instance
      */
@@ -57,7 +57,7 @@ public class Recipe {
         recipe.userId = json.optInt(User.USER_ID);
         recipe.userName = json.optString(User.USER_NAME);
         recipe.title = json.optString(RECIPE_TITLE);
-        recipe.instructions = new ArrayList<>(Arrays.asList(json.optString(RECIPE_INST).split("\\|\\|"))); // Split by || // asList가 참조값을 가지게 하는거라 어딘가 누수 생길지도
+        recipe.instructions = new ArrayList<>(Arrays.asList(json.optString(RECIPE_INST).split("\\|\\|", -1))); // Split by || // asList가 참조값을 가지게 하는거라 어딘가 누수 생길지도
         recipe.mainImageIndex = json.optInt(RECIPE_MAINIMG);
         recipe.cookingTime = json.optInt(RECIPE_COOKINGTIME);
         recipe.theme = json.optString(RECIPE_THEME);
@@ -73,14 +73,23 @@ public class Recipe {
     /**
      * Get server url of image
      * @param imageIndex image index
-     * @return String url
+     * @return full url string
      */
     public String getImageUrl(int imageIndex) {
         return String.format(URL.GET_IMAGE_URL, this.id, imageIndex);
     }
-//    public String getImageUrl(int imageNum) {
-//        return String.format(URL.GET_IMAGE_URL, this.id, imageNum);
-//    }
+
+    /**
+     * Get url of various size image.
+     * @param imageIndex image index
+     * @param type String variable.
+     *             sm : 240x240
+     *             org: original image(not edited). doesn't exist if image hasn't edited.
+     * @return full url string
+     */
+    public String getImageUrl(int imageIndex, String type) {
+        return String.format(URL.GET_IMAGE_URL, this.id, imageIndex + "_" + type); // 성능개선 필요..
+    }
 
     // 임시로 작성. User에 있어야.
     public String getWriterProfileImageUrl(int userId) {
