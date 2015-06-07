@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -32,7 +33,6 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.nostra13.universalimageloader.core.display.FadeInBitmapDisplayer;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import org.apache.http.Header;
@@ -61,8 +61,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
             .bitmapConfig(Bitmap.Config.RGB_565)
             .imageScaleType(ImageScaleType.EXACTLY)
             .cacheInMemory(true)
-            .showImageOnLoading(null)
-            .displayer(new FadeInBitmapDisplayer(300))
+            .showImageOnLoading(android.R.color.white)
             .build();
 
 
@@ -82,6 +81,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         initEvents();
 //        executeGetRecipes();
         setHasOptionsMenu(true);
+        Log.i("CYMK", "MainFragment onCreateView");
+        ((App)getActivity().getApplication()).logCacheInMemory();
         return v;
     }
 
@@ -214,7 +215,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
         Recipe recipe;
         for (int i = 0; i < count; i++) {
             recipe = mRecipes.get(i);
-            ImageLoader.getInstance().displayImage(recipe.getImageUrl(recipe.mainImageIndex, "sm"), mIvRecipeImages[i], mImageLoaderOptions, imageLoadingListener);
+            String uri = recipe.getImageUrl(recipe.mainImageIndex, i == 0 || i == 1 ? "md" : "sm");
+            ImageLoader.getInstance().displayImage(uri, mIvRecipeImages[i], mImageLoaderOptions, imageLoadingListener);
         }
 
     }
@@ -252,6 +254,15 @@ public class MainFragment extends Fragment implements View.OnClickListener{
 //    }
 
     SimpleImageLoadingListener imageLoadingListener = new SimpleImageLoadingListener() {
+        @Override
+        public void onLoadingStarted(String imageUri, View view) {
+            super.onLoadingStarted(imageUri, view);
+        }
+
+        @Override
+        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+            super.onLoadingComplete(imageUri, view, loadedImage);
+        }
 
         @Override
         public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
@@ -280,6 +291,8 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onDestroyView() {
         super.onDestroy();
+        Log.i("CYMK", "MainFragment onDestroyView");
+        ((App)getActivity().getApplication()).logCacheInMemory();
         for (ImageView iv : mIvRecipeImages) {
 //        for (int i = 0; i < count; i++) {
             returnBitmapMemory(iv);
@@ -325,6 +338,7 @@ public class MainFragment extends Fragment implements View.OnClickListener{
     private void returnBitmapMemory(ImageView v) {
         Drawable drawable;
         if ((drawable = v.getDrawable()) != null) {
+            if ((drawable instanceof ColorDrawable)) return;
             Bitmap bm = ((BitmapDrawable) drawable).getBitmap();
             v.setImageBitmap(null);
             drawable.setCallback(null); // callback이 남아있어 반환 안되는 경우도 있으므로 직접 끊어줌.

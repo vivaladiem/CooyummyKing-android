@@ -5,8 +5,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Log;
 
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
+import com.nostra13.universalimageloader.cache.memory.MemoryCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
@@ -14,6 +16,7 @@ import com.nostra13.universalimageloader.core.assist.ImageScaleType;
 import com.nostra13.universalimageloader.utils.StorageUtils;
 
 import java.io.File;
+import java.util.Collection;
 
 /**
  * Created by Y2 on 2015-04-25.
@@ -37,7 +40,7 @@ public class App extends Application {
                 .build();
         File cacheDir = StorageUtils.getCacheDirectory(this);
         ImageLoaderConfiguration config = new ImageLoaderConfiguration.Builder(this)
-//                .denyCacheImageMultipleSizesInMemory()
+                .denyCacheImageMultipleSizesInMemory()
                 .memoryCacheSizePercentage(13) // 1/8 of total memory. if set this, automatically use LruMemoryCache.
 //                .diskCache(new LimitedAgeDiscCache(cacheDir, 7 * 24 * 60 * 60)) // 7 days // I'm not sure whether it's proper or not
                 .diskCache(new UnlimitedDiscCache(cacheDir))
@@ -64,13 +67,22 @@ public class App extends Application {
             if(networkInfo != null && (networkInfo.isConnected())) {
                 isInternetAvailable  = true;
             }
-            connectivityManager = null;
-            networkInfo = null;
         }
         catch(Exception exception) {
             exception.printStackTrace();
         }
 
         return isInternetAvailable;
+    }
+
+    public void logCacheInMemory() {
+        MemoryCache cache = ImageLoader.getInstance().getMemoryCache();
+        Collection<String> keys = cache.keys();
+        Log.i("CYMK", "// ----------------- memory cache ---------------- //");
+        Log.i("CYMK", "Count: " + keys.size());
+        for (String key : keys) {
+            Log.i("CYMK", key);
+        }
+        Log.i("CYMK", "// ------------------------------------------------ //");
     }
 }

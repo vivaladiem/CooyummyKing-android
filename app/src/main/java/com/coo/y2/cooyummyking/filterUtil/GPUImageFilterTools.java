@@ -127,7 +127,9 @@ public class GPUImageFilterTools implements View.OnClickListener {
     public View makeFilterLayout(OnGpuImageFilterSelectListener onSelectedFilterListener, ViewGroup container) {
         this.filterListener = onSelectedFilterListener;
 
+        /* Add filter at here */
         // This order is applied to filter sample view order.
+        mFilters.addFilter("sharpen", FilterType.SHARPEN);
         mFilters.addFilter("amaro", FilterType.I_AMARO);
         mFilters.addFilter("brannan", FilterType.I_BRANNAN);
         mFilters.addFilter("contrast", FilterType.CONTRAST);
@@ -301,7 +303,7 @@ public class GPUImageFilterTools implements View.OnClickListener {
                 return new GPUImageSepiaFilter();
             case SHARPEN:
                 GPUImageSharpenFilter sharpness = new GPUImageSharpenFilter();
-                sharpness.setSharpness(2.0f);
+                sharpness.setSharpness(0.2f);
                 return sharpness;
             case SOBEL_EDGE_DETECTION:
                 return new GPUImageSobelEdgeDetection();

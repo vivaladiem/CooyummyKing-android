@@ -21,6 +21,7 @@ import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.listener.OnBackPressedListener;
+import com.coo.y2.cooyummyking.widget.SquareImageView_byWidth;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
@@ -28,7 +29,7 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
  * Created by Y2 on 2015-05-30.
  */
 public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTouchListener, OnBackPressedListener{
-    private ImageView mImageView;
+    private SquareImageView_byWidth mImageView;
     private Bitmap mOriginalImage; // original, filteredimage 주고받는게 복잡하여 recycle 또는 메모리 유출에 관련된 문제가 발생할 수 있음.
     private Bitmap mFilteredImage; // 문제가능성은 다 잡긴 한것같은데, 성능 손해 안보는 선에서 디자인패턴 적용해 구조 정리하는것도 좋음.
     private int mCurrentItemIndex;
@@ -45,14 +46,13 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mImageView = new ImageView(getActivity());
+        mImageView = new SquareImageView_byWidth(getActivity());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 ViewPager.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
         );
-        mImageView.setLayoutParams(params);
         mImageView.setBackgroundColor(Color.WHITE);
-        mImageView.setPadding(32, 16, 32, 16);
+        mImageView.setLayoutParams(params);
         mImageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mImageView.setClickable(true);
         mImageView.setOnTouchListener(this);

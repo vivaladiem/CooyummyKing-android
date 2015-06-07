@@ -77,6 +77,28 @@ public class RecipeCompleteWorker {
         requestPost(params);
     }
 
+//    private class SharpenTask extends AsyncTask<Void, Void, Void> {
+//        private File file;
+//        private RequestParams params;
+//
+//        public SharpenTask (File file, RequestParams params, ) {
+//            this.file = file;
+//            this.params = params;
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... voids) {
+//            GPUImage gpuImage = new GPUImage(context);
+//            GPUImageSharpenFilter filter = new GPUImageSharpenFilter();
+//            filter.setSharpness(2.0f);
+//            gpuImage.setImage(file);
+//            gpuImage.setFilter(filter);
+//            params.put()
+//
+//            return null;
+//        }
+//    }
+
 
 //    private class ImageLoadingListener extends SimpleImageLoadingListener {
 //        private int index;

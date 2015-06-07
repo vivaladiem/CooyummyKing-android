@@ -17,8 +17,8 @@ public class Recipe {
     public static final String RECIPE_MAINIMG = "main_image_index";
     public static final String RECIPE_COOKINGTIME = "cooking_time";
     public static final String RECIPE_THEME = "theme";
-    public static final String RECIPE_INGREDIENTS = "ingredients";
-    public static final String RECIPE_SOURCES = "sources";
+    public static final String RECIPE_INGREDIENTS = "ingredient";
+    public static final String RECIPE_SOURCES = "source";
     public static final String RECIPE_LIKE = "like_count";
     public static final String RECIPE_SCRAP = "scrap_count";
     public static final String CREATED_AT = "created_at";
@@ -50,6 +50,7 @@ public class Recipe {
      */
     public static Recipe loadRecipe(JSONObject json) {
         if (json == null) {
+            //TODO 정보없음 오류 안내해야
             return null;
         }
         Recipe recipe = new Recipe();
@@ -60,9 +61,9 @@ public class Recipe {
         recipe.instructions = new ArrayList<>(Arrays.asList(json.optString(RECIPE_INST).split("\\|\\|", -1))); // Split by || // asList가 참조값을 가지게 하는거라 어딘가 누수 생길지도
         recipe.mainImageIndex = json.optInt(RECIPE_MAINIMG);
         recipe.cookingTime = json.optInt(RECIPE_COOKINGTIME);
-        recipe.theme = json.optString(RECIPE_THEME);
-        recipe.ingredients = json.optString(RECIPE_INGREDIENTS);
-        recipe.sources = json.optString(RECIPE_SOURCES);
+        recipe.theme = optString(json, RECIPE_THEME);
+        recipe.ingredients = optString(json, RECIPE_INGREDIENTS);
+        recipe.sources = optString(json, RECIPE_SOURCES);
         recipe.likeCount = json.optInt(RECIPE_LIKE);
         recipe.scrapCount = json.optInt(RECIPE_SCRAP);
         recipe.createdAt = json.optString(CREATED_AT);
@@ -70,8 +71,12 @@ public class Recipe {
         return recipe;
     }
 
+    private static String optString(JSONObject json, String key) {
+        return json.isNull(key) ? null : json.optString(key, null);
+    }
+
     /**
-     * Get server url of image
+     * Get server url of original image (640x640)
      * @param imageIndex image index
      * @return full url string
      */
@@ -83,6 +88,7 @@ public class Recipe {
      * Get url of various size image.
      * @param imageIndex image index
      * @param type String variable.
+     *             md : 480x480
      *             sm : 240x240
      *             org: original image(not edited). doesn't exist if image hasn't edited.
      * @return full url string

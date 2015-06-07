@@ -1,5 +1,7 @@
 package com.coo.y2.cooyummyking.entity;
 
+import android.content.Context;
+
 import com.coo.y2.cooyummyking.util.RecipeSerializer;
 
 import org.json.JSONObject;
@@ -12,6 +14,8 @@ import java.util.Arrays;
  * Recipe design class used in Tool function
  */
 public class RecipeDesign {
+    private static RecipeDesign sRecipe;
+
     public String title;
     private ArrayList<String> imagePaths;
     public ArrayList<String> instructions;
@@ -23,7 +27,6 @@ public class RecipeDesign {
 
     public boolean isChanged = false; // 레시피 저장 여부를 알기 위한 전역변수 // 이것 빼먹으면 문제가 생기니 적어도 할당은 세터로 하는것이 좋을지도.. // 일일이 메서드에 넣어야해서 좀.. 변수들 변화를 감지하는 법?
     public boolean isMainImgManuallySet = false;
-    private static RecipeDesign sRecipe;
 
     public static final int IMAGE_ORIGINAL = 0;
     public static final int IMAGE_EDITED = 1;
@@ -125,6 +128,10 @@ public class RecipeDesign {
     public int getTotalImageCount() {
         int separators = imagePaths.toString().split("\\|\\|", -1).length - 1;
         return imagePaths.size() + separators;
+    }
+
+    public String getFilesDir(Context context) {
+        return context.getDir("edited_images", Context.MODE_PRIVATE).toString();
     }
 
     public void addImage(String path) {

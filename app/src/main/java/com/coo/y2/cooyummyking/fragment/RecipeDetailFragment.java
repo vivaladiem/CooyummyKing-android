@@ -1,11 +1,13 @@
 package com.coo.y2.cooyummyking.fragment;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +19,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.coo.y2.cooyummyking.R;
+import com.coo.y2.cooyummyking.core.App;
 import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.network.HttpUtil;
 import com.coo.y2.cooyummyking.network.URL;
@@ -58,12 +61,12 @@ public class RecipeDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_recipe_detail, container, false);
-        executeGetAndDisplayRecipe(v);
+        executeGetAndDisplayRecipes(v);
         return v;
     }
 
     // Inner Class를 너무 많이 쓴것 같다...
-    private void executeGetAndDisplayRecipe(final View v) {
+    private void executeGetAndDisplayRecipes(final View v) {
         String url = String.format(URL.GET_RECIPE, getArguments().getInt(EXTRA_RECIPEID), 1);
         HttpUtil.get(url, null, null, new JsonHttpResponseHandler() {
             @Override
@@ -86,6 +89,7 @@ public class RecipeDetailFragment extends Fragment {
                 JSONObject recipeData;
                 try {
                     recipeData = response.getJSONObject("recipe");
+                    Log.i("CYMK", "recipe data : " + recipeData);
 
                     recipeData.put(Recipe.RECIPE_ID, id);
                     recipeData.put(Recipe.RECIPE_MAINIMG, mainImageNum);
@@ -108,7 +112,7 @@ public class RecipeDetailFragment extends Fragment {
                 CircleImageView ivProfileImage = (CircleImageView) v.findViewById(R.id.detail_writer_thumb);
                 ivProfileImage.setBorderColor(Color.TRANSPARENT);
                 ivProfileImage.setBorderWidth(0);
-                ImageLoader.getInstance().displayImage(mRecipe.getWriterProfileImageUrl(mRecipe.userId), ivProfileImage, mOptions);
+                ImageLoader.getInstance().displayImage(mRecipe.getWriterProfileImageUrl(mRecipe.userId), ivProfileImage);
                 ((ImageView) v.findViewById(R.id.detail_writer_level)).setImageLevel(4); // set user's level - 1
             }
 
@@ -124,8 +128,8 @@ public class RecipeDetailFragment extends Fragment {
 
     }
     public class ViewHolder {
-        public ImageView instImageView;
-        public TextView instTextView;
+        public ImageView iv;
+        public TextView tv;
     }
 
     // ListView에서 사용할 Adapter를 정의합니다.
@@ -174,22 +178,34 @@ public class RecipeDetailFragment extends Fragment {
                         ImageLoader.getInstance().displayImage(url, ivMainImage, mOptions);
 
                         TextView tvTitle = (TextView) convertView.findViewById(R.id.detail_recipe_title);
+                        TextView tvTime = (TextView) convertView.findViewById(R.id.detail_recipe_time);
+                        TextView tvTheme = (TextView) convertView.findViewById(R.id.detail_recipe_theme);
+                        TextView tvIngredient = (TextView) convertView.findViewById(R.id.detail_recipe_ingredient);
+                        TextView tvSource = (TextView) convertView.findViewById(R.id.detail_recipe_source);
+
                         tvTitle.setText(mRecipe.title);
+                        tvTime.setText(timeToText(mRecipe.cookingTime));
+                        tvTheme.setText(mRecipe.theme);
+                        tvIngredient.setText(mRecipe.ingredients);
+                        tvSource.setText(mRecipe.sources);
+
                         break;
                     case TYPE_END: // 레시피 좋아요, 스크랩 정보가 포함된 페이지를 인플레이트합니다.(같은 레이아웃, viewstub 사용)
                         convertView = getActivity().getLayoutInflater()
                                 .inflate(R.layout.listview_recipe_instruction, parent, false);
                         View bottom = ((ViewStub) convertView.findViewById(R.id.detail_recipe_instruction_end_stub)).inflate();
-                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_like)).setText(mRecipe.likeCount + "명");
-                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_scrap)).setText(mRecipe.scrapCount + "명");
+                        String 명 = getResources().getString(R.string.recipe_number_of_person);
+                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_like)).setText(mRecipe.likeCount + 명);
+                        ((TextView)bottom.findViewById(R.id.detail_recipe_instruction_end_scrap)).setText(mRecipe.scrapCount + 명);
                         break;
+
                     default: // 내용을 인플레이트합니다.
                         convertView = getActivity().getLayoutInflater()
                                 .inflate(R.layout.listview_recipe_instruction, parent, false);
                 }
 
-                holder.instImageView = (ImageView) convertView.findViewById(R.id.detail_recipe_instruction_iv);
-                holder.instTextView = (TextView) convertView.findViewById(R.id.detail_recipe_instruction_tv);
+                holder.iv = (ImageView) convertView.findViewById(R.id.detail_recipe_instruction_iv);
+                holder.tv = (TextView) convertView.findViewById(R.id.detail_recipe_instruction_tv);
 
                 convertView.setTag(holder);
 
@@ -200,9 +216,9 @@ public class RecipeDetailFragment extends Fragment {
             String instruction = getItem(position);
             String imageUrl = mRecipe.getImageUrl(position);
 
-            ImageLoader.getInstance().displayImage(imageUrl, holder.instImageView, mOptions, imageLoadingListener);
+            ImageLoader.getInstance().displayImage(imageUrl, holder.iv, mOptions, imageLoadingListener);
+            holder.tv.setText(instruction);
 
-            holder.instTextView.setText(instruction);
             return convertView;
         }
 
@@ -213,11 +229,23 @@ public class RecipeDetailFragment extends Fragment {
                 view.setVisibility(View.VISIBLE);
             }
         };
+
+        private String timeToText(int time) {
+            StringBuilder txt = new StringBuilder();
+            Resources resources = getResources();
+            int h = time / 60;
+            int m = time % 60;
+            if (h != 0) txt.append(h).append(resources.getString(R.string.tool_info_time_hour)).append(" ");
+            if (m != 0) txt.append(m).append(resources.getString(R.string.tool_info_time_minute));
+            return txt.toString();
+        }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        Log.i("CYMK", "RecipeDetailFragment onDestroyView");
+        ((App)getActivity().getApplication()).logCacheInMemory();
         recursiveRecycle(getView());
     }
 

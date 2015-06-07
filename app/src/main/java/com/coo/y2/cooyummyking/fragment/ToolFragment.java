@@ -88,7 +88,7 @@ public class ToolFragment extends Fragment {
     private EditText mTxtSource;
     private View mTimeEditArea;
     private InputMethodManager imm;
-    private boolean isFinish = false; // 나의 멍청함을 탓하라...달리 해결책을 모르겠다..// 뒤로가기로 종료 할 때 EditText의ImeOption이 수행되서 Jogdialog 실행되며 에러나는 현상 막기 위한 변수
+    private boolean isFinish; // 나의 멍청함을 탓하라...달리 해결책을 모르겠다..// 뒤로가기로 종료 할 때 EditText의ImeOption이 수행되서 Jogdialog 실행되며 에러나는 현상 막기 위한 변수
     public boolean isDialogFromTouch = false; // If so, don't move focus to next EditText
 
     private final DisplayImageOptions mOptions = new DisplayImageOptions.Builder()
@@ -163,6 +163,8 @@ public class ToolFragment extends Fragment {
         initScrollViewFlicker();
         initEvents();
         setHasOptionsMenu(true);
+
+        isFinish = false;
         return mScrollView;
     }
 
@@ -432,6 +434,7 @@ public class ToolFragment extends Fragment {
     }
 
 
+
     private void initBottomTabAnimation() {
         mOutAnim = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_slide_out_bottom);
         mInAnim = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_slide_in_bottom);
@@ -545,6 +548,7 @@ public class ToolFragment extends Fragment {
 
     }
     // ---------------------------------------------------------------- //
+
 
 
     @SuppressWarnings("unchecked")
@@ -670,12 +674,11 @@ public class ToolFragment extends Fragment {
 
             try {
                 out = new FileOutputStream(file);
-                success = image.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                success = image.compress(Bitmap.CompressFormat.JPEG, 75, out);
 
                 // 성공시 imagePath를 업데이트합니다.
                 if (success) {
                     sRecipe.updateImage(index, file.getAbsolutePath());
-                    Log.i("CYMK", "recipe " + index + " image path : " + sRecipe.getImagePath(index));
 
                     Log.i("CYMK", "new image save success : " + index);
                 }
@@ -697,11 +700,12 @@ public class ToolFragment extends Fragment {
             super.onPostExecute(success);
             ExhibitManager.getExhibit(index).finishExhibit();
 
-            if (!success) // TODO 에러처리가 부족하다. 나중에 다시 저장할 수 있게 하든가 사용자에게 더 확실히 알리는 등 조치가 필요.
+            if (!success) // TODO 에러처리가 부족하다. 나중에 다시 자동으로 저장하든가 사용자에게 더 확실히 알리는 등 조치가 필요.
                 Toast.makeText(new WeakReference<Context>(getActivity()).get(), "이미지 저장을 실패하였습니다", Toast.LENGTH_LONG).show();
         }
 
     }
+
 
 
     @Override
@@ -710,32 +714,34 @@ public class ToolFragment extends Fragment {
 
         // Recipe Data는 정보를 입력하는 각 프래그먼트의 onPause에서 Recipe 싱글톤에 할당하고,
         // MainActivity의 OnPause에서 파일에 저장한다.
-        String txt;
-        if (!(txt = mTxtTitle.getText().toString()).equals(sRecipe.title)) {
-            sRecipe.title = txt;
-            sRecipe.isChanged = true;
-        }
-
-        // 시간은 onTimerDialogClose에서 저장됨
-
-        // TODO 언어따라 다르니 코드로 배정 - 적어도 테마, 주재료 등 값 정해져있는 건 자동번역이 가능하게 됨
-        if (!(txt = mTxtTheme.getText().toString()).equals(sRecipe.theme)) {
-            //getText()가 아니라 다이얼로그 닫길 때 선택한 것으로, 닫길 때 할당되어야.(요리시간처럼) 그러니 나중엔 이 코드는 필요 없게됨.
-            sRecipe.theme = txt;
-            sRecipe.isChanged = true;
-        }
-
-        if (!(txt = mTxtIngredient.getText().toString()).equals(sRecipe.ingredients)) {
-            sRecipe.ingredients = txt;
-            sRecipe.isChanged = true;
-        }
-
-        if (!(txt = mTxtSource.getText().toString()).equals(sRecipe.sources)) {
-            sRecipe.sources = txt;
-            sRecipe.isChanged = true;
-        }
+//        String txt;
+//        if (!(txt = mTxtTitle.getText().toString()).equals(sRecipe.title)) {
+//            sRecipe.title = txt;
+//            sRecipe.isChanged = true;
+//        }
+//
+//        // 시간은 onTimerDialogClose에서 저장됨
+//
+//        // TODO 언어따라 다르니 코드로 배정 - 적어도 테마, 주재료 등 값 정해져있는 건 자동번역이 가능하게 됨
+//        if (!(txt = mTxtTheme.getText().toString()).equals(sRecipe.theme)) {
+//            //getText()가 아니라 다이얼로그 닫길 때 선택한 것으로, 닫길 때 할당되어야.(요리시간처럼) 그러니 나중엔 이 코드는 필요 없게됨.
+//            sRecipe.theme = txt;
+//            sRecipe.isChanged = true;
+//        }
+//
+//        if (!(txt = mTxtIngredient.getText().toString()).equals(sRecipe.ingredients)) {
+//            sRecipe.ingredients = txt;
+//            sRecipe.isChanged = true;
+//        }
+//
+//        if (!(txt = mTxtSource.getText().toString()).equals(sRecipe.sources)) {
+//            sRecipe.sources = txt;
+//            sRecipe.isChanged = true;
+//        }
 
     }
+
+
 
     // ------------------- Handle menu and complete recipe ----------------------- //
     @Override
@@ -772,173 +778,6 @@ public class ToolFragment extends Fragment {
     }
 
 
-    // 서비스? 로 넣고서 안드 뉴스피드에 구글 앱 다운받을 때 처럼 프로그래스 바 띄움.
-    // 다되면 다이얼로그 뜨고 안드로이드 뉴스피드에 완성표시.
-//    private void completeRecipe() {
-//        RequestParams params = new RequestParams();
-//        params.put(User.USER_ID, String.valueOf(1));//
-//        params.put(User.USER_TOKEN, String.valueOf("change_later"));
-//        params.put(Recipe.RECIPE_TITLE, sRecipe.title);
-//        params.put(Recipe.RECIPE_INST, TextUtils.join(Recipe.RECIPE_SEPARATOR, sRecipe.instructions));
-//        params.put(Recipe.RECIPE_MAINIMG, sRecipe.mainImageIndex);
-//        params.put(Recipe.RECIPE_COOKINGTIME, sRecipe.cookingTime);
-//        params.put(Recipe.RECIPE_THEME, sRecipe.theme);
-//        params.put(Recipe.RECIPE_INGREDIENTS, sRecipe.ingredients);
-//        params.put(Recipe.RECIPE_SOURCES, sRecipe.sources);
-//
-//        ArrayList<String> imagePaths = sRecipe.getAllImagePath();
-//        int stepCount = imagePaths.size();
-//        int imageCount = sRecipe.getTotalImageCount();
-//        int progress = 0;
-//        for (int i = 0; i < stepCount; i++) {
-//            String path = imagePaths.get(i);
-//
-//            if (path.contains("||")) { // If edited image exist - send both file
-//                // path가 아니라 file을 넣어야..
-////                params.put(String.valueOf(i), paths[1]);
-////                params.put(Recipe.RECIPE_ORIGINAL_IMG + i, paths[0]);
-//                // 핸들러로 파일 불러올 때마다 params에 파일 넣는식으로 진행
-//                // 다 넣으면 post요청.
-//
-//                // 또는 AsyncTask사용, doInBackground에서 이미지 로드한 후 publish, 각 publish에서 params에 파일 넣고
-//                // onPostExecute에서 post요청. 이게 낫겠다.
-//
-//                String[] paths = path.split("\\|\\|", -1);
-//                ImageLoader.getInstance().loadImage("file://" + paths[1], new ImageSize(640, 640), new SimpleImageLoadingListener() {
-//                    @Override
-//                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                        super.onLoadingComplete(imageUri, view, loadedImage);
-////                        params.put(String.valueOf(i), loadedImage);
-//                        if (++progress == imageCount)
-//                    }
-//                });
-//                ImageLoader.getInstance().loadImage("file://" + paths[0], new ImageSize(640, 640), new SimpleImageLoadingListener() {
-//                    @Override
-//                    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                        super.onLoadingComplete(imageUri, view, loadedImage);
-////                        params.put(Recipe.RECIPE_ORIGINAL_IMG + index, loadedImage);
-//                    }
-//                });
-//
-//
-//            } else { // If only original image exist
-//                params.put(String.valueOf(i), path);
-//            }
-//        }
-//
-//        HttpUtil.post(URL.CREATE_RECIPES, null, params, new JsonHttpResponseHandler() {
-//
-//            @Override
-//            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-//                super.onSuccess(statusCode, headers, response);
-//                int result = 0;
-//                String msg = "";
-//                try {
-//                    result = response.getInt("result");
-//                    msg = response.getString("msg");
-//                } catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//                if (statusCode == 200) {
-//                    if (result == 1) {
-//                        Toast.makeText(getActivity(), "레시피를 성공적으로 완성하였습니다", Toast.LENGTH_SHORT).show();
-//                    } else if (result == 0) {
-//                        new AlertDialog.Builder(getActivity())
-//                                .setMessage("레시피 완성에 문제가 발생하였습니다\r레시피를 보관합니다\r" + msg)
-//                                .show();
-//                    }
-//                }
-//
-//            }
-//        });
-//    }
-
-//    private void onImageLoaded(int i, RequestParams params, Bitmap image) {
-//        params.put(String.valueOf(i), image);
-//    }
-//
-//    private void onOriginalImageLoaded(int i, RequestParams params, Bitmap image) {
-//        params.put(Recipe.RECIPE_ORIGINAL_IMG + i, image);
-//    }
-//
-//    SimpleImageLoadingListener loadingListener = new SimpleImageLoadingListener() {
-//        @Override
-//        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//            super.onLoadingComplete(imageUri, view, loadedImage);
-//
-//        }
-//    }
-
-//    private class CompleteRecipeTask extends AsyncTask<Void, Integer, Void> {
-//        private RequestParams params;
-//        private int count;
-//        @Override
-//        protected void onPreExecute() {
-//            super.onPreExecute();
-//            // 서비스에 넣음
-//            // RequestParams 생성 및 채워넣기
-//            params = new RequestParams();
-//            params.put(User.USER_ID, String.valueOf(1));//
-//            params.put(User.USER_TOKEN, String.valueOf("change_later"));
-//            params.put(Recipe.RECIPE_TITLE, sRecipe.title);
-//            params.put(Recipe.RECIPE_INST, TextUtils.join(Recipe.RECIPE_SEPARATOR, sRecipe.instructions));
-//            params.put(Recipe.RECIPE_MAINIMG, sRecipe.mainImageIndex);
-//            params.put(Recipe.RECIPE_COOKINGTIME, sRecipe.cookingTime);
-//            params.put(Recipe.RECIPE_THEME, sRecipe.theme);
-//            params.put(Recipe.RECIPE_INGREDIENTS, sRecipe.ingredients);
-//            params.put(Recipe.RECIPE_SOURCES, sRecipe.sources);
-//        }
-//
-//        @Override
-//        protected Void doInBackground(Void... voids) {
-//            ArrayList<String> imagePaths = sRecipe.getAllImagePath();
-//            count = sRecipe.getStepSize();
-//            for (int i = 0; i < count; i++) {
-//                String path = imagePaths.get(i);
-//                final int index = i;
-//
-//                if (path.contains("||")) { // If edited image exist - send both file
-//                    String[] paths = path.split("\\|\\|", -1);
-//                    ImageLoader.getInstance().loadImage("file://" + paths[1], new ImageSize(640, 640), new SimpleImageLoadingListener() {
-//                        @Override
-//                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                            super.onLoadingComplete(imageUri, view, loadedImage);
-//                            params.put(String.valueOf(index), loadedImage);
-//                            publishProgress(index);
-//                        }
-//                    });
-//                    ImageLoader.getInstance().loadImage("file://" + paths[0], new ImageSize(640, 640), new SimpleImageLoadingListener() {
-//                        @Override
-//                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                            super.onLoadingComplete(imageUri, view, loadedImage);
-//                            params.put(Recipe.RECIPE_ORIGINAL_IMG + index, loadedImage);
-//                        }
-//                    });
-//
-//
-//                } else { // If only original image exist
-//                    ImageLoader.getInstance().loadImage("file://" + path, new ImageSize(640, 640), new SimpleImageLoadingListener() {
-//                        @Override
-//                        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-//                            super.onLoadingComplete(imageUri, view, loadedImage);
-//                            params.put(String.valueOf(index), loadedImage);
-//                        }
-//                    });
-//                }
-//            }
-//            return null;
-//        }
-//
-//        @Override
-//        protected void onProgressUpdate(Integer... values) {
-//            super.onProgressUpdate(values);
-//            int i = values[0];
-//            Log.i("CYMK", "onProgress : " + i);
-//            if (i < count) {
-//                // Update Progress Bar or just block until all progress finish
-//            }
-//        }
-//    }
 
     // ----------------------- Return Memory -------------------- //
     @Override

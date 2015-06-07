@@ -359,8 +359,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     private final class SaveEditedImageTask extends AsyncTask<Void, Void, Boolean> {
         private int index;
         private Bitmap image; // == mFilteredImage. should recycle
-        private String fileName;
-        private String dir;
+        private String filePath;
         private File file;
 
         public SaveEditedImageTask(Bitmap image, int index) {
@@ -374,10 +373,10 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
             ExhibitManager.getExhibit(index).startExhibit(image);
             sRecipe.isChanged = true; // TODO notify에 이어 또 남은 문제는 사진편집만 했을 때 isChanged 바꾸는 타이밍 문제인데.. 먼저 하자니 실패되면 저장할게 없는데..
             // 그래도 작동 자체를 따지자면 앞에서 해두는게 맞긴 하다. 똑같은걸 저장해도 문제가 되진 않으니.
-            fileName = sRecipe.getImagePath(index, RecipeDesign.IMAGE_EDITED);
-            if (fileName == null) fileName = UUID.randomUUID() + ".jpg";
-            dir = getActivity().getDir("edited_images", Context.MODE_PRIVATE).toString();
-            file = new File(dir, fileName);
+
+            filePath = sRecipe.getImagePath(index, RecipeDesign.IMAGE_EDITED);
+            if (filePath == null) filePath = sRecipe.getFilesDir(getActivity()) + File.separator + UUID.randomUUID() + ".jpg";
+            file = new File(filePath);
         }
 
         @Override
@@ -387,7 +386,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
             try {
 //                Log.i("CYMK", "create new file : " + file.createNewFile()); // 없어도 됨. dir만 존재하면.
                 out = new FileOutputStream(file);
-                success = image.compress(Bitmap.CompressFormat.JPEG, 100, out); // TODO recycle 에러 발생
+                success = image.compress(Bitmap.CompressFormat.JPEG, 75, out); // TODO recycle 에러 발생
                 if (success) {
                     sRecipe.addEditedImage(index, file.getAbsolutePath()); // 임시 데이터에 포함되야하므로 여기에서 처리한다.
                     Log.i("CYMK", "Edited image of " + index + " save success : " + file.getAbsolutePath());
