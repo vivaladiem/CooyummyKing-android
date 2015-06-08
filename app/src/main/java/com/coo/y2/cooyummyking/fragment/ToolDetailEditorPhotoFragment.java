@@ -29,12 +29,14 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
  * Created by Y2 on 2015-05-30.
  */
 public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTouchListener, OnBackPressedListener{
+    private ViewGroup container;
     private SquareImageView_byWidth mImageView;
     private Bitmap mOriginalImage; // original, filteredimage 주고받는게 복잡하여 recycle 또는 메모리 유출에 관련된 문제가 발생할 수 있음.
     private Bitmap mFilteredImage; // 문제가능성은 다 잡긴 한것같은데, 성능 손해 안보는 선에서 디자인패턴 적용해 구조 정리하는것도 좋음.
     private int mCurrentItemIndex;
 
     private Menu menu;
+
 
     public static ToolDetailEditorPhotoFragment newInstance(int currentItemIndex, Bitmap image) {
         ToolDetailEditorPhotoFragment fragment = new ToolDetailEditorPhotoFragment();
@@ -45,7 +47,7 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container, Bundle savedInstanceState) {
         mImageView = new SquareImageView_byWidth(getActivity());
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 ViewPager.LayoutParams.MATCH_PARENT,
@@ -91,6 +93,29 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
         setHasOptionsMenu(true);
 
         ((MainActivity)getActivity()).setOnFragmentBackPressedListener(this);
+
+        this.container = container;
+        container.setVisibility(View.VISIBLE);
+//        frame.animate().scaleX(1.2f).scaleY(1.2f).setListener(new Animator.AnimatorListener() {
+//            @Override
+//            public void onAnimationStart(Animator animator) { }
+//
+//            @Override
+//            public void onAnimationEnd(Animator animator) {
+//                container.setVisibility(View.VISIBLE);
+//            }
+//
+//            @Override
+//            public void onAnimationCancel(Animator animator) {
+//
+//            }
+//
+//            @Override
+//            public void onAnimationRepeat(Animator animator) {
+//
+//            }
+//        }).start();
+
         return mImageView;
     }
 
@@ -165,6 +190,7 @@ public class ToolDetailEditorPhotoFragment extends Fragment implements View.OnTo
 
     @Override
     public void onDestroyView() {
+        container.setVisibility(View.INVISIBLE);
         Drawable drawable;
         if ((drawable = mImageView.getDrawable()) != null) {
             drawable.setCallback(null);

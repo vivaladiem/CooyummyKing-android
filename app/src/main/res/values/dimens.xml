@@ -12,4 +12,6 @@
     <dimen name="tool_overview_item_margin_side">4dp</dimen>
     <dimen name="tool_overview_item_margin_top_bottom">12dp</dimen>
     <dimen name="tool_overview_item_text_height">28sp</dimen>
+    <dimen name="tool_detail_item_padding">8dp</dimen>
+    <dimen name="tool_detail_page_padding">32dp</dimen>
 </resources>

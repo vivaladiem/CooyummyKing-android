@@ -2,16 +2,17 @@ package com.coo.y2.cooyummyking.fragment;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -21,6 +22,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.ScaleAnimation;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ImageView;
@@ -49,6 +52,7 @@ import jp.co.cyberagent.android.gpuimage.GPUImageFilter;
 
 /**
  * Created by Y2 on 2015-05-18.
+ * ToolFragment에서 Overview 아아템을 클릭했을 때 실행되는 프래그먼트
  */
 public class ToolDetailEditorFragment extends Fragment implements View.OnClickListener, GPUImageFilterTools.OnGpuImageFilterSelectListener {
 
@@ -59,7 +63,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     private ViewGroup mLowerView;
     private ViewGroup mBottomBar;
     private Animation mAnimSlideIn;
-    private Animation mAnimFadeIn;
+    private Animation mAnimFadeIn = null;
     private RecipeDesign sRecipe = RecipeDesign.getDesign();
 
     // ------------ Bottom bar ------------ //
@@ -75,6 +79,11 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
 
     private final String VIEW_IMAGE = "iv";
     private final String VIEW_TEXT = "ed";
+
+    private Animation mAnimScaleUp;
+    private Animation mAnimTrans;
+    private Animation mAnimRTrans;
+    private Animation mAnimFadeOut;
 
 
     // Use in ToolDetailEditorPageFragment
@@ -142,18 +151,6 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
 
     private void initAnimation(View v) {
         mAnimFadeIn = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_in);
-        mAnimFadeIn.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-                mViewPager.setBackgroundColor(Color.argb(150, 0, 0, 0));
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) { }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) { }
-        });
         mViewPager.startAnimation(mAnimFadeIn);
 
         mBottomBar = (ViewGroup) v.findViewById(R.id.tool_detail_editor_bottombar);
@@ -251,14 +248,70 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     private void showPhotoEditFragment() {
         if (fm.findFragmentById(R.id.tool_detail_editor_photo_container) != null) return;
 
-        int i = getCurrentItem();
+        final int i = getCurrentItem();
         // TODO 아직 뷰가 완성이 안되서 image가 없을 때 해결해야.
         // 여기에서 이미지헬퍼 쓰면 Fragment 생성과정에서 저장이 완료되면 문제가 발생하므로 ToolDetailEditorPhotoFragment에서 한다.
-        Bitmap image = ((BitmapDrawable)((ImageView) getPageChildView(VIEW_IMAGE)).getDrawable()).getBitmap(); // 문제가능지점 1. view 미완성 3. 사진로드 아직 안됨// from : 1.load new,
-        mPhotoFragment = ToolDetailEditorPhotoFragment.newInstance(i, image);
-        fm.beginTransaction()
-                .add(R.id.tool_detail_editor_photo_container, mPhotoFragment)
-                .commit();
+
+
+        // Set animation
+        View cardIv = getPageChildView(VIEW_IMAGE);
+        View card = (View) getPageChildView(VIEW_IMAGE).getParent();
+
+        if (mAnimScaleUp == null) {
+            DisplayMetrics dm = getResources().getDisplayMetrics();
+            int screenWidth = dm.widthPixels;
+            float scale = (float) screenWidth / (float) card.getWidth();
+
+            int padding = getResources().getDimensionPixelSize(R.dimen.tool_detail_item_padding);
+            mAnimScaleUp = new ScaleAnimation(1, scale, 1, scale,
+                    card.getWidth() / 2, cardIv.getHeight() / 2 + padding);
+            mAnimScaleUp.setDuration(300);
+            mAnimScaleUp.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {}
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    // Start fragment
+                    Bitmap image = ((BitmapDrawable)((ImageView) getPageChildView(VIEW_IMAGE)).getDrawable()).getBitmap(); // 문제가능지점 1. view 미완성 3. 사진로드 아직 안됨// from : 1.load new,
+                    mPhotoFragment = ToolDetailEditorPhotoFragment.newInstance(getCurrentItem(), image);
+                    fm.beginTransaction()
+                            .add(R.id.tool_detail_editor_photo_container, mPhotoFragment)
+                            .commit();
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {}
+            });
+        }
+
+        if (mAnimTrans == null) {
+            int padding = getResources().getDimensionPixelSize(R.dimen.tool_detail_page_padding);
+            mAnimTrans = new TranslateAnimation(1, -padding, 1, 1);
+            mAnimTrans.setDuration(300);
+        }
+
+        if (mAnimRTrans == null) {
+            int padding = getResources().getDimensionPixelSize(R.dimen.tool_detail_page_padding);
+            mAnimRTrans = new TranslateAnimation(1, padding, 1, 1);
+            mAnimRTrans.setDuration(300);
+        }
+
+        if (mAnimFadeOut == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) { // 너무 느림 // 버전이 아니라 CPU 성능 등을 기준으로 할 순 없나..
+            mAnimFadeOut = AnimationUtils.loadAnimation(getActivity(), R.anim.abc_fade_out);
+            getPageChildView(VIEW_TEXT).startAnimation(mAnimFadeOut);
+        } else
+            getPageChildView(VIEW_TEXT).setVisibility(View.INVISIBLE);
+
+        // Start animation
+        Bitmap background = Bitmap.createBitmap(ToolFragment.screenImage,
+                0, (ToolFragment.screenImage.getHeight() - (mLowerView.getHeight() + getResources().getDimensionPixelSize(R.dimen.bottombar_height))/2),
+                ToolFragment.screenImage.getWidth(), mLowerView.getHeight()/2);
+        mLowerView.setBackground(new BitmapDrawable(getResources(), background));
+
+        card.startAnimation(mAnimScaleUp);
+        if (i > 0) ((View)getPageChildView(VIEW_IMAGE, i - 1).getParent()).startAnimation(mAnimTrans);
+        if (i < sRecipe.getStepSize() - 1) ((View)getPageChildView(VIEW_IMAGE, i + 1).getParent()).startAnimation(mAnimRTrans);
     }
 
 
@@ -273,12 +326,13 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
 
         // on filter is selected
         String imagePath = "file://" + sRecipe.getImagePath(getCurrentItem());
-        Log.i("CYMK", "onFilterSelected : " + imagePath);
 
         // 여기에서 매번 불필요하게 새로 로딩하니 느려진다.. 캐시에 저장하면 메모리가 조금 아깝고, 확인을 하자니 애매한데.
         // 확인법? Tool~PhotoFragment에서 이미지 가져와서 size w, h 다 640 넘는지 확인하는 임시변통 - 이미지가 원래 작으면 안됨...
+        // 일단은 캐시적용
         ImageLoader.getInstance().loadImage(imagePath, imageOptions, listener.getListener(imagePath, filter));
     }
+
 
     ArgumentImageLoadingListener listener = new ArgumentImageLoadingListener() {
 
@@ -320,10 +374,12 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
     }
 
 
+
     // TODO 필터 뿐 아니라 다른 변경에도 대응해야. ToolDetailEditorPhotoFragment에도 해당.
     public void onFinishPhotoEdit(boolean isApply) {
         clearUtilView();
         currentBtnId = 0;
+        getPageChildView(VIEW_TEXT).setVisibility(View.VISIBLE);
 
         /* Finished by back button*/
         if (!isApply) {
@@ -349,6 +405,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
 
         new SaveEditedImageTask(resultImage, getCurrentItem()).execute();
     }
+
 
 
     private void finishPhotoFragment() {
@@ -497,7 +554,6 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         mAnimSlideIn = null;
 //        animSlideOut.setAnimationListener(null);
 //        animSlideOut = null;
-        mAnimFadeIn.setAnimationListener(null);
         mAnimFadeIn = null;
 
         recursiveRecycle(view);
@@ -507,7 +563,7 @@ public class ToolDetailEditorFragment extends Fragment implements View.OnClickLi
         super.onDestroyView();
     }
 
-    // 하나로 관리하면서 필요에 따라 추가기능을 넣으려면 어떻게 하지?
+    // 하나로 관리하면서 필요에 따라 추가기능을 넣으려면 어떻게 하지? 빌더를 쓰자니 너무 거창하고.. 사실상 맨 밑 리스너부분 빼고는 다 공통사항 -> 리스너는 따로 해주든가,
     @SuppressWarnings("unchecked")
     private void recursiveRecycle(View root) {
         if (root == null)

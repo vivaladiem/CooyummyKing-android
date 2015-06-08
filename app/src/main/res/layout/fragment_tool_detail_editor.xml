@@ -4,7 +4,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:focusableInTouchMode="true">
-    <!-- canvas로 화면에 어두운 레이어 깔 수 있으면 굳이 viewpager를 길게 놓지 않아도 될텐데 -->
     <android.support.v4.view.ViewPager
         android:id="@+id/tool_detail_editor_viewPager"
         android:layout_width="match_parent"
@@ -19,7 +18,12 @@
         android:id="@+id/tool_detail_editor_photo_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingBottom="176dp"/>
+        android:paddingLeft="8dp"
+        android:paddingTop="8dp"
+        android:paddingRight="8dp"
+        android:layout_marginBottom="176dp"
+        android:background="@android:color/white"
+        android:visibility="invisible"/>
     <!-- 나중엔 이부분은 블러된 배경을 쓰는 것도 좋겠다. 투명디스플레이, 유리같은 느낌으로 -->
     <FrameLayout
         android:id="@+id/tool_detail_editor_util_container"
@@ -27,6 +31,28 @@
         android:layout_height="120dp"
         android:layout_alignBottom="@id/tool_detail_editor_viewPager"
         android:layout_marginBottom="@dimen/bottombar_height"/>
+
+    <!-- 아예 PhotoEditor를 분리할 경우. 안의 뷰들은 다른 레이아웃파일로 옮기고 프래그먼트의 기능이 확실히 나뉘어 사용 -->
+    <!--<LinearLayout-->
+        <!--android:id="@+id/tool_detail_editor_photo_container"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:layout_marginBottom="@dimen/bottombar_height"-->
+        <!--android:orientation="vertical">-->
+        <!--<com.coo.y2.cooyummyking.widget.SquareImageView_byWidth-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="0dp"/>-->
+        <!--<SeekBar-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="0dp"-->
+            <!--android:layout_weight="1"-->
+            <!--android:id="@+id/seekBar"/>-->
+        <!--<FrameLayout-->
+            <!--android:id="@+id/tool_detail_editor_util_container"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="120dp"-->
+            <!--android:layout_alignBottom="@id/tool_detail_editor_viewPager"/>-->
+    <!--</LinearLayout>-->
 
     <!-- TODO [디자인]아이콘 크기 똑같게 만들어야. 그래야 글씨 크기 키워도 한줄로 정렬됨 -->
     <LinearLayout

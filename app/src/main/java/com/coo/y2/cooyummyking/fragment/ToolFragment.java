@@ -7,6 +7,9 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.LightingColorFilter;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -306,11 +309,11 @@ public class ToolFragment extends Fragment {
 
 
         Bitmap tempImage = ExhibitManager.getReplica(i);
-        if (tempImage == null) {
+        if (tempImage == null)
             ImageLoader.getInstance().displayImage("file://" + sRecipe.getImagePath(i), mIvRecipeImage, mOptions, imageLoadingListener);
-        } else {
+        else
             mIvRecipeImage.setImageBitmap(tempImage);
-        }
+
         mTvRecipeText.setText(sRecipe.instructions.get(i));
 
 
@@ -351,14 +354,22 @@ public class ToolFragment extends Fragment {
             float scaleFactor = 2;
 
             screenImage = Bitmap.createBitmap((int) (width / scaleFactor), (int) (height / scaleFactor), Bitmap.Config.RGB_565);
+//            screenImage = Bitmap.createBitmap((int) (width), (int) (height), Bitmap.Config.RGB_565);
+
             Canvas canvas = new Canvas(screenImage);
             canvas.scale(1 / scaleFactor, 1 / scaleFactor);
 
+            Paint paint = new Paint();
+            ColorFilter filter = new LightingColorFilter(0xFF555555, 0x88000000);
+            paint.setColorFilter(filter);
 
             mScrollView.setDrawingCacheEnabled(true);
-            canvas.drawBitmap(mScrollView.getDrawingCache(), 0, 0, null); // TODO 필터 관련 recycle 에러 여기에서 발생..?
+//            mScrollView.setDrawingCacheQuality(View.DRAWING_CACHE_QUALITY_LOW);
+            canvas.drawBitmap(mScrollView.getDrawingCache(), 0, 0, paint); // TODO 필터 관련 recycle 에러 여기에서 발생..?
             mScrollView.setDrawingCacheEnabled(false);
             canvas.scale(scaleFactor, scaleFactor);
+//            Log.i("CYMK", "low size screen : " + screenImage.getByteCount()); // low quality : byte - 1632960; mem - 17.88~18.8 // low size : byte - 408240; mem - 15.8~17.8 (사진4개)
+
 
             // Open Detail Editor Fragment
             FragmentManager fm = getActivity().getSupportFragmentManager();
@@ -585,6 +596,8 @@ public class ToolFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+
+
     private void saveImage(final int i, String path, ImageSize size) {
         String uri = "file://" + path;
         ImageLoader.getInstance().loadImage(uri, size, addImageLoadingListener.getListener(uri, i));
@@ -659,7 +672,7 @@ public class ToolFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            // 세이브 전에 앱이 꺼짐을 방지하기 위해 세이브의 시작과 끝을 알립니다. 원래는 ToolDetailEditorFragment에서 사용
+            // 세이브 전에 앱이 꺼짐을 방지하기 위해 세이브의 시작과 끝을 알립니다. 원래는 ToolDetailEditorFragment에서 사용하던 것 차용
             ExhibitManager.getExhibit(index).startExhibit(null);
         }
 
