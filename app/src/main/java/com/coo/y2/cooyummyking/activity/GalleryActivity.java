@@ -19,7 +19,7 @@ import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.coo.y2.cooyummykingr.R;
+import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.adapter.GalleryCursorAdapter;
 import com.nostra13.universalimageloader.core.ImageLoader;
 
@@ -36,7 +36,7 @@ public class GalleryActivity extends AppCompatActivity implements LoaderManager.
     GalleryCursorAdapter mAdapter;
     Cursor mCursor;
 
-    public static final String EXTRA_SELECTED_ITEMS = "com.coo.y2.cooyummykingr.activity.GalleryActivity";
+    public static final String EXTRA_SELECTED_ITEMS = "com.coo.y2.cooyummyking.R.activity.GalleryActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

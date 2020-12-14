@@ -42,7 +42,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.gridlayout.widget.GridLayout;
 
 import com.coo.y2.cooyummyking.listener.ArgumentImageLoadingListener;
-import com.coo.y2.cooyummykingr.R;
+import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.GalleryActivity;
 import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.core.App;

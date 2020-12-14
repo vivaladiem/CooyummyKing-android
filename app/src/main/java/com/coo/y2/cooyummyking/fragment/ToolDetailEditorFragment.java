@@ -30,7 +30,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
-import com.coo.y2.cooyummykingr.R;
+import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.util.ExhibitManager;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;

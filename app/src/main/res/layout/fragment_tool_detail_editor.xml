@@ -39,7 +39,7 @@
         <!--android:layout_height="match_parent"-->
         <!--android:layout_marginBottom="@dimen/bottombar_height"-->
         <!--android:orientation="vertical">-->
-        <!--<com.coo.y2.cooyummykingr.widget.SquareImageView_byWidth-->
+        <!--<com.coo.y2.cooyummyking.widget.SquareImageView_byWidth-->
             <!--android:layout_width="match_parent"-->
             <!--android:layout_height="0dp"/>-->
         <!--<SeekBar-->

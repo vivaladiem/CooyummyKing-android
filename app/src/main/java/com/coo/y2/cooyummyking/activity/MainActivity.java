@@ -22,7 +22,7 @@ import androidx.fragment.app.FragmentTransaction;
 import com.coo.y2.cooyummyking.fragment.MainFragment;
 import com.coo.y2.cooyummyking.fragment.ToolFragment;
 import com.coo.y2.cooyummyking.listener.OnBackPressedListener;
-import com.coo.y2.cooyummykingr.R;
+import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.entity.RecipeDesign;
 import com.coo.y2.cooyummyking.util.ExhibitManager;
 import com.coo.y2.cooyummyking.util.RecipeSerializer;

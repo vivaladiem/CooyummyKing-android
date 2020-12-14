@@ -1,4 +1,4 @@
-package com.coo.y2.cooyummykingr;
+package com.coo.y2.cooyummyking;
 
 import org.junit.Test;
 

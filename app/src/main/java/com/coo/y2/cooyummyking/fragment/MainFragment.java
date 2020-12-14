@@ -23,7 +23,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.coo.y2.cooyummykingr.R;
+import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.activity.MainActivity;
 import com.coo.y2.cooyummyking.core.App;
 import com.coo.y2.cooyummyking.entity.Recipe;

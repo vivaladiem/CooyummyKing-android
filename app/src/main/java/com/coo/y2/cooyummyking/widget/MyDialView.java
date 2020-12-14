@@ -12,7 +12,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.coo.y2.cooyummykingr.R;
+import com.coo.y2.cooyummyking.R;
 
 /**
  * Created by Y2 on 2015-05-23.

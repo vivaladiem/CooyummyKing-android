@@ -5,7 +5,7 @@
                 android:background="@color/Coo_BackgroundLightGrey"
                 android:soundEffectsEnabled="true">
     <!--
-    <com.coo.y2.cooyummykingr.widget.RotaryKnobView
+    <com.coo.y2.cooyummyking.widget.RotaryKnobView
         android:id="@+id/tool_timer_jog"
         android:layout_width="300dp"
         android:layout_height="300dp"

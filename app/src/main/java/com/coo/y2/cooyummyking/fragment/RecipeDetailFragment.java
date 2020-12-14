@@ -19,7 +19,7 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.coo.y2.cooyummykingr.R;
+import com.coo.y2.cooyummyking.R;
 import com.coo.y2.cooyummyking.core.App;
 import com.coo.y2.cooyummyking.entity.Recipe;
 import com.coo.y2.cooyummyking.network.HttpUtil;
@@ -40,10 +40,10 @@ import cz.msebera.android.httpclient.Header;
  * Created by Y2 on 2015-04-30.
  */
 public class RecipeDetailFragment extends Fragment {
-    public static final String EXTRA_RECIPEID = "com.coo.y2.cooyummykingr.recipeId";
-    public static final String EXTRA_USERID = "com.coo.y2.cooyummykingr.userId";
-    public static final String EXTRA_MAIN_IMAGE_INDEX = "com.coo.y2.cooyummykingr.mainImageIndex";
-    public static final String EXTRA_TITLE = "com.coo.y2.cooyummykingr.title";
+    public static final String EXTRA_RECIPEID = "com.coo.y2.cooyummyking.RecipeId";
+    public static final String EXTRA_USERID = "com.coo.y2.cooyummyking.userId";
+    public static final String EXTRA_MAIN_IMAGE_INDEX = "com.coo.y2.cooyummyking.mainImageIndex";
+    public static final String EXTRA_TITLE = "com.coo.y2.cooyummyking.title";
 
     private Recipe mRecipe;
     private DisplayImageOptions mOptions;
