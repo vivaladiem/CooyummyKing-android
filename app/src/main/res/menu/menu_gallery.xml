@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      tools:context=".GalleryActivity">
+    <item
+        android:id="@+id/toolbar_gallery_complete"
+        android:title="@string/toolbar_gallery_complete"
+        android:icon="@drawable/toolbar_btn_complete"
+        app:showAsAction="ifRoom|withText"/>
+</menu>

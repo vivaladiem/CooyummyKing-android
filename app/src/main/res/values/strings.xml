@@ -1,0 +1,59 @@
+<resources>
+    <string name="app_name">CooYummyKing</string>
+    <string name="gallery">갤러리</string>
+    <string name="close_toast">한번 더 뒤로가기를 누르시면 종료합니다.</string>
+
+    <!-- Toolbar -->
+    <string name="toolbar_ham">메뉴</string>
+    <string name="toolbar_refresh">새로고침</string>
+    <string name="toolbar_search">검색</string>
+    <string name="ham_open">햄버거메뉴 열기</string>
+    <string name="ham_close">햄버거메뉴 닫기</string>
+    <string name="toolbar_title_main">쿠요미킹</string>
+    <string name="toolbar_gallery_complete">확인</string>
+    <string name="toolbar_tool_complete">완료</string>
+    <string name="toolbar_tool_detail_editor_thumbnail">썸네일</string>
+
+    <!-- Main -->
+
+    <!-- Detail -->
+    <string name="detail_recipe_toolbar_title">상세레시피</string>
+    <string name="detail_recipe_title_caption">제목</string>
+    <string name="detail_recipe_time_caption">시간</string>
+    <string name="detail_recipe_theme_caption">테마</string>
+    <string name="detail_recipe_ingredient_caption">재료</string>
+    <string name="detail_recipe_source_caption">양념</string>
+
+    <!-- Tool -->
+    <string name="tool_toolbar_title">쿠요미 툴</string>
+    <string name="tool_info_caption">기본정보</string>
+    <string name="tool_info_title_caption">제목</string>
+    <string name="tool_info_time_caption">시간</string>
+    <string name="tool_info_time_hour">시간</string>
+    <string name="tool_info_time_minute">분</string>
+    <string name="tool_info_theme_caption">테마</string>
+    <string name="tool_info_ingredient_caption">재료</string>
+    <string name="tool_info_source_caption">양념</string>
+    <string name="tool_photo_load_image">사진로드</string>
+    <string name="tool_photo_camera">촬영</string>
+    <string name="tool_photo_album">앨범</string>
+    <string name="tool_making_title_caption">요리과정</string>
+    <string name="tool_complete">레시피 작성을 완료하시겠습니까?</string>
+
+    <string name="tool_detail_edit_instruction_hint">과정을 입력하세요</string>
+    <string name="tool_detail_bottombar_photoedit">사진편집</string>
+    <string name="tool_detail_bottombar_filter">필터</string>
+    <string name="tool_detail_bottombar_sticker">스티커</string>
+    <string name="tool_detail_bottombar_subtitle">자막</string>
+    <string name="tool_detail_bottombar_text">텍스트</string>
+
+
+    <string name="recipe_number_of_person">명</string>
+
+    <!-- Errors -->
+    <string name="err_network_unavailable">네트워크에 연결할 수 없습니다</string>
+    <string name="err_no_recipe">레시피를 불러올 수 없습니다</string>
+    <!--<string name="err_no_recipe">네트워크 오류로 인해 레시피 정보를 가져올 수 없습니다</string>-->
+    <string name="err_fail_edit_image">이미지 편집을 실패하였습니다</string>
+    <string name="err_fail_load_edited_image">꾸밈 이미지를 가져오는데 실패하여 원본 이미지를 불러왔습니다.</string>
+</resources>

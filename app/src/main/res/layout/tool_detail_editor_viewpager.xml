@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:background="@drawable/shape_background_white_with_grey_stroke">
+    <!-- 태그 -->
+    <!-- TODO 초록색 원 그림자가 없음. 용량 적게 하고 다시 만들어야 -->
+    <ImageView
+        android:id="@+id/tool_detail_editor_tag_main"
+        android:layout_width="36dp"
+        android:layout_height="18dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="-26dp"
+        android:visibility="gone"
+        android:background="@drawable/tool_making_tag_main_img"/>
+    <TextView
+        android:id="@+id/tool_detail_editor_tag_num"
+        android:layout_width="36dp"
+        android:layout_height="18dp"
+        android:layout_marginLeft="-8dp"
+        android:layout_marginTop="-26dp"
+        android:gravity="center"
+        android:background="@drawable/tool_making_tag_num_img"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/white"/>
+
+    <!-- 내용 -->
+    <com.coo.y2.cooyummykingr.widget.SquareImageView_byWidth
+        android:id="@+id/tool_detail_editor_image"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginBottom="2dp"
+        android:maxWidth="320dp"
+        android:maxHeight="240dp"
+        android:scaleType="centerCrop"
+        android:cropToPadding="true"
+        />
+    <!-- 텍스트 줄에 따라 사진 높이를 줄이든 카드 높이를 늘이든 처리하는게 좋지 않을까 / 파란 줄이 보여서 보기 안좋음 -->
+    <EditText
+        android:id="@+id/tool_detail_editor_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tool_detail_editor_image"
+        android:minLines="3"
+        android:hint="@string/tool_detail_edit_instruction_hint"
+        android:textColor="@color/Coo_DarkGrey"
+        android:textColorHint="@color/Coo_LightGrey"/>
+</RelativeLayout>

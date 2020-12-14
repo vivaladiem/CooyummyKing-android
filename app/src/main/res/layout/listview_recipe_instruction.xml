@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:clipToPadding="false"
+                android:clipChildren="false"
+                android:padding="12dp"
+                android:background="@drawable/detail_recipe_card_background">
+    <!-- TODO 끈 작은이미지 만들어서 wrap_content로 해야.-->
+    <!-- TODO 젤리빈(API 17, 4.2.2)하고 API 8 2.3.3에선 버그로 인해 Parent 밖으로 나가면 아예 사라지거나 부분이 잘리면서 이상해짐..
+    ToolFragment에서 했듯 이어붙이든가 다른 디자인으로 변경하든가 해당버전에서만 다른 디자인을 쓰는 수 밖에...
+    한 쪽에서만 넘어가는거면(ToolFragment의 라벨 과 같이) 겉을 다른 레이아웃으로 감싸서 paddingTop을 주고 처리하면 되지만
+    여기서와 같이 양쪽을 넘어야 하면 불가능한듯.. 아예 레이아웃을 새로 그리면 되긴 하겠지만.. 아오 멍청한 안드로이드-->
+    <ImageView
+        android:layout_height="28dp"
+        android:layout_width="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="-30dp"
+        android:layout_marginLeft="20dp"
+        android:src="@drawable/detail_recipe_card_string"/>
+    <ImageView
+        android:layout_height="28dp"
+        android:layout_width="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="-30dp"
+        android:layout_marginRight="20dp"
+        android:src="@drawable/detail_recipe_card_string"/>
+    <com.coo.y2.cooyummykingr.widget.SquareImageView_byWidth
+        android:id="@+id/detail_recipe_instruction_iv"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:cropToPadding="true"
+        android:visibility="gone"
+        android:scaleType="centerCrop"
+        android:background="@android:color/white"/>
+    <TextView
+        android:id="@+id/detail_recipe_instruction_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/detail_recipe_instruction_iv"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:textAppearance="@style/TextDarkGrey"
+        android:text="200도 예열에서 10분간 구워 완성!"/>
+    <ViewStub
+        android:id="@+id/detail_recipe_instruction_end_stub"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="24dp"
+        android:layout_below="@id/detail_recipe_instruction_tv"
+        android:layout="@layout/listview_recipe_instruction_end_stub"/>
+</RelativeLayout>

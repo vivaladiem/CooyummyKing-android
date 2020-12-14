@@ -1,0 +1,17 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="toolbar_height">48dp</dimen>
+    <dimen name="bottombar_height">56dp</dimen>
+
+    <dimen name="tool_padding">16dp</dimen>
+    <dimen name="tool_padding_bottom">36dp</dimen>
+    <dimen name="link_height">40dp</dimen>
+    <dimen name="tool_overview_item_padding">4dp</dimen>
+    <dimen name="tool_overview_item_margin_side">4dp</dimen>
+    <dimen name="tool_overview_item_margin_top_bottom">12dp</dimen>
+    <dimen name="tool_overview_item_text_height">28sp</dimen>
+    <dimen name="tool_detail_item_padding">8dp</dimen>
+    <dimen name="tool_detail_page_padding">32dp</dimen>
+</resources>

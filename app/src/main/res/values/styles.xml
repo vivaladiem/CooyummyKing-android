@@ -1,0 +1,56 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="android:windowBackground">@null</item> <!-- Tuning -->
+        <item name="drawerArrowStyle">@style/DrawerArrowStyle</item>
+    </style>
+
+    <!-- Toolbar 사이드메뉴 토글버튼 -->
+    // http://developer.android.com/reference/android/support/v7/appcompat/R.styleable.html 참고. 툴바 커스텀 가능 요소들
+    <style name="DrawerArrowStyle" parent="Widget.AppCompat.DrawerArrowToggle">
+        <item name="spinBars">true</item>
+        <item name="color">@android:color/white</item>
+        <item name="actionBarSize">24sp</item>
+        <item name="thickness">3sp</item>
+        <item name="gapBetweenBars">3sp</item>
+<!--        <item name="middleBarArrowSize">20sp</item>-->
+    </style>
+
+    <!-- Text -->
+    <style name="TextWhite">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+    <style name="TextLightGrey">
+        <item name="android:textColor">@color/Coo_LightGrey</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+    <style name="TextLargeItalicLightGrey">
+        <item name="android:textColor">@color/Coo_LightGrey</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">italic</item>
+    </style>
+    <style name="TextLargeDarkGrey">
+        <item name="android:textColor">@color/Coo_DarkGrey</item>
+        <item name="android:textSize">32sp</item>
+    </style>
+    <style name="TextLargeItalicDarkGrey">
+        <item name="android:textColor">@color/Coo_DarkGrey</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:textStyle">italic</item>
+    </style>
+    <style name="TextDarkGrey">
+        <item name="android:textColor">@color/Coo_DarkGrey</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+    <style name="TextRed">
+        <item name="android:textColor">@color/Coo_Red</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+    <style name="TextLightGreyAndRed">
+        <item name="android:textColor">@color/coo_text_selector_grey_red</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+</resources>

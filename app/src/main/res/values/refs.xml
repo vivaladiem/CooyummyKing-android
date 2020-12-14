@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="tool_making_tag_num_btn" type="drawable">@drawable/tool_making_tag_num_shadowed</item>
+    <item name="tool_making_tag_main_btn" type="drawable">@drawable/tool_making_tag_main_shadowed</item>
+</resources>

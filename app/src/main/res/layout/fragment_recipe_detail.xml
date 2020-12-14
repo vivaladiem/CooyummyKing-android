@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#fff2f2f2">
+    <!-- 작성자 정보, 버튼 -->
+    <LinearLayout
+        android:id="@+id/detail_writer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_margin="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+        <com.coo.y2.cooyummykingr.widget.CircleImageView
+            android:id="@+id/detail_writer_thumb"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="4dp"
+            android:layout_gravity="center_vertical|left"/>
+
+        <!-- TODO 레벨아이콘에 숫자가 써있어야 함 -->
+        <ImageView
+            android:id="@+id/detail_writer_level"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:src="@drawable/level_list"/>
+        <TextView
+            android:id="@+id/detail_writer_nickname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="4dp"
+            android:layout_weight="1"
+            android:singleLine="true"
+            android:textSize="16sp"
+            android:textColor="#ff222222"
+            android:textStyle="bold"/>
+        <ImageView
+            android:id="@+id/detail_like"
+            android:layout_width="42sp"
+            android:layout_height="42sp"
+            android:layout_marginRight="2dp"
+            android:padding="8sp"
+            android:src="@drawable/detail_header_btn_like"
+            android:clickable="true"/>
+        <ImageView
+            android:id="@+id/detail_scrap"
+            android:layout_width="42sp"
+            android:layout_height="42sp"
+            android:layout_marginRight="2dp"
+            android:padding="8sp"
+            android:src="@drawable/detail_header_btn_scrap"
+            android:clickable="true"/>
+        <ImageView
+            android:id="@+id/detail_share"
+            android:layout_width="42sp"
+            android:layout_height="42sp"
+            android:layout_marginRight="2dp"
+            android:padding="8sp"
+            android:src="@drawable/detail_header_btn_share"
+            android:clickable="true"/>
+    </LinearLayout>
+
+    <!-- 레시피 -->
+    <ListView
+        android:id="@+id/detail_recipe_instruction_listview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_below="@id/detail_writer_layout"
+        android:scrollbars="none"
+        android:clipChildren="false"
+        android:cacheColorHint="#fff2f2f2"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="8dp"/>
+</RelativeLayout>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:clipToPadding="false">
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        android:layout_marginTop="-7dp"
+        android:layout_marginLeft="-16dp"
+        android:layout_marginRight="-16dp"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/shape_dotted_line"
+        android:layerType="software"/>
+    <android.widget.Space
+        android:id="@+id/stand"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_centerHorizontal="true"/>
+    <TextView
+        android:id="@+id/detail_recipe_instruction_end_like"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/stand"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="16dp"
+        android:drawableLeft="@drawable/detail_info_btn_like_on"
+        android:drawablePadding="4dp"
+        android:textAppearance="@style/TextRed"
+        android:textStyle="bold"/>
+    <TextView
+        android:id="@+id/detail_recipe_instruction_end_scrap"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@id/detail_recipe_instruction_end_like"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="16dp"
+        android:drawableLeft="@drawable/detail_info_btn_scrap_on"
+        android:drawablePadding="4dp"
+        android:textAppearance="@style/TextRed"
+        android:textStyle="bold"/>
+</RelativeLayout>

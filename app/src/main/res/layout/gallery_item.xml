@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 코드상에서 크기를 정확히 넣어줘야 UIL이 리사이즈해서 디스플레이함.-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:id="@+id/gallery_item"
+             android:layout_width="wrap_content"
+             android:layout_height="wrap_content"
+             android:layout_margin="1dp">
+    <com.coo.y2.cooyummykingr.widget.SquareImageView_byWidth
+        android:id="@+id/gallery_item_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:maxWidth="240dp"
+        android:maxHeight="240dp"
+        android:scaleType="centerCrop"/>
+    <TextView
+        android:id="@+id/gallery_item_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:visibility="gone"
+        android:textAppearance="@style/TextDarkGrey"
+        android:background="@drawable/shape_rounded_rectangle"/>
+</FrameLayout>
